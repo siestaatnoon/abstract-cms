@@ -1,0 +1,51 @@
+<div class="form-group modules-validation-btn">
+    <a href="#modules-validation" class="modules-validation-list-open ui-btn ui-corner-all ui-shadow ui-icon-carat-d ui-btn-icon-right ui-btn-icon-right closed"><?php echo __('form.validation.options'); ?></a>
+</div>
+<div id="modules-validation" class="modules-validation" data-visible="1">
+  <input type="hidden" name="validation" value='' class="modules-validation-hidden widget-hidden" />
+  <div class="modules-validation-form">
+      <ul id="modules-validation-list" class="modules-validation-list ui-mini" data-role="listview" data-split-icon="delete" data-split-theme="a"></ul>
+      <div class="form-group ct-valid-type">
+        <label class="control-label"><?php echo __('form.validation.type'); ?></label>
+        <select class="validation-field-type form-control">
+            <?php echo form_fields_valid_options_html(); ?>
+        </select>
+      </div>
+      <div class="form-group ct-valid-fields ct-valid-custom">
+        <label class="control-label"><?php echo __('form.validation.custom'); ?></label>
+        <input class="validation-field-custom field-alphanum form-control ui-mini" type="text" />
+      </div>
+      <div class="form-group ct-valid-fields ct-valid-min">
+        <label class="control-label"><?php echo __('form.validation.min'); ?></label>
+        <input class="validation-field-min form-control ui-mini" type="text" />
+      </div>
+      <div class="form-group ct-valid-fields ct-valid-max">
+        <label class="control-label"><?php echo __('form.validation.max'); ?></label>
+        <input class="validation-field-max form-control ui-mini" type="text" />
+      </div>
+      <div class="form-group ct-valid-fields ct-valid-custom">
+        <label class="control-label"><?php echo __('form.validation.param'); ?></label>
+        <input class="validation-field-param form-control ui-mini" type="text" />
+      </div>
+      <div class="form-group ct-valid-fields ct-valid-custom">
+        <label class="control-label"><?php echo __('form.validation.rules'); ?></label>
+        <textarea class="validation-field-rules form-control" data-enhance="false"></textarea>
+      </div>
+      <div class="form-group ct-valid-fields ct-valid-message ct-valid-min ct-valid-max ct-valid-custom">
+          <label class="control-label"><?php echo __('form.validation.message'); ?></label>
+          <input class="validation-field-message form-control ui-mini" type="text" />
+      </div>
+
+      <?php if ( ! $is_readonly) : ?>
+
+      <div class="form-group">
+        <button class="modules-validation-save btn btn-primary ui-mini ui-btn ui-corner-all ui-icon-action ui-btn-icon-right" data-add-text="<?php echo __('form.add'); ?>" data-update-text="<?php echo __('form.update'); ?>"></button>
+      </div>
+
+      <?php endif; ?>
+
+      <div class="form-group modules-validation-cancel-cnt">
+        <button class="modules-validation-cancel btn btn-primary ui-mini ui-btn ui-corner-all ui-icon-minus ui-btn-icon-right"><?php echo __('form.cancel'); ?></button>
+      </div>
+  </div>
+</div>

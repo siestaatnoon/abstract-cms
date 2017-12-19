@@ -1,0 +1,27 @@
+<?php
+$title = 'Page Not Found';
+
+?><div class="row">
+
+    <div class="small-12 medium-8 large-8 large-centered columns">
+
+        <div id="main-content2">
+
+            <h1><?php echo $title; ?></h1>
+
+            <p>Sorry, we could not find the page you were looking for. Maybe try one of these:</p>
+
+            <p><a href="/home">Home Page</a></p>
+
+        </div>
+
+    </div>
+
+</div><!--end .row-->
+
+<?php
+$head = array(
+    'title' => $title
+);
+template_head_tags($head);
+?>

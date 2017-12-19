@@ -1,0 +1,39 @@
+.widget-values-btn {
+	margin-bottom: 0;
+}
+.widget-values {
+	margin-bottom: 1em;
+	display: none;
+}
+.widget-values-list-open {
+	margin-bottom: 0;
+}
+.widget-values-list-open.closed {
+	margin-bottom: 1em;
+}
+.widget-values-form {
+	background-color: #f0f0f0;
+	-webkit-border-radius: .3125em;
+    border-radius: .3125em;
+	padding: .5em 1em;
+}
+.widget-values-form > div,
+.widget-values-list {
+	margin-top: 1em;
+}
+.widget-values-list > li {
+	border-left: 1px solid #ddd;
+	border-right: 1px solid #ddd;
+}
+.widget-values-list.ui-listview {
+	padding-left: .5em;
+	padding-right: .5em;
+	margin: 0;
+}
+.widget-values-submit {
+	margin-left: 0;
+	margin-right: 0;
+}
+.widget-values-cancel-cnt {
+	display: none;
+}

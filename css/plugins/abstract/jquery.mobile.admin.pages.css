@@ -1,0 +1,142 @@
+#search-results {
+	font-weight:bold;
+	display: none;
+}
+#pages-tree, #pages-tree ul {
+	font-family: Arial, sans-serif;
+	font-size: 16px;
+	line-height: 16px;
+	list-style-type:none;
+	margin:0;
+	padding:0;
+	list-style-type:none;
+	margin:0 0 0 2em; 
+	padding:0;
+}
+#pages-tree li {
+	margin-top:10px; 
+	padding:0;
+}
+#pages-search-pagination {
+	margin:15px 0;
+	overflow:hidden;
+	display: none;
+}
+#pages-search-pagination {
+	margin-left: 2em;
+}
+#pages-search-pagination div {
+	float:left;
+	margin-right: .5em;
+}
+#pages-search-pagination .pagination-link {
+	font-size: 1em;
+	width:24px;
+	height:24px;
+	line-height:24px;
+	text-align:center;
+	display:block;
+}
+#pages-search-pagination a.pagination-link {
+	font-weight: normal;
+	cursor:pointer;
+}
+#pages-search-pagination a.pagination-link:hover {
+	text-decoration:none;
+}
+#pages-search-pagination a.pagination-link:hover,
+#pages-search-pagination .pagination-link-active {
+	background:#43657C;
+	color:#fff;
+}
+#pages-search-pagination .pagination-link-inactive {
+	background:#eee;
+	color:#43657C;
+}
+.toggle-page {
+	display:inline;
+	cursor:pointer;
+}
+.toggle-page .toggle-inactive {
+	color:#43657C;
+}
+.toggle-page .toggle-active {
+	color:#000;
+	background:#FFFFDD;
+}
+.toggle-page .toggle-links-show {
+	display:inline;
+}
+.toggle-page .toggle-links-hide {
+	display:none;
+}
+.toggle-page .page-inactive {
+	color:#aaa !important;
+}
+.toggle-page .subpage-count {
+	font-family:Georgia, serif;
+	color:#ccc;
+	padding:0 2px;
+}
+.toggle-page div {
+	display:inline;
+}
+div.toggle-links {
+	font-size:12px;
+}
+div.toggle-links a, div.toggle-links a.version-action {
+	text-decoration:none;
+	font-size:12px;
+	line-height:12px;
+	color:#c26916;
+	padding:0 4px 0 6px;
+	border-left:1px solid #ccc;
+	cursor:pointer;
+}
+div.toggle-links a.toggle-delete {
+	color:#f00;
+	cursor:pointer;
+}
+div.toggle-links .toggle-loading {
+	margin-left:5px;
+}
+div.version-cnt {
+	display:none;
+}
+.version-cnt div {
+	padding:0 0 5px 1px;
+}
+.version-cnt div:first-child {
+	font-weight:bold;
+}
+
+@media (max-width: 640px) {
+	#pages-tree {
+		font-size: 1.25em;
+		line-height: 1.5em;
+		margin: 0; 
+	}
+	#pages-tree ul {
+		font-size: inherit;	
+	}
+	#pages-search-pagination {
+		margin-left: 0;
+	}
+	#pages-tree li {
+		margin-top: 1em; 
+	}
+	#pages-search-pagination div {
+		margin-right: 1.3em;
+	}
+	#pages-search-pagination a.pagination-link {
+		font-size: 1.25em;
+		width: 40px;
+		height: 40px;
+		line-height: 40px;
+	}
+	div.toggle-links a, div.toggle-links a.version-action {
+		font-size: 1.25em;
+		line-height: 1em;
+		padding:0 5px 0 10px;
+	}
+}

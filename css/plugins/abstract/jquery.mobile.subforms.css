@@ -1,0 +1,76 @@
+@import url('../jquery-ui/jquery-ui.min.css');
+@import url('../jquery-ui/jquery-ui.structure.min.css');
+
+#form-sidebar .relation {
+	margin-bottom: 1.5em;
+}
+#form-sidebar .relation a.relation-list-open,
+#form-sidebar .relation a.form-panel-add {
+	margin-bottom: .5em;
+}
+#form-sidebar .relation a.relation-list-open {
+	margin-top: 0;
+}
+#form-sidebar .relation .relation-list {
+	margin-bottom: 2.5em;
+	display: none;
+}
+.form-panel-list.ui-listview {
+	padding-left: .5em;
+	padding-right: .5em;
+	margin: 0;
+}
+.form-panel .ui-content {
+	padding: 0;
+}
+.form-panel {
+	width: 50em;
+	z-index: 1002;
+}
+.form-panel.ui-panel-animate {
+	-webkit-transition: -webkit-transform 600ms ease;
+	-webkit-transition-duration: 600ms;
+	-moz-transition: -moz-transform 600ms ease;
+	transition: transform 600mss ease;
+}
+.form-panel.ui-panel-position-right {
+	-webkit-box-shadow: -5px 0 5px rgba(0,0,0,.15);
+	-moz-box-shadow: -5px 0 5px rgba(0,0,0,.15);
+	box-shadow: -5px 0 5px rgba(0,0,0,.15);
+}
+.form-panel.ui-panel-animate.ui-panel-open.ui-panel-position-right.ui-panel-display-push {
+	-webkit-transform: translate3d(0,0,0);
+	transform: translate3d(0,0,0);
+	-moz-transform: none;
+}
+.ui-panel-animate.ui-panel-page-content-position-right {
+	left: 0;
+	right: 0;
+	-webkit-transform: translate3d(-50em,0,0);
+	-moz-transform: translate3d(-50em,0,0);
+	transform: translate3d(-50em,0,0);
+}
+.form-panel.ui-panel-animate.ui-panel-position-right.ui-panel-display-push {
+	-webkit-transform: translate3d(100%,0,0);
+	-moz-transform: translate3d(100%,0,0);
+	transform: translate3d(100%,0,0);
+}
+.ui-panel-wrapper {
+	position: relative;
+}
+.panel-overlay {
+    position: fixed;
+    z-index: 1001;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+@media (max-width: 50em) { 
+	.ui-panel-animate.ui-panel-page-content-position-right {
+		-webkit-transform: translate3d(-100%,0,0);
+		-moz-transform: translate3d(-100%,0,0);
+		transform: translate3d(-100%,0,0);
+	}
+}

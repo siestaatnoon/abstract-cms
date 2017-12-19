@@ -1,0 +1,73 @@
+<?php
+$web_root = template_web_root();
+
+?><div class="row">
+
+    <div id="sidebar" class="small-12 medium-3 large-3 columns">
+        <h3><a href="#">Services</a></h3>
+        <ul class="side-nav">
+            <li><a href="#">Service #1</a></li>
+            <li class="active">
+                <a href="#">Service #2</a>
+                <ul>
+                    <li class="active"><a href="#">Some kind of service</a></li>
+                    <li><a href="#">Another kind of service</a></li>
+                </ul>
+            </li>
+            <li><a href="#">Service #3</a></li>
+        </ul>
+    </div>
+
+    <div class="small-12 medium-9 large-9 columns">
+
+<?php echo template_breadcrumbs(); ?>
+
+        <div id="main-content2">
+
+            <h1>Gizmos</h1>
+
+            <% for (var i=0; i < items.length; i++) { var item = items[i]; %>
+
+            <div class="list-item row">
+                <div class="small-12 medium-2 large-2 columns">
+                    <img src="<?php echo template_img_path('test'); ?><%= item.images.length ? item.images[0] : 'default.jpg' %>" alt="<%- item.title %>" />
+                </div>
+                <div class="small-12 medium-10 large-10 columns">
+                    <p class="title">
+                        <a href="<?php echo $web_root; ?>/gizmos/detail/<%= item.slug %>"><%= item.title %></a>
+                    </p>
+                    <p class="subinfo">
+                        <%= item.post_date %><br/>
+                        <%= item.post_time %>
+                    </p>
+                    <p class="intro">
+                        <%= item.color %> <%= item.day %>
+                    </p>
+                </div>
+            </div>
+
+            <% } %>
+
+          <%= pagination %>
+
+        </div>
+
+    </div>
+
+    </div><!--end .row-->
+
+<?php
+
+$head = array(
+    'title' => 'Gizmos',
+    'meta' => array(
+        'name' => array(
+            'data-url' => array('content' => template_app_path() ),
+            'keywords' => array('content' => 'gizmos'),
+            'description' => array('content' => 'Gizmos test data')
+        )
+    )
+);
+template_head_tags($head);
+
+?>

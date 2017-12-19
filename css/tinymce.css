@@ -1,0 +1,37 @@
+@charset "UTF-8";
+/* CSS Document */
+
+body {
+	font:normal 13px Arial, Helvetica, sans-serif;
+	background-color:#fff;
+}
+
+a {
+	color:#00AA00;
+}
+a:link {
+	text-decoration:none;
+}
+a:visited {
+	text-decoration:none;
+}
+a:active {
+	text-decoration:none;
+}
+a:hover {
+	text-decoration:underline;
+}
+
+h1 {
+	font-size:16px;
+}
+h2 {
+	font-size:15px;
+}
+h3, h4, h5 {
+	font-size:14px;
+}
+
+p {
+	line-height:16px;
+}

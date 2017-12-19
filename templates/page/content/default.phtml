@@ -1,0 +1,48 @@
+<div class="row">
+
+    <div id="sidebar" class="small-12 medium-3 large-3 columns">
+        <h3><a href="#">Services</a></h3>
+        <ul class="side-nav">
+            <li><a href="#">Service #1</a></li>
+            <li class="active">
+                <a href="#">Service #2</a>
+                <ul>
+                    <li class="active"><a href="#">Some kind of service</a></li>
+                    <li><a href="#">Another kind of service</a></li>
+                </ul>
+            </li>
+            <li><a href="#">Service #3</a></li>
+        </ul>
+    </div>
+
+    <div class="small-12 medium-9 large-9 columns">
+
+<?php echo template_breadcrumbs(); ?>
+
+        <div id="main-content2">
+
+<h1><%= short_title %></h1>
+
+<%= content %>
+
+        </div>
+
+    </div>
+
+</div><!--end .row-->
+
+<?php
+
+$head = array(
+    'title' => $long_title,
+    'meta' => array(
+        'name' => array(
+            'data-url' => array('content' => template_app_path() ),
+            'keywords' => array('content' => $meta_keywords),
+            'description' => array('content' => $meta_description)
+        )
+    )
+);
+template_head_tags($head);
+
+?>

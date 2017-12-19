@@ -1,0 +1,19 @@
+/* plugins/abstract/jquery.mobile.nv-pairs.css */
+
+.name-value-pairs-form {
+	background-color: #f0f0f0;
+}
+.name-value-pairs-list > li {
+	border-left: 1px solid #ddd;
+	border-right: 1px solid #ddd;
+}
+
+/* plugins/abstract/jquery.mobile.values.css */
+
+.widget-values-form {
+	background-color: #f0f0f0;
+}
+.widget-values-list > li {
+	border-left: 1px solid #ddd;
+	border-right: 1px solid #ddd;
+}

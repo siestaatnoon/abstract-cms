@@ -1,0 +1,7 @@
+.idea/*
+dist/*
+templates/static/.sass-cache/*
+build-admin.js
+build-front.js
+r.html
+r.js

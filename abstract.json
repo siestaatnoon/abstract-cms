@@ -1,0 +1,49 @@
+{
+  "debug":             true,
+  "adminUri":          "admin",
+  "adminPagerPerPage": 4,
+  "frontPagerPerPage": 2,
+  "frontFramework":    "foundation",
+  "csrfToken":         "X-CSRF-Token",
+  "docRoot":           "/backbone/dev",
+  "loadingId":         "#abstract-spinner",
+  "pageContentId":     "#main-content",
+  "pageDynContentId":  "#abstract-content",
+  "requireJsId":       "#require-js",
+  "tplInfoHeader":     "X-Tpl",
+  "useFrontJqm":       false,
+  "frontNavConfig":    [
+      { "label": "Home", "url": "/" },
+      { "label": "Gizmos", "url": "/gizmos" ,
+        "items": [
+          { "label": "Gizmos Custom Test", "url": "/gizmos/test", "position": "first" }
+        ]
+      },
+      { "label": "Locations", "page_id": 4 },
+      { "label": "Services", "page_id": 3 },
+      { "label": "Other Stuff", "url": "#",
+          "items": [
+              { "label": "Stuff #1", "url": "#" },
+              { "label": "Stuff #2", "url": "#" },
+              { "label": "Stuff #3", "url": "#" }
+          ]
+      },
+      { "label": "About", "page_id": 7,
+          "items": [
+            { "label": "Before TEST PAGE", "url": "flavors", "before": 8 },
+            { "label": "After TEST PAGE 2", "url": "flavors", "after": 9 },
+            { "label": "This is First", "url": "#", "position": "first" },
+            { "label": "This is Last", "url": "#", "position": "last" }
+          ]
+      },
+      { "label": "Contact Us", "page_id": 6 }
+  ],
+  "frontTemplateVars": {
+      "contact_email": "johnny@projectabstractcms.org",
+      "contact_name": "Abstract App",
+      "noreply_email": "noreply@projectabstractcms.org",
+      "recaptcha_public_key": "6LftJjsUAAAAAEG5jzyKhQUh4dI-uK7X6buBDQqS",
+      "recaptcha_private_key": "6LftJjsUAAAAAJyvc0TTlSEK6COv4WTnwppIhvJm"
+  },
+  "frontNavHasSearch":  true
+}

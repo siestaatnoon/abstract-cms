@@ -1,0 +1,14 @@
+[2015-04-15 15:01:27] App\Exception\AppException: Module "news" not found in C:\Users\JOHNNY\Documents\Dropbox\Work\webs\personal\abstract.app\web\api\App\Module\Abstract_module.php, line 957
+1. C:\Users\JOHNNY\Documents\Dropbox\Work\webs\personal\abstract.app\web\api\App\Module\Abstract_module.php, line 158
+2. C:\Users\JOHNNY\Documents\Dropbox\Work\webs\personal\abstract.app\web\api\App\Module\Module.php, line 41
+3. C:\Users\JOHNNY\Documents\Dropbox\Work\webs\personal\abstract.app\web\api\App\Module\Module.php, line 297
+4. C:\Users\JOHNNY\Documents\Dropbox\Work\webs\personal\abstract.app\web\api\App\Module\Module.php, line 202
+5. C:\Users\JOHNNY\Documents\Dropbox\Work\webs\personal\abstract.app\web\api\test.php, line 182
+
+[2015-04-15 15:02:30] App\Exception\AppException: Module "news" not found in C:\Users\JOHNNY\Documents\Dropbox\Work\webs\personal\abstract.app\web\api\App\Module\Abstract_module.php, line 957
+1. C:\Users\JOHNNY\Documents\Dropbox\Work\webs\personal\abstract.app\web\api\App\Module\Abstract_module.php, line 158
+2. C:\Users\JOHNNY\Documents\Dropbox\Work\webs\personal\abstract.app\web\api\App\Module\Module.php, line 41
+3. C:\Users\JOHNNY\Documents\Dropbox\Work\webs\personal\abstract.app\web\api\App\Module\Module.php, line 297
+4. C:\Users\JOHNNY\Documents\Dropbox\Work\webs\personal\abstract.app\web\api\App\Module\Module.php, line 202
+5. C:\Users\JOHNNY\Documents\Dropbox\Work\webs\personal\abstract.app\web\api\test.php, line 182
+

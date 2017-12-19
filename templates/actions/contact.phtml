@@ -1,0 +1,74 @@
+<?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require $include_path.'/PHPMailer/src/Exception.php';
+require $include_path.'/PHPMailer/src/PHPMailer.php';
+require $include_path.'/PHPMailer/src/SMTP.php';
+require $include_path.'/form_functions.php';
+
+ini_set('error_log', $include_path.'logs/contact.log');
+ini_set('log_errors', true);
+
+$errors = array();
+if (  is_valid_email($post['email']) === false ) {
+    $response['errors'] = 'Please enter a valid email.';
+    exit;
+} else if ( is_recaptcha_verified($config['recaptcha_private_key'], $post['g-recaptcha-response']) === false ) {
+    $response['errors'] = 'Please respond to the checkbox at the bottom of the form.';
+}
+
+$post = sanitize($post);
+$Mail = new PHPMailer(true);                    // Passing `true` enables exceptions
+$mod_resp = $Module->add($post);
+$has_saved = is_numeric($mod_resp);
+
+if ( ! empty($mod_resp['errors']) ) {
+    $error = "Error(s) occurred while saving contact form info:\n".implode("\n", $mod_resp['errors']);
+    error_log($error);
+}
+
+try {
+    //Server settings
+    $Mail->SMTPDebug = 0;                                 // Enable verbose debug output, "0" no output, "2" verbose
+
+    $Mail->isMail();
+    //$Mail->isSendmail();                                  // Set mailer to use sendmail
+    /*
+    $Mail->isSMTP();                                      // Set mailer to use SMTP
+    $Mail->Host = 'smtp1.example.com;smtp2.example.com';  // Specify main and backup SMTP servers
+    $Mail->SMTPAuth = true;                               // Enable SMTP authentication
+    $Mail->Username = 'user@example.com';                 // SMTP username
+    $Mail->Password = 'secret';                           // SMTP password
+    $Mail->SMTPSecure = 'tls';                            // Enable TLS encryption, `ssl` also accepted
+    $Mail->Port = 587;                                    // TCP port to connect to
+    */
+
+    $subject = 'Contact form submission';
+    $from_name = $post['first_name'].' '.$post['last_name'];
+    $body = "Results from form:\n\n";
+    $body .= $from_name."\n";
+    $body .= $post['email']."\n";
+    $body .= empty($post['phone']) ? '' : $post['phone']."\n";
+    $body .= empty($post['comments']) ? '' : "\nMessage:\n".$post['comments']."\n";
+
+    $Mail->setFrom($config['noreply_email'], $from_name);
+    $Mail->addAddress($config['contact_email'], $config['contact_name']);
+    $Mail->addReplyTo($post['email'], $from_name);
+
+    $Mail->isHTML(false);
+    $Mail->Subject = $subject;
+    $Mail->Body    = $body;
+    //$Mail->AltBody = '';
+
+    $has_saved = $has_saved && $Mail->send();
+} catch (Exception $e) {
+    error_log($Mail->ErrorInfo."\n\n");
+} finally {
+    $response['clear_form'] = $has_saved;
+    if ($has_saved) {
+        $response['message'] = 'Thank you. We will reply as soon as possible.';
+    } else {
+        $response['errors'] = 'A server error occurred while saving your information.';
+    }
+}

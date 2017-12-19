@@ -1,0 +1,179 @@
+<?php
+
+$lang['add']    = 'Añadir';
+$lang['cancel'] = 'Cancelar';
+$lang['delete'] = 'Borrar';
+$lang['update'] = 'Actualizar';
+
+$lang['field.boolean'] 		= 'True/False (checkbox)';
+$lang['field.button'] 		= 'Form Button';
+$lang['field.checkbox'] 	= 'Checkboxes';
+$lang['field.code'] 	    = 'Editor de codigo javascript';
+$lang['field.countries'] 	= 'World Countries Dropdown';
+$lang['field.custom'] 		= 'Campo customizado';
+$lang['field.date'] 		= 'Selector de fecha';
+$lang['field.editor'] 		= 'TinyMCE Editor';
+$lang['field.file'] 		= 'File Upload';
+$lang['field.hidden'] 		= 'Hidden Field';
+$lang['field.jqm_flipswitch'] = 'jQuery Mobile Flipswitch Widget';
+$lang['field.image'] 		= 'Image Upload';
+$lang['field.info'] 		= 'Information Area';
+$lang['field.multiselect'] 	= 'Dropdown Menu (multiple selections)';
+$lang['field.name_values_widget'] = 'Name/Value Pairs Widget';
+$lang['field.object'] 	    = 'Data de objeto (PHP/Javascript/JSON)';
+$lang['field.password'] 	= 'Password Field';
+$lang['field.radio'] 		= 'Radio Buttons';
+$lang['field.regions'] 		= 'U.S. States/Canadian Provinces Dropdown';
+$lang['field.relation'] 	= 'Database Relation';
+$lang['field.select'] 		= 'Dropdown Menu';
+$lang['field.text'] 		= 'Campo de texto';
+$lang['field.textarea'] 	= 'Campo textarea';
+$lang['field.time'] 		= 'Selector de hora';
+$lang['field.values_widget']= 'Values Array Widget';
+
+$lang['form.add'] 							= 'Añadir';
+$lang['form.cancel'] 						= 'Cancelar';
+$lang['form.delete'] 						= 'Borrar';
+$lang['form.save'] 							= 'Guardar';
+$lang['form.update']                        = 'Actualizar';
+$lang['form.id'] 							= 'ID';
+$lang['form.is_active'] 					= 'Activo';
+$lang['form.is_archive'] 					= 'Archivar';
+$lang['form.id'] 							= 'ID';
+$lang['form.label'] 						= 'Etiqueta del campo';
+$lang['form.lang'] 							= 'Índice de la idioma';
+$lang['form.name'] 							= 'Atributo del nombre';
+$lang['form.default'] 						= 'Valor por defecto';
+$lang['form.is_filter'] 					= 'Campo utilizado de filtro de busqueda';
+$lang['form.is_list_col'] 					= 'Columna utilizada en la vista de lista';
+$lang['form.is_model'] 						= 'Campo del modelo?';
+$lang['form.tooltip'] 						= 'Tooltip';
+$lang['form.tooltip_lang'] 					= 'Índice del fichero idioma del contenido tooltip';
+$lang['form.field_type.attributes'] 		= 'Atributos del campo';
+$lang['form.field_type.config.file'] 		= 'Fichero de configuración';
+$lang['form.field_type.config.key'] 		= 'Indece del variable $config';
+$lang['form.field_type.config_mce'] 		= 'Configuración de TinyMCE';
+$lang['form.field_type.content'] 			= 'Contenido del información';
+$lang['form.field_type.ct_attr'] 		    = 'Atributos del contenedor';
+$lang['form.field_type.dir'] 				= 'Menú de directorio';
+$lang['form.field_type.filename_only'] 		= 'Utilizar solo nombre del fichero sin directorio';
+$lang['form.field_type.format'] 			= 'Formato fecha (PHP)';
+$lang['form.field_type.html'] 				= 'HTML customizado del campo';
+$lang['form.field_type.is_24hr'] 			= 'Formato 24 horas?';
+$lang['form.field_type.is_ajax'] 			= 'Cargar por AJAX?';
+$lang['form.field_type.is_custom'] 			= 'Campo customizado?';
+$lang['form.field_type.is_json'] 			= 'Campo utiliza datos JSON?';
+$lang['form.field_type.is_multiple'] 		= 'Tiene valores múltiples';
+$lang['form.field_type.is_inline'] 			= 'Alineado horizontal?';
+$lang['form.field_type.sort'] 			    = 'Permitir ordenar';
+$lang['form.field_type.max_items'] 			= 'Numero maximo de objetos';
+$lang['form.field_type.module'] 			= 'Menú de lista del modulos';
+$lang['form.field_type.name_label'] 		= 'Etiqueta del campo nombre';
+$lang['form.field_type.open_on_init'] 		= 'Abrir el widget al mostrar el formulario';
+$lang['form.field_type.placeholder'] 		= 'Atributo placeholder';
+$lang['form.field_type.relation.name'] 		= 'Nombre de relación del modulo';
+$lang['form.field_type.relation.type'] 		= 'Tipo de relación';
+$lang['form.field_type.show_ext'] 			= 'Muestra extensión del fichero';
+$lang['form.field_type.template'] 			= 'Plantilla customizada del campo';
+$lang['form.field_type.type'] 				= 'Tipo del campo';
+$lang['form.field_type.upload'] 			= 'Índice de configuración en uploads.php (sin "_file" o "_image")';
+$lang['form.field_type.value_label'] 		= 'Etiqueta del campo valor';
+$lang['form.field_type.value_required'] 	= 'Obligatorio el valor?';
+$lang['form.field_type.value_select'] 	    = 'Tipo etiqueta/valor';
+$lang['form.field_type.values'] 			= 'Array de valores';
+$lang['form.field_type.values.name'] 		= 'Nombre';
+$lang['form.field_type.values.value'] 		= 'Valor';
+$lang['form.data_type.type'] 				= 'Tipo de dato MySQL';
+$lang['form.data_type.length'] 				= 'Longitud del dato';
+$lang['form.data_type.values'] 				= 'Valores enumeración';
+$lang['form.validation'] 				    = 'Validación';
+$lang['form.validation.options'] 			= 'Opciónes de validación';
+$lang['form.validation.type'] 				= 'Tipo de validación';
+$lang['form.validation.custom'] 			= 'Regla de validación customizado';
+$lang['form.validation.min'] 				= 'Valor minimo';
+$lang['form.validation.max'] 				= 'Valor máximo';
+$lang['form.validation.param'] 				= 'Parametros customizados';
+$lang['form.validation.rules'] 				= 'Función de validación Javascript';
+$lang['form.validation.message'] 			= 'Mensaje del error customizado';
+
+
+//Pages
+$lang['form.pages.parent_id'] 			= 'Página primaria';
+$lang['form.pages.short_title'] 		= 'Título de página';
+$lang['form.pages.url'] 				= 'URL';
+$lang['form.pages.content'] 			= 'Contenido';
+$lang['form.pages.long_title'] 			= 'Título de etiqueta <title>';
+$lang['form.pages.meta_keywords'] 		= 'Palabras claves de meta';
+$lang['form.pages.meta_description'] 	= 'Descripción de meta';
+$lang['form.pages.module_id_list'] 	    = 'Poner listado del modulo';
+$lang['form.pages.module_id_form'] 	    = 'Poner formulario de modulo';
+$lang['form.pages.is_permanent'] 	    = 'Permanente?';
+
+//Users
+$lang['form.users.last_name'] 		= 'Apellido';
+$lang['form.users.first_name'] 		= 'Nombre';
+$lang['form.users.email'] 			= 'Email';
+$lang['form.users.username'] 		= 'Usuario';
+$lang['form.users.userpass'] 		= 'Contraseña';
+$lang['form.users.global_perm'] 	= 'Permisos globales';
+$lang['form.users.modules'] 		= 'Permisos de modulos';
+
+//Modules
+$lang['modules.id'] 				= 'ID';
+$lang['modules.name'] 				= 'Nombre del modulo';
+$lang['modules.pk_field'] 			= 'Nombre del campo clave primaria de la tabla';
+$lang['modules.title_field'] 		= 'Nombre del campo descriptivo de la tabla';
+$lang['modules.use_slug'] 			= 'Utilizar slug en lugar de ID';
+$lang['modules.slug_field'] 		= 'Nombre del campo para generar el valor slug';
+$lang['modules.label'] 				= 'Nombre descriptivo';
+$lang['modules.label_plural'] 		= 'Nombre descriptivo (plural)';
+$lang['modules.css_includes'] 		= 'Incluidos de CSS stylesheet';
+$lang['modules.js_includes'] 		= 'Incluidos de Javascript script';
+$lang['modules.js_load_block'] 		= 'Javascript para ejecutar en document ready';
+$lang['modules.js_unload_block'] 	= 'Javascript para ejecutar en on document unload';
+$lang['modules.form_fields'] 		= 'Campos del formulario del modulo';
+$lang['modules.use_model'] 			= 'Tipo de modulo';
+$lang['modules.use_add'] 			= 'Permitir añadir filas';
+$lang['modules.use_edit'] 			= 'Permitir actualizar filas';
+$lang['modules.use_delete'] 		= 'Permitir borrar filas';
+$lang['modules.use_active'] 		= 'Permitir marcar filas activa/inactiva (no visible in la web)';
+$lang['modules.use_sort'] 			= 'Permitir ordenar';
+$lang['modules.use_archive'] 		= 'Permitir archivar filas (no visible en CMS/web)';
+$lang['modules.use_cms_form'] 		= 'Usar formulario en el admin';
+$lang['modules.use_frontend_form'] 	= 'Usar formulario en página publica visible';
+$lang['modules.use_frontend_list'] 	= 'Usar página listado en página publica visible';
+
+$lang['sql.varchar'] 		= '[varchar] Short text value (title, email)';
+$lang['sql.text']			= '[text] Large text value (a few paragraphs)Large text value (a few paragraphs)';
+$lang['sql.mediumtext'] 	= '[mediumtext] Very large text value (long page of text)';
+$lang['sql.tinyint'] 		= '[tinyint] Binary, true/false or on/off';
+$lang['sql.int'] 			= '[int] Whole number';
+$lang['sql.float'] 			= '[float] Decimal number';
+$lang['sql.decimal'] 		= '[decimal] Currency value';
+$lang['sql.char'] 			= '[char] Short string sequence (state abbrev, acronym)';
+$lang['sql.date'] 			= '[date] Date value';
+$lang['sql.time'] 			= '[time] Time value';
+$lang['sql.datetime'] 		= '[datetime] Date + time value';
+$lang['sql.enum'] 			= '[enum] A limited range of string values';
+
+$lang['tooltip.field_type.dir'] 	= 'Enter the site-relative directory to display its files in a dropdown menu';
+$lang['tooltip.field_type.format'] 	= 'Date format equivalent to PHP date() function';
+$lang['tooltip.field_type.image.config_name'] = 'Config name in ./App/Config/uploads.php (without "_image")';
+$lang['tooltip.field_type.file.config_name'] = 'Config name in ./App/Config/uploads.php (without "_file")';
+$lang['tooltip.field_type.config_mce'] 	= 'JS config file in tinymce dir (mce_xxxx.js)';
+$lang['tooltip.css_includes.files'] 	= 'Root relative path (begins with "/") to stylesheet files';
+$lang['tooltip.js_includes.files'] 		= 'Root relative path (begins with "/") to JS script';
+$lang['tooltip.js_unload_block'] 		= 'All events must be unbound, Javascript objects set to null and/or destroy() called on jQuery plugin objects';
+$lang['tooltip.'] 	= '';
+
+$lang['validate.required'] 			= 'Required value';
+$lang['validate.email'] 			= 'Valid Eemail';
+$lang['validate.min'] 				= 'Minimum length/selected';
+$lang['validate.max'] 				= 'Maximum length/selected';
+$lang['validate.natural'] 			= 'Integer value';
+$lang['validate.natural_not_zero'] 	= 'Integer value greater than zero';
+$lang['validate.strong_password'] 	= 'Strong password';
+$lang['validate.custom'] 			= 'Custom validation';
+
+/* End of file es_ES.php */
+/* Location: ./App/Lang/es/ES/es_ES.php */

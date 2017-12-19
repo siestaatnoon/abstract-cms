@@ -1,0 +1,97 @@
+<script id="pages-li-item" type="text/template">
+<%
+var $tree = $('#pages-tree');
+var has_add = parseInt( $tree.data('hasAdd') ) === 1;
+var has_update = parseInt( $tree.data('hasUpdate') ) === 1;
+var has_delete = parseInt( $tree.data('hasDelete') ) === 1;
+var add_new_frag = $tree.data('addNewFrag');
+var edit_frag = $tree.data('editFrag');
+var arrange_frag = $tree.data('arrangeFrag');
+var web_base = $tree.data('webBase');
+var uncategorized_id = parseInt( $tree.data('uncategorizedId') );
+var default_id = parseInt( $tree.data('defaultId') );
+var parent_show_id = parseInt( $tree.data('parentShowId') );
+var stop_id = parseInt( $tree.data('stopId') );
+var top_level_id = $tree.data('currTopLevel');
+top_level_id = top_level_id === undefined ? false : parseInt(top_level_id);
+	
+for (var i=0; i < pages.length; i++) {
+	var page = pages[i];
+	var page_id = parseInt(page.page_id);
+	var short_title = page.short_title.replace('"', '&quot;');
+	var is_permanent = parseInt(page.is_permanent) === 1;
+	var is_uc_page = page_id === uncategorized_id;
+	var is_node = page.subpages.length === 0;
+
+	var parent_id = parseInt(page.parent_id);
+	if (parent_id === default_id && top_level_id !== page_id) {
+		top_level_id = page_id;
+		$tree.data('currTopLevel', top_level_id);
+	}
+	var is_visible = page_id !== stop_id && top_level_id === parent_show_id;
+	var is_recursive = is_visible && has_depth && ! is_node;
+	
+	var klass = is_visible ? '  toggle-active' : ' toggle-inactive';
+	klass += page.is_active === 'No' || parseInt(page.is_active) === 0 ? ' page-inactive' : '';
+	klass += is_node ? ' page-node' : '';
+	klass += has_depth ? '' : ' no-subpages';
+%>
+
+<li>
+  <div class="toggle-page">
+    <div id="toggle-<%= page_id %>" class="toggle-hitarea<%= klass %>"><%= page.short_title %></div>
+			
+	<% if (page.subpages.length) { %>
+
+    <div class="subpage-count"><%= page.subpages.length %></div>
+
+	<% } %>
+			
+    <div class="toggle-links<%= is_visible ? ' toggle-links-show' : ' toggle-links-hide' %>">
+	
+	<% if ( ! is_uc_page) { %>
+			
+      <div><a href="<%= web_base + '/' + page.slug %>" class="module-route" target="_blank">View</a></div>
+
+	<% } %>
+	
+	<% if (has_delete && ! is_permanent && is_node) { %>
+			
+      <div><a class="toggle-delete" rel="<%= page_id %>" title="<%- page.title %>">Delete</a></div>
+
+	<% } %>
+			
+	<% if (has_update && page.subpages.length > 1 && ! is_node) { %>
+	
+      <div><a href="<%= arrange_frag + page_id %>" class="module-route">Arrange Subpages</a></div>
+
+	<% } %>
+
+	<% if (has_add && parent_id !== uncategorized_id && has_depth) { %>		
+		
+      <div><a href="<%= add_new_frag + page_id %>" class="module-route">Add Subpage</a></div>
+
+	<% } %>
+
+	<% if (has_update && ! is_uc_page) { %>
+	
+      <div><a href="<%= edit_frag + page_id %>" class="module-route">Edit</a></div>
+
+	<% } %>
+			
+    </div>
+  
+  </div>
+  
+	<% if (is_recursive) { %>			
+
+  <ul>
+    <%= pagesLiItem({pages: page.subpages, has_depth: has_depth, pagesLiItem: pagesLiItem}) %>
+  </ul>
+
+	<% } %>
+			
+</li>
+
+<% } %>
+</script>

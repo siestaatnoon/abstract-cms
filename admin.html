@@ -1,0 +1,40 @@
+<!doctype html>
+<html class="abstract-splash">
+<head>
+<title>Abstract Template</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="">
+<meta name="keywords" content="">
+<meta name="author" content="">
+<link rel="shortcut icon" href="/backbone/dev/favicon.ico">
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:300,400,700">
+<link rel="stylesheet" href="/backbone/dev/css/jquery.mobile.min.css">
+<link rel="stylesheet" href="/backbone/dev/css/icon-pack-custom.css">
+<link rel="stylesheet" href="/backbone/dev/css/styles.css">
+</head>
+
+<body>
+
+<div class="abstract-overlay"></div>
+
+<div id="abstract-cms-page" data-role="page">
+
+  <div class="abstract-header" data-role="header">
+    <h2><img src="/backbone/dev/images/abstract-logo.png" alt="Abstract Template"></h2>
+    <a href="#" class="jqm-navmenu-link ui-btn ui-btn-icon-notext ui-corner-all ui-icon-bars ui-nodisc-icon ui-alt-icon ui-btn-left">Menu</a>
+    <a href="#" class="jqm-search-link ui-btn ui-btn-icon-notext ui-corner-all ui-icon-search ui-nodisc-icon ui-alt-icon ui-btn-right">Search</a>
+  </div><!-- /header -->
+
+  <div id="main-content" data-role="content"></div>
+  
+  <div class="abstract-footer ui-footer-fixed" data-role="footer">
+    <h4>My Footer</h4>
+  </div><!-- /footer -->
+ 
+</div><!-- /page -->
+
+<!-- NOTE: can use data-main="dist/admin" for minified Backbone src files -->
+<script src="/backbone/dev/js/lib/require.min.js" data-main="/backbone/dev/js/admin"></script>
+</body>
+</html>

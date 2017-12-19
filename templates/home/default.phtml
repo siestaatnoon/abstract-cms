@@ -1,0 +1,147 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Abstract Home Template</title>
+{CSS_LINKS}
+</head>
+<body class="home">
+
+<header class="contain-to-grid">
+
+  <div class="header-main-bg">
+    <div class="header-main">
+      <div class="header-logo">
+        <img src="<?php echo template_file_static('images/abstract-logo.png'); ?>" alt="" id="logo-image">
+      </div>
+      <ul class="header-links">
+        <li><a href="#">Privacy</a></li>
+        <li><a href="#">Blog</a></li>
+        <li class="no-more"><a href="#">Contact</a></li><!-- li.no-more items will not show in condensed menu -->
+        <li class="header-search">
+          <form>
+            <div class="row collapse">
+              <div class="small-10 columns">
+                <input type="text" placeholder="Search...">
+              </div>
+              <div class="small-2 columns">
+                <a href="#" class="button postfix">Go</a>
+              </div>
+            </div>
+          </form>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="top-bar-bg">
+    <nav class="top-bar important-class" data-topbar>
+
+    <!-- COMPACT/MOBILE LOGO, MENU -->
+    <ul class="title-area">
+      <li class="name">
+        <img src="<?php echo template_file_static('images/abstract-logo.png'); ?>" alt="" id="logo-image">
+      </li>
+      <li class="toggle-topbar menu-icon"><a href="#"><span>menu</span></a></li>
+    </ul>
+
+<?php echo template_navigation(); ?>
+
+    </nav>
+  </div>
+
+</header>
+
+<!-- HEADER FILL, DO NOT REMOVE -->
+<div class="header-fill"></div>
+
+
+<div class="home-img-bg">
+  <div class="home-img"></div>
+</div>
+
+
+<!-- CONTENT SECTION -->
+<div class="row int-content">
+  <div id="main-content" class="small-12 medium-12 large-12 columns">
+
+<!--CONTENT TO GO HERE VIA AJAX-->
+
+  </div><!--end #main-content-->
+</div>
+
+{FOOTER}
+
+{JS_SCRIPTS}
+
+</body>
+
+<script type="text/javascript">
+//
+// Sample "onload" parsed into require execute
+// Note that can be added to any template and
+// will not display in page DOM
+//
+console.log('An onload script to execute for home template.');
+</script>
+
+<script data-unload="1" type="text/javascript">
+//
+// Sample "unload" parsed into require execute
+// Note that can be added to any template, also
+// MUST have the data-unload="1" attribute
+//
+console.log('An UNLOAD  script to execute for home template.');
+</script>
+
+</html>
+<?php
+
+$head = array(
+    'title' => 'Abstract Home Template',  // default title if not set in content template
+    'meta' => array(
+        'name' => array(
+            'keywords' => array('content' => 'abstract sample template home'),            // -> default keywords and description
+            'description' => array('content' => 'Sample home template for Abstract App')  //    if not set in content templates
+        ),
+        'property' => array(  // other meta tags can be set too (e.g. Facebook)
+            'og:site_name' => array('content' => 'projectabstractcms.org'),
+            'og:url' => array('content' => 'http://www.projectabstractcms.org/home'),
+            'og:title' => array('content' => 'Abstract App Home'),
+            'og:description' => array('content' => 'Sample home template for Abstract App')
+        )
+    ),
+    'link' => array(  // other head tags can be set as well
+        'hreflang' => array(
+            'en-us' => array(
+                'href' => 'http://www.projectabstractcms.org/',
+                'rel' => 'alternate'
+            ),
+            'es-es' => array(
+                'href' => 'http://www.projectabstractcms.org/es',
+                'rel' => 'alternate'
+            )
+        )
+    )
+);
+template_head_tags($head);
+
+template_include( array(
+    'css' => array(),
+    'js' => array(
+        'js/plugins/modernizr/modernizr.js',
+        'js/plugins/foundation/js/foundation.min.js',
+    // since js loaded with Require.js, below is the way to
+    // have a dependancy load before another script, in this
+    // case foundation.min.js will load before init.js
+        array('js/init.js' => array('js/plugins/foundation/js/foundation.min.js') ),
+        'js/test.js'
+    ),
+    'onload' => "",   // -> onload and unload scripts can be set here as PHP
+    'unload' => ""    //    variables as well as in <script> tags shown above
+));
+
+template_use_jqm(false);
+
+?>

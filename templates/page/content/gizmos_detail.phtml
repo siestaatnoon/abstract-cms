@@ -1,0 +1,63 @@
+<?php
+$web_root = template_web_root();
+
+?><div class="row">
+
+    <div id="sidebar" class="small-12 medium-3 large-3 columns">
+        <h3><a href="#">Services</a></h3>
+        <ul class="side-nav">
+            <li><a href="#">Service #1</a></li>
+            <li class="active">
+                <a href="#">Service #2</a>
+                <ul>
+                    <li class="active"><a href="#">Some kind of service</a></li>
+                    <li><a href="#">Another kind of service</a></li>
+                </ul>
+            </li>
+            <li><a href="#">Service #3</a></li>
+        </ul>
+    </div>
+
+    <div class="small-12 medium-9 large-9 columns">
+
+<?php echo template_breadcrumbs(); ?>
+
+        <div id="main-content2">
+
+<h1>Gizmos</h1>
+
+<h2><%- title %></h2>
+
+<img src="<?php echo template_img_path('test'); ?><%= images.length ? images[0] : 'default.jpg' %>" alt="<%- title %>" />
+
+<p class="subinfo">
+  <%= post_date %><br/>
+  <%= post_time %>
+</p>
+<p class="intro">
+  <%= color %> <%= day %>
+</p>
+
+<%= content %>
+
+        </div>
+
+    </div>
+
+    </div><!--end .row-->
+
+<?php
+
+$head = array(
+    'title' => 'Gizmos',
+    'meta' => array(
+        'name' => array(
+            'data-url' => array('content' => template_app_path() ),
+            'keywords' => array('content' => 'gizmos'),
+            'description' => array('content' => 'Gizmos test data')
+        )
+    )
+);
+template_head_tags($head);
+
+?>

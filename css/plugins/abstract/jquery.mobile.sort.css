@@ -1,0 +1,114 @@
+@import url('../jquery-ui/jquery-ui.min.css');
+@import url('../jquery-ui/jquery-ui.structure.min.css');
+
+h2 {
+    margin-top: 1em;
+}
+#sort-no-items {
+    margin-top: 2em;
+}
+.ui-content .ui-listview {
+    margin: 0;
+}
+.ui-listview > .ui-li-static {
+    border-width: 1px 1px 0 1px;
+    cursor: pointer;
+}
+.ui-listview > .ui-li-static:last-child {
+    border-bottom-width: 1px;
+}
+.ui-sortable-helper {
+    border-width: 1px !important;
+}
+.ui-listview .placeholder {
+    border: 2px dotted #CCCCCC;
+    width: auto;
+    height: 3em;
+    margin: .2em 0;
+}
+.sort-grid {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+.sort-grid .placeholder, .sort-grid li {
+    width: 150px;
+    width: calc(20% - 8px);
+    height: 50px;
+}
+.sort-grid .placeholder {
+    border: 1px dotted #CCCCCC;
+}
+.sort-grid li {
+    margin: 3px;
+    float: left;
+    line-height: 50px;
+    text-align: center;
+    border: 1px solid #c5c5c5;
+    background: #f6f6f6;
+    font-weight: normal;
+    position: relative;
+    color: #454545;
+    background-position: center;
+    background-size: cover;
+    cursor: pointer;
+}
+.sort-grid li h3, #sort-list-cnt div.sort-number {
+    font-size: 12px;
+    font-weight: bold;
+    text-shadow: none;
+    margin-bottom: 0;
+}
+.sort-grid li h3 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background-color: rgba(255, 255, 255, 0.6);
+}
+#sort-list-cnt div.sort-number {
+    color: #CCCCCC;
+    position: absolute;
+    display: inline-block;
+    text-align: left;
+    height: 15px;
+    line-height: 15px;
+}
+.sort-grid li > div.sort-number {
+    top: 2px;
+    left: 2px;
+}
+.ui-listview li > div.sort-number {
+    font-size: 13px;
+    top: 4px;
+    right: 4px;
+}
+.ui-listview.disabled li, .sort-grid.disabled li {
+    cursor: not-allowed;
+}
+@media (max-width: 60em) {
+    #sort-list-cnt {
+        overflow: hidden;
+        margin-bottom: 1em;
+    }
+}
+@media screen and (max-width: 792px) {
+    .sort-grid .placeholder, .sort-grid li {
+        width: calc(25% - 8px);
+    }
+}
+@media screen and (max-width: 680px) {
+    .sort-grid .placeholder, .sort-grid li {
+        width: calc(33% - 8px);
+    }
+}
+@media screen and (max-width: 524px) {
+    .sort-grid .placeholder, .sort-grid li {
+        width: calc(50% - 8px);
+    }
+}
+@media screen and (max-width: 360px) {
+    .sort-grid .placeholder, .sort-grid li {
+        width: calc(100% - 8px);
+    }
+}

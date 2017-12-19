@@ -1,0 +1,22 @@
+<h3 id="search-results" class="grid-header"></h3>
+
+<div id="pages-search-pagination">
+  
+  <div id="pagination-link-prev">
+    <a rel="prev" class="pagination-link pagination-link-inactive">&lt;</a>
+  </div>
+  <div id="pagination-link-next">
+    <a rel="next" class="pagination-link pagination-link-inactive">&gt;</a>
+  </div>
+
+</div>
+
+<div id="section_list">
+
+  <ul id="pages-tree" data-max-depth="<%= max_depth %>" data-has-add="<%= has_add ? 1 : 0 %>" data-has-update="<%= has_update ? 1 : 0 %>" data-has-delete="<%= has_delete ? 1 : 0 %>" data-add-new-frag="<%= add_new_frag %>" data-edit-frag="<%= edit_frag %>" data-arrange-frag="<%= arrange_frag %>" data-subpages-url="<%= subpages_url %>" data-web-base="<%= web_base %>" data-uncategorized-id="<%= uncategorized_id %>" data-default-id="<%= default_id %>" data-parent-show-id="<%= parent_show_id %>" data-stop-id="<%= stop_id %>" style="display:<%= collection.length === 0 ? 'none' : 'block' %>;"></ul>
+  
+  <div id="pages-no-results" style="display:<%= collection.length === 0 ? 'block' : 'none' %>;">No results found</div>
+
+</div><!--end #section_list-->
+
+<%= li_template %>

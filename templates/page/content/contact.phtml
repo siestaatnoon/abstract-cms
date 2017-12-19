@@ -1,0 +1,139 @@
+<div class="row">
+
+    <div id="sidebar" class="small-12 medium-3 large-3 columns">
+        <h3><a href="#">Services</a></h3>
+        <ul class="side-nav">
+            <li><a href="#">Service #1</a></li>
+            <li class="active">
+                <a href="#">Service #2</a>
+                <ul>
+                    <li class="active"><a href="#">Some kind of service</a></li>
+                    <li><a href="#">Another kind of service</a></li>
+                </ul>
+            </li>
+            <li><a href="#">Service #3</a></li>
+        </ul>
+    </div>
+
+    <div class="small-12 medium-9 large-9 columns">
+
+<?php echo template_breadcrumbs(); ?>
+
+        <div id="main-content2">
+
+<h1><%= page.short_title %></h1>
+
+<%= page.content %>
+
+<form id="form-contact" class="front-form" method="POST">
+  <input type="hidden" name="csrf_token" value="<%= csrf_token %>" />
+
+  <div class="row">
+    <div class="large-6 columns">
+      <label class="control-label">
+        First Name <span class="required">*</span>
+        <input type="text" name="first_name" />
+      </label>
+    </div>
+    <div class="large-6 columns">
+      <label class="control-label">
+        Last Name <span class="required">*</span>
+        <input type="text" name="last_name" />
+      </label>
+    </div>
+  </div>
+  <div class="row">
+    <div class="large-12 columns">
+      <label class="control-label">
+        Email <span class="required">*</span>
+        <input type="email" name="email" />
+      </label>
+     </div>
+  </div>
+  <div class="row">
+    <div class="large-12 columns">
+      <label class="control-label">
+        Phone
+        <input type="text" name="phone" />
+       </label>
+     </div>
+  </div>
+  <div class="row">
+    <div class="large-12 columns">
+      <label class="control-label">
+        Message <span class="required">*</span>
+        <textarea name="comments" class="medium"></textarea>
+      </label>
+    </div>
+  </div>
+  <div class="row">
+    <div class="large-12 columns">
+      <label class="control-label">
+        Please respond to the following <span class="required">*</span>
+        <div id="recaptcha" data-sitekey="<?php echo template_var('recaptcha_public_key'); ?>" style="margin-bottom:1rem;"></div>
+      </label>
+    </div>
+  </div>
+  <div class="row">
+    <div class="large-12 columns">
+      <button type="submit" id="submit-save" class="button small">Submit</button>
+      <button type="submit" id="submit-cancel" class="button small secondary" redirect="/">Cancel</button>
+    </div>
+  </div>
+</form>
+
+        </div>
+
+    </div>
+
+</div><!--end .row-->
+
+<script type="text/javascript">
+var $view = app.AppView.contentView;
+
+$('#submit-save').on('click.contact', function(e) {
+    if ( ! isRecatchaVerified) {
+        e.preventDefault();
+        e.stopPropagation();
+        $('#recaptcha').parent('label').addClass('error');
+        return false;
+    }
+    return true;
+});
+
+$view.on('form:submit:success', function(form, response) {
+    recaptchaReset();
+    window.scrollTo(0, 0);
+});
+
+$(window).on('page:unload', function() {
+    $('#submit-save').off('click.contact');
+    $view.off('form:submit:success');
+    $(this).off('page:unload');
+});
+</script>
+
+<?php
+
+$head = array(
+    'title' => $long_title,
+    'meta' => array(
+        'name' => array(
+            'data-url' => array('content' => template_app_path() ),
+            'keywords' => array('content' => $meta_keywords),
+            'description' => array('content' => $meta_description)
+        )
+    )
+);
+template_head_tags($head);
+
+template_js(array(
+    'js/forms-foundation.js',
+    array(
+        'https://www.google.com/recaptcha/api.js?onload=recaptchaCallback&render=explicit' => array(
+            'js/recaptcha.js'
+        )
+    )
+));
+
+?>

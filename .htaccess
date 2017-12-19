@@ -1,0 +1,52 @@
+php_value memory_limit 64M
+php_value session.cookie_lifetime 3600
+php_value session.gc_maxlifetime 3600
+
+IndexIgnore *
+
+<IfModule mod_rewrite.c>
+
+RewriteEngine On
+# RewriteBase /
+Options +FollowSymLinks
+
+ErrorDocument 403 /404
+ErrorDocument 404 /404
+
+# Restrict access to site css/js files, return a 403 (Forbidden)
+# RewriteCond %{HTTP_REFERER} !^$
+# RewriteCond %{HTTP_REFERER} !^http://localhost/backbone/dev/.*$ [NC]
+# RewriteRule \.(css|js|map)$ - [F]
+
+# Send API requests outside this domain, requests to log directory to 404
+RewriteCond %{REQUEST_URI} ^/backbone/dev/(api|logs)/.*
+RewriteRule ^(.*)$ /backbone/dev/404 [L]
+
+# Redirect admin API calls, restricting to this domain
+RewriteCond %{HTTP_REFERER} ^http://localhost/backbone/dev/.*$ [NC]
+RewriteCond %{REQUEST_URI} ^/backbone/dev/api/admin/.*$
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ api/admin.php [QSA,L]
+
+# Route admin URLs to CMS panel
+RewriteCond %{REQUEST_FILENAME} !-f 
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} ^/backbone/dev/admin/.*$
+RewriteRule ^(.*)$ admin.html [L]
+
+# Redirect frontend API calls, restricting to this domain
+RewriteCond %{HTTP_REFERER} ^http://localhost/backbone/dev/.*$ [NC]
+RewriteCond %{REQUEST_URI} ^/backbone/dev/api/front/.*$
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^(.*)$ api/front.php [QSA,L]
+
+# Redirect empty URI to home page
+RewriteCond %{REQUEST_URI} ^/backbone/dev(/)?$
+RewriteRule ^(.*)$ /backbone/dev/home [L]
+
+# Route all other URLs to frontend
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ front.html [L]
+
+</IfModule>

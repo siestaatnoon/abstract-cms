@@ -1,0 +1,50 @@
+.plupload-cnt {
+	margin-top: 1em;
+}
+.plupload-uploaded-list, .plupload-queued-list, .plupload-status, .plupload-hidden {
+	display: none;
+}
+.plupload-uploaded-list, .plupload-queued-list {
+	margin-bottom: 1.24em;
+}
+.plupload-uploaded-list p, .plupload-queued-list p {
+	margin: 0 0 .5em 0;
+}
+.plupload-list.ui-listview, .plupload-queue.ui-listview {
+    margin: 0;
+}
+.plupload-list > li {
+	border-left: 1px solid #ddd;
+	border-right: 1px solid #ddd;
+}
+.plupload-list .plupload-file-icon {
+	text-align: center;
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 2em;
+	height: 2em;
+	line-height: 2em;
+	display: block;
+}
+.plupload-status {
+	width: auto;
+	height: 1em;
+	margin: 1em 0;
+}
+.plupload-status > span {
+	background-color: #38c;
+	display: block;
+	height: 100%;
+	width: 0;
+}
+.plupload-buttons {
+	overflow: hidden;
+}
+.plupload-buttons button {
+	max-width: 10em;
+	float: left;
+}
+.plupload-buttons button.plupload-add-btn {
+	margin-right: 1em;
+}
