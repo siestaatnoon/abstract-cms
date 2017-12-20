@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!-- Sample config file at: https://github.com/jrburke/r.js/blob/master/build/example.build.js -->
+    <style>
+        textarea {
+            width: 100%;
+            height: 20em;
+        }
+    </style>
+    <script src="r.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function (evt) {
+        document.getElementById('build').addEventListener('click', function (evt) {
+            requirejs.optimize({
+			    baseUrl: 				'/backbone/abstract/js',
+			    name: 					'app',
+			    
+			    //Used to optimized CSS
+			    //
+			    /*
+			    appDir:					'/backbone/abstract',
+			    mainConfigFile: 		'js/config.js',
+			    dir:					'dist',
+			    modules: [
+			        {
+			            name: 'config'
+			        }
+			    ],
+			    */
+			    
+			    removeCombined: 		false,
+    			findNestedDependencies: true,
+			    fileExclusionRegExp: 	/^(r|build)\.js$/,
+			    optimizeCss: 			'standard.keepComments',
+
+			    paths: {
+			        'jquery':				'lib/jquery.min', // 'empty:',
+			        'underscore':			'lib/underscore.min',
+			        'backbone': 			'lib/backbone.min',
+			        'bootstrap': 			'lib/bootstrap.min',
+			        'backgrid': 			'lib/backgrid.min'
+			    },
+			    
+			    shim: {
+					'underscore': {
+						deps: ['jquery'],
+						exports: '_'
+					},
+					'backbone': {
+						deps: ['underscore', 'jquery'],
+						exports: 'Backbone'
+					},
+					'bootstrap':						['jquery'],
+					'backgrid': 						['underscore', 'backbone'],
+					'lib/ext/backbone.paginator': 		['underscore', 'backbone'],
+					
+					'lib/ext/backgrid.paginator': [
+						'underscore', 
+						'backbone', 
+						'backgrid',
+						'lib/ext/backbone.paginator'
+					],
+					
+					'lib/ext/backgrid.textcell': 		['underscore', 'backgrid'],
+					'classes/Class': 					['jquery', 'underscore'],
+					'classes/Utils': 					['jquery', 'underscore'],
+					'classes/ScriptLoader': 			['jquery', 'underscore', 'classes/Class'],
+                    'classes/SessionPoller': 			['jquery', 'underscore', 'classes/Class'],
+					'classes/TaskParser': 				['jquery', 'underscore', 'classes/Class'],
+					'classes/AbstractValidator': 		['jquery', 'underscore', 'classes/Class'],
+					
+					'classes/AbstractTaskParser': 		[
+						'jquery', 
+						'underscore', 
+						'backbone', 
+						'backgrid', 
+						'classes/TaskParser'
+					],
+					
+					'classes/LoginTaskParser': 			['jquery', 'underscore', 'classes/TaskParser'],
+
+					'models/AbstractModel': [
+						'jquery', 
+						'underscore', 
+						'backbone', 
+						'classes/AbstractTaskParser',
+						'classes/AbstractValidator'
+					],
+					
+					'collections/AbstractCollection': 	[
+						'underscore', 
+						'backbone', 
+						'classes/AbstractTaskParser', 
+						'models/AbstractModel',
+						'lib/ext/backbone.paginator'
+					],
+
+					'views/LoginView': 	[
+						'jquery',
+						'underscore',
+						'backbone', 
+						'classes/LoginTaskParser'
+					],
+					
+					'views/PageView': ['jquery', 'underscore', 'backbone'],
+					
+					'views/AbstractFormView': 	[
+						'jquery',
+						'underscore', 
+						'backbone',
+						'classes/AbstractTaskParser', 
+						'classes/ScriptLoader',
+						'models/AbstractModel'
+					],
+					
+					'views/AbstractListView': 	[
+						'jquery',
+						'underscore',
+						'backbone',
+						'backgrid',
+						'classes/AbstractTaskParser', 
+						'classes/ScriptLoader',
+						'collections/AbstractCollection',
+						'lib/ext/backbone.paginator',
+						'lib/ext/backgrid.paginator',
+						'lib/ext/backgrid.textcell'
+					],
+					
+					'views/AbstractAppView': 	[
+						'jquery',
+						'underscore',
+						'backbone',
+						'classes/AbstractTaskParser'
+					],
+		
+					'routers/AbstractRouter': 	[
+						'views/AbstractAppView'	
+					]
+
+			    },
+				
+                out: function (text) {
+                    document.getElementById('output').value = text;
+                }
+
+            }, function (buildText) {
+                document.getElementById('buildMessages').value = buildText;
+            });
+        }, false);
+    }, false);
+    </script>
+</head>
+<body>
+    <h1>r.js in the browser</h1>
+
+
+    <p>A test of running r.js in the browser.</p>
+
+    <p>
+        <button id="build">Build it</button>
+    </p>
+
+    <h2>Build Messages</h2>
+    <textarea id="buildMessages"></textarea>
+
+    <h2>Output</h2>
+    <textarea id="output"></textarea>
+</body>
+</html>
