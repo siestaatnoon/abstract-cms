@@ -5,31 +5,79 @@ define([
 	'classes/Class',
 	'classes/Utils'
 ], function(app, $, _, C, Utils) {
+
+    /**
+     * Utility class that polls the server at regular intervals to check for an active session,
+     * return the time left and execute and callbacks upon a session timeeout.
+     *
+     * @exports classes/ScriptLoader
+     * @requires config
+     * @requires jquery
+     * @requires Underscore
+     * @requires classes/Class
+     * @requires classes/Utils
+     * @constructor
+     * @augments classes/Class
+     */
 	var SessionPoller = Class.extend({
-		
+    /** @lends classes/SessionPoller.prototype **/
+
+        /**
+         * @property {Object} _destroyCallback
+         * Callback to execute upon a session timing out
+         */
 		_destroyCallback: {},
-		
-		_hasInitialized: false,
-		
+
+        /**
+         * @property {Boolean} _hasSession
+         * Flag if session is active and has not timed out
+         */
 		_hasSession: false,
-		
+
+        /**
+         * @property {Number} _pollingInterval
+         * Interval in milliseconds between polling calls via AJAX
+         */
 		_pollingInterval: 10000,
-		
+
+        /**
+         * @property {Number} _poller
+         * ID of timer used for session polling
+         */
 		_poller: null,
-		
+
+        /**
+         * @property {Number} _timeLeft
+         * Time left in session in seconds
+         */
 		_timeLeft: 0,
-		
+
+        /**
+         * Initializes the SessionPoller. An optional object with properties
+         * interval: [polling interval in seconds] and destroyCallback: [function()],
+         * to execute upon session timeout, may be set
+         *
+         */
 		init: function(options) {
 			if (options) {
 				this._pollingInterval = options.interval || this._pollingInterval;
 				this._destroyCallback = options.destroyCallback || null;
 			}
 		},
-		
+
+        /**
+         * Returns true if session is active and has not timed out.
+         *
+         * @return {Boolean} True if session still active
+         */
 		isSessionValid: function() {
 			return this._hasSession;
 		},
-		
+
+        /**
+         * Pings the API server, keeping the session active. No data is returned.
+         *
+         */
 		keepAlive: function() {
 			var url = app.adminSessPollURL + '/ping';
 			$.ajax({
@@ -42,23 +90,33 @@ define([
 					message += data.errors.join("\n");
 					console.log(message);
 				}
-			}).fail(function(jqXHR, status, error) {
+			}).fail(function(jqXHR) {
 				if (app.debug) {
-					console.log('SessionPoller.keepAlive: refresh failed: [' + status + '] ' + error);
+					console.log('SessionPoller.keepAlive: refresh failed: [' + jqXHR.status + '] ' + jqXHR.statusText);
 				}
 			});
 		},
-		
+
+        /**
+         * Destroys the session and executes the callback if set in this.init().
+         *
+         */
 		sessionDestroy: function() {
 			window.clearInterval(this._poller);
 			this._poller = null;
 			this._hasSession = false;
 			this._timeLeft = 0;
-			if (typeof this._destroyCallback === 'function') {
+			if ( _.isFunction(this._destroyCallback) ) {
                 this._destroyCallback.call(this);
             }
 		},
-		
+
+        /**
+         * Polls the API server, keeping the session active and returning the time left
+         * in the session in seconds.
+         *
+         * @param {Function} callback - A function to execute upon polling serer
+         */
 		sessionPing: function(callback) {
 			var self = this;
 			var isActive = false;
@@ -76,9 +134,9 @@ define([
 					message += data.errors.join("\n");
 					console.log(message);
 				}
-			}).fail(function(jqXHR, status, error) {
+			}).fail(function(jqXHR) {
 				if (app.debug) {
-					console.log('SessionPoller.sessionPing: restart failed: [' + status + '] ' + error);
+					console.log('SessionPoller.sessionPing: restart failed: [' + jqXHR.status + '] ' + jqXHR.statusText);
 				}
 			}).always(function() {
 				if ( _.isFunction(callback)) {
@@ -86,7 +144,13 @@ define([
 				}
 			});
 		},
-		
+
+        /**
+         * Initializes the session polling. If session winding down within five minutes,
+         * will display an alert to the user. If a session has timed out, will also notify
+         * the user with an alert and execute the destroy callback set in this.init().
+         *
+         */
 		sessionStart: function() {
 			if (this._poller) {
 			//to eliminate multiple calls here, just return if poller timer set
@@ -94,7 +158,6 @@ define([
 			}
 			
 			this._hasSession = true;
-			this._hasInitialized = true;
 			var self = this;
 			var sessionPoller = function() {
 				$.ajax({
@@ -134,10 +197,10 @@ define([
 						message = 'Your session has ended. You will now be redirected to the login page.';
 						Utils.showModalWarning(label, message, self.sessionDestroy, self);
 					}
-				}).fail(function(jqXHR, status, error) {
+				}).fail(function(jqXHR) {
 					self._hasSession = false;
 					if (app.debug) {
-						console.log('SessionPoller.sessionStart: poll initialize failed: [' + status + '] ' + error);
+						console.log('SessionPoller.sessionStart: poll initialize failed: [' + jqXHR.status + '] ' + jqXHR.statusText);
 					}
 				});
 			};

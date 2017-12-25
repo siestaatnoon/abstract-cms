@@ -75,7 +75,6 @@ define([
 		initialize: function(options) {
 
 		/*
-			TODOS:
 
 	[-X-]	1. AppView initialized here, loads own template, menu/header views
 	[DONE]	2. LoginParser, AdminTaskParser to use parent class?
@@ -92,29 +91,29 @@ define([
 	[DONE]	13. listenTo's for Views to update from Model updates (Delete, Cancel)
 	[DONE]	14. Polling for session activity, auto logout
 	[DONE]	15. AJAX fail functions to show errors
-			16. Better debugging output in general
-			17. Start DOC style comments
-			18. Frontend view template (including noscript view)
+			TODO: 16. Better debugging output in general
+	[DONE]  17. Start DOC style comments
+			TODO: 18. Frontend view template (including noscript view)
 	[-X-]	19. Authentication moved to AdminRouter.initialize() [HERE]
-			20. Optimize CSS
+			TODO: 20. Optimize CSS
 	[DONE]	21. Optimizer for module + fix $ Error when using optimized JS file
 	[DONE]	22. Close off CSS, JS directories to snoopers
 	[DONE]	23. Restrict API calls to this domain
 	[DONE]	24. Validator for login page
 	[DONE]	25. Learn Node for optimizing, Docs
 	[DONE]	26. Reduce dependencies in modules and main admin.js
-			27. Find new way to bootstrap app template
+			TODO: 27. Find new way to bootstrap app template
 	[DONE]	28. Refactor for CMS/frontend
 	[DONE]	29. Make Login/Logout/Lost password separate module
 	[DONE]	30. ** FIX BACK/FORWARD BUTTONS NOT UPDATING PAGE **
-			31. Optimize gc in close/remove, run Chrome tests to compare!
-			32. ALL AJAX CALLS check for errors array in callback and pass to deferred
+			TODO: 31. Optimize gc in close/remove, run Chrome tests to compare!
+			TODO: 32. ALL AJAX CALLS check for errors array in callback and pass to deferred
 	[-X-]	33. Login template passed in to main require() call
-			34. 'use strict';
+			TODO: 34. 'use strict';
 	[-X-]	35. Add observer to SessionPoller
-			36. Get correct params of AJAX.fail for errors
+			TODO: 36. Get correct params of AJAX.fail for errors
 	[DONE]	37. Proper app.appCache for gc in AdminRouter.reset()
-			38. SEO "escape fragment"
+			TODO: 38. SEO "escape fragment"
 
 			JSDOC3 Usage
 
