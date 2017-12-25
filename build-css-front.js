@@ -1,5 +1,5 @@
 ({
     optimizeCss: 'standard.keepComments',
-    cssIn: 'css/main.css',
+    cssIn: 'templates/static/css/main.css',
     out: 'dist/front.css'
 })
