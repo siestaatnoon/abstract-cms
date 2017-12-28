@@ -55,7 +55,7 @@ define([
         /**
          * Initializes the SessionPoller. An optional object with properties
          * interval: [polling interval in seconds] and destroyCallback: [function()],
-         * to execute upon session timeout, may be set
+         * to execute upon session timeout, may be set.
          *
          */
 		init: function(options) {
