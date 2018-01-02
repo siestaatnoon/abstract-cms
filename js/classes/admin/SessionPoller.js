@@ -57,6 +57,7 @@ define([
          * interval: [polling interval in seconds] and destroyCallback: [function()],
          * to execute upon session timeout, may be set.
          *
+         * @param {Object} options - Options for poller
          */
 		init: function(options) {
 			if (options) {
