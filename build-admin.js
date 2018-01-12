@@ -92,86 +92,87 @@
 			'underscore', 
 			'backgrid'
 		],
-		
-		'classes/Class': 					['config', 'jquery', 'underscore'],
-		'classes/Utils': 					['config', 'jquery', 'underscore'],
-		'classes/FormValidator': 			['config', 'jquery', 'underscore', 'classes/Class'],
-		'classes/ScriptLoader': 			['config', 'jquery', 'underscore', 'classes/Class'],
-		'classes/PageLoader': 				['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils'],
-        'classes/admin/SessionPoller': 		['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils'],
-		'classes/ModuleLoader': 			['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils'],
-		
-		'classes/admin/AdminAuth': 			[
-			'config', 
-			'jquery', 
-			'underscore', 
-			'classes/Class', 
-			'classes/admin/SessionPoller',
-			'classes/Utils'
-		],
-		
-		'classes/admin/AdminModuleLoader': 	['config', 'jquery', 'underscore', 'classes/Class', 'classes/ModuleLoader'],
 
-		'models/AdminModel': 			[
-			'config', 
-			'underscore', 
-			'backbone',
-			'classes/admin/AdminModuleLoader',
-			'classes/FormValidator'
-		],
-		
-		'collections/AdminCollection': 	[
-			'config', 
-			'underscore', 
-			'backbone',
-			'backbone.paginator',
-			'classes/admin/AdminModuleLoader',
-			'models/AdminModel'
-		],
-		
-		'views/AdminListUpdaterView': 	[
-			'config', 
-			'jquery',
-			'underscore',
-			'backbone', 
-			'classes/Utils'
-		],
-		
-		'views/AdminAuthView': 	[
-			'config', 
-			'jquery',
-			'underscore',
-			'backbone', 
-			'classes/admin/AdminAuth'
-		],
-		
-		'views/PageView': ['config', 'jquery', 'underscore', 'backbone'],
-		
-		'views/FormView': 	[
-			'config', 
-			'jquery',
-			'underscore', 
-			'backbone',
-			'classes/admin/AdminModuleLoader',
-			'classes/ScriptLoader',
-			'classes/FormValidator',
-			'models/AdminModel'
-		],
-		
-		'views/AdminListView': 	[
-			'config', 
-			'jquery',
-			'underscore',
-			'backbone',
-			'backgrid',
-			'backbone.paginator',
-			'abstract.paginator',
-			'backgrid.textcell',
-			'classes/admin/AdminModuleLoader',
-			'classes/ScriptLoader',
-			'collections/AdminCollection',
-			'views/AdminListUpdaterView'
-		],
+        'classes/Class': 					['config', 'jquery', 'underscore'],
+        'classes/Utils': 					['config', 'jquery', 'underscore'],
+        'classes/FormValidator': 			['config', 'jquery', 'underscore', 'classes/Class'],
+        'classes/ScriptLoader': 			['config', 'jquery', 'underscore', 'classes/Class'],
+        'classes/PageLoader': 				['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils'],
+        'classes/admin/SessionPoller': 		['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils'],
+        'classes/ModuleLoader': 			['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils'],
+
+        'classes/admin/AdminAuth': 			[
+            'config',
+            'jquery',
+            'underscore',
+            'classes/Class',
+            'classes/admin/SessionPoller',
+            'classes/Utils'
+        ],
+
+        'classes/admin/AdminModuleLoader': 	['config', 'jquery', 'underscore', 'classes/Class', 'classes/ModuleLoader'],
+
+        'models/AdminModel': 			[
+            'config',
+            'underscore',
+            'backbone',
+            'classes/admin/AdminModuleLoader',
+            'classes/FormValidator'
+        ],
+
+        'collections/AdminCollection': 	[
+            'config',
+            'underscore',
+            'backbone',
+            'backbone.paginator',
+            'classes/admin/AdminModuleLoader',
+            'models/AdminModel'
+        ],
+
+        'views/AdminListUpdaterView': 	[
+            'config',
+            'jquery',
+            'underscore',
+            'backbone',
+            'classes/Utils'
+        ],
+
+        'views/AdminAuthView': 	[
+            'config',
+            'jquery',
+            'underscore',
+            'backbone',
+            'classes/Utils',
+            'classes/admin/AdminAuth'
+        ],
+
+        'views/PageView': ['config', 'jquery', 'underscore', 'backbone'],
+
+        'views/FormView': 	[
+            'config',
+            'jquery',
+            'underscore',
+            'backbone',
+            'classes/admin/AdminModuleLoader',
+            'classes/ScriptLoader',
+            'classes/FormValidator',
+            'models/AdminModel'
+        ],
+
+        'views/AdminListView': 	[
+            'config',
+            'jquery',
+            'underscore',
+            'backbone',
+            'backgrid',
+            'backbone.paginator',
+            'abstract.paginator',
+            'backgrid.textcell',
+            'classes/admin/AdminModuleLoader',
+            'classes/ScriptLoader',
+            'collections/AdminCollection',
+            'views/AdminListUpdaterView'
+        ],
 
         'views/errors/AdminErrorView': 	[
             'config',
@@ -180,18 +181,17 @@
             'backbone',
             'backgrid'
         ],
-		
-		'views/AdminTplView': 	[
-			'config',
-			'jquery',
-			'underscore',
-			'backbone',
-			'classes/admin/AdminModuleLoader'
-		],
-		
-		'routers/AdminRouter': 	[
-			'views/AdminTplView'
-		]
-	}
 
+        'views/AdminTplView': 	[
+            'config',
+            'jquery',
+            'underscore',
+            'backbone',
+            'classes/admin/AdminModuleLoader'
+        ],
+
+        'routers/AdminRouter': 	[
+            'views/AdminTplView'
+        ]
+	}
 })

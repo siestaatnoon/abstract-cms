@@ -5,7 +5,7 @@
   "frontPagerPerPage": 2,
   "frontFramework":    "foundation",
   "csrfToken":         "X-CSRF-Token",
-  "docRoot":           "/backbone/dev",
+  "docRoot":           "",
   "loadingId":         "#abstract-spinner",
   "pageContentId":     "#main-content",
   "pageDynContentId":  "#abstract-content",
