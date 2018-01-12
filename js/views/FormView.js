@@ -18,8 +18,6 @@ define([
 		
 		fields: [],
 		
-		scriptLoader: {},
-		
 		scripts: {},
 
 		events: {
@@ -46,7 +44,6 @@ define([
 			this.scripts = options.scripts || null;
 			this.boostrapModel = options.bootstrapModel || null;
 			this.template = _.template(tpl);
-			this.scriptLoader = new ScriptLoader();
 		},
 
 		render: function() {
@@ -74,20 +71,6 @@ define([
 			}});
 
 			return deferred.promise();
-		},
-		
-		loadScripts: function() {
-			if ( ! _.isUndefined(this.scripts['css']) ) {	
-				this.scriptLoader.loadCss(this.scripts['css']);
-			}
-			
-			if ( ! _.isUndefined(this.scripts['js']) ) {	
-				var include = this.scripts['js'];
-				var scripts = include['src'] || [];
-				var onload = include['onload'] || '';
-				var unload = include['unload'] || '';
-				this.scriptLoader.loadJs(scripts, onload, unload);
-			}
 		},
 
 		formCancel: function(event) {
@@ -221,7 +204,6 @@ define([
 		},
 		
 		remove: function() {
-			this.scriptLoader.unload();
 			$('#' + this.form_id).find(':input').off('change');
 			Backbone.View.prototype.remove.call(this);
 		},

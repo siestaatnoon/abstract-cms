@@ -2,8 +2,9 @@ define([
     'config',
     'jquery',
     'underscore',
-    'backbone'
-], function(app, $, _, Backbone) {
+    'backbone',
+    'classes/ScriptLoader'
+], function(app, $, _, Backbone, ScriptLoader) {
 
     /**
      * Superclass for main template view in CMS and frontent.
@@ -13,6 +14,7 @@ define([
      * @requires jquery
      * @requires Underscore
      * @requires Backbone
+     * @requires classes/ScriptLoader
      * @constructor
      * @augments Backbone.View
      */
@@ -123,7 +125,7 @@ define([
          * @property {String} templateURL
          * API url to retrieve main template data.
          */
-        templateURL: '',
+        templateUrl: '',
 
         /**
          * @property {Boolean} useJqm
@@ -146,20 +148,20 @@ define([
          * @param {Object} options - View options (Backbone).
          */
         initialize: function(options) {
-            this._setScriptLoader();
+            this.setScriptLoader();
 
             if (this.deferred === null) {
                 var self = this;
                 var deferred = $.Deferred();
 
                 $.ajax({
-                    url:		this.templateURL,
+                    url:		this.templateUrl,
                     type: 		'GET',
                     dataType: 	'json'
                 }).done(function(data) {
                     if (data.errors) {
                         if(app.debug) {
-                            var message = "TplView.initialize: an API error has occurred:\n";
+                            var message = "AbstractTplView.initialize: an API error has occurred:\n";
                             message += data.errors.join("\n");
                             console.log(message);
                         }
@@ -169,7 +171,9 @@ define([
                     deferred.resolve();
                 }).fail(function(jqXHR, status) {
                     if (app.debug) {
-                        console.log('TplView.initialize: data retrieve failed: [' + status + "]\n" + jqXHR.responseText);
+                        var msg = 'AbstractTplView.initialize: data retrieve failed: [' + jqXHR.status + "] ";
+                        msg += jqXHR.responseText;
+                        console.log(msg);
                     }
                 });
 
@@ -178,6 +182,35 @@ define([
                 self.postInit({});
             }
         },
+
+        /**
+         * Removes the content view from the main application template, removing associated
+         * CSS, Javascript and HTML blocks.
+         *
+         */
+        closeContentView: function() {
+            if ( _.isEmpty(this.contentView) === false ) {
+                this.contentView.remove();
+                this.contentView = {};
+            }
+
+            for (var i=0; i < this.blocksView.length; i++) {
+                this.blocksView[i].remove();
+            }
+            this.blocksView = [];
+        },
+
+
+        /**
+         * Retrieves a default Object used to configure CSS/Javascript includes for the
+         * ScriptLoader class.
+         *
+         * @return {Object} The CSS/Javascript configuration object
+         */
+        getScriptsObject: function() {
+            return JSON.parse( JSON.stringify(this.DEFAULT_SCRIPTS) );
+        },
+
 
         /**
          * Renders the template content view. If loaded by AJAX, will wait until
@@ -191,18 +224,18 @@ define([
             }
 
             this.trigger('content:update:start');
-            this._closeContentView();
+            this.closeContentView();
             var render = view.render();
 
             if (render.promise) {
                 var self = this;
                 render.done(function() {
-                    self._transitionPage(view);
+                    self.transitionPage(view);
                     self.trigger('content:update:end');
                     self.loading('hide');
                 });
             } else {
-                this._transitionPage(view);
+                this.transitionPage(view);
                 this.trigger('content:update:end');
                 this.loading('hide');
             }
@@ -219,6 +252,39 @@ define([
                 $.mobile.loading(task);
             }
         },
+
+
+        /**
+         * Loads CSS/Javascript includes for the page, including the content view. Note,
+         * will load content view includes separately if content view is updated.
+         *
+         */
+        loadScripts: function() {
+            var cssInc = [];
+            var jsInc = [];
+            var jsOnload = '';
+            var jsUnload = '';
+            var js = this.scripts['js'] ? this.scripts['js'] : {};
+
+            if (this.hasLoadedScripts) {
+                cssInc = this.contentScripts.css;
+                jsInc = this.contentScripts.js.src;
+            } else {
+                var css = this.scripts['css'] ? this.scripts['css'] : [];
+                var src = js['src'] ? js['src'] : [];
+                cssInc = css.concat(this.contentScripts.css);
+                jsInc = src.concat(this.contentScripts.js.src);
+                this.hasLoadedScripts = true;
+            }
+
+            var cvOnload = this.contentScripts.js.onload ? "\n\n" + this.contentScripts.js.onload : '';
+            jsOnload = js['onload'] ? js['onload'] + cvOnload : '';
+            var cvUnload = this.contentScripts.js.unload ? "\n\n" + this.contentScripts.js.unload : '';
+            jsUnload = js['unload'] ? js['unload'] + cvUnload : '';
+            this.scriptLoader.loadCss(cssInc);
+            this.scriptLoader.loadJs(jsInc, jsOnload, jsUnload);
+        },
+
 
         onInit: function(callback, args) {
             if ( ! this.deferred) {
@@ -254,7 +320,7 @@ define([
             if ( _.isEmpty(data) === false ) {
                 this.useJqm = data.useJqm || this.useJqm;
                 this.blocks = data.blocks || this.blocks;
-                this.scripts = data.scripts || this._getScriptsObject();
+                this.scripts = data.scripts || this.getScriptsObject();
                 var template = data.template ? $.trim(data.template) : '';
                 if (template.length) {
                     this.template = _.template(template, {});
@@ -273,7 +339,7 @@ define([
         remove: function() {
             this.scriptLoader.unload();
             this.hasLoadedScripts = false;
-            this._closeContentView();
+            this.closeContentView();
             for (var i=0; i < this.blocksApp.length; i++) {
                 this.blocksApp[i].remove();
             }
@@ -300,7 +366,7 @@ define([
 
             //blocks only load once
             if (this.blocksApp.length === 0) {
-                this._setBlocks(this.blocks, this.blocksApp);
+                this.setBlocks(this.blocks, this.blocksApp);
             }
 
             this.$el.empty();
@@ -312,115 +378,6 @@ define([
             return this;
         },
 
-        /**
-         * Sets or creates the DOM element container for the content view.
-         *
-         */
-        setEl: function() {
-            if ( $(this.id).length ) {
-            // check for element in current DOM
-                this.setElement( $(this.id)[0] );
-            } else if (this.template) {
-            // check for element in new template
-                var $template = $(this.template);
-                if ( '#' + $template.attr('id') === this.id ) {
-                    this.setElement($template[0]);
-                } else if ( $(this.id, $template).length ) {
-                    this.setElement( $(this.id, $template)[0] );
-                } else {
-                    this.tagName = 'div';
-                }
-            } else {
-            // create a new element appended to <body> tag
-                var $body = $('body');
-                var $el = $('<div/>').attr('id', this.id.substr(1) ).html( $body.html() );
-                $body.html('');
-                $el.appendTo($body);
-                this.setElement($el[0]);
-            }
-        },
-
-        /**
-         * Initializes the ScriptLoader class to load CSS/Javascript includes.
-         *
-         */
-        _setScriptLoader: function() {
-            this.scriptLoader = new ScriptLoader();
-        },
-
-        /**
-         * Removes the content view from the main application template, removing associated
-         * CSS, Javascript and HTML blocks.
-         *
-         */
-        _closeContentView: function() {
-            // remove content view CSS/JS
-            if (this.contentScripts.css || this.contentScripts.js) {
-                if (this.contentScripts.css) {
-                    this.scriptLoader.removeCss(this.contentScripts.css);
-                }
-                if (this.contentScripts.js) {
-                    this.scriptLoader.removeJs(this.contentScripts.js.src);
-                }
-                this.scriptLoader.triggerUnload();
-            }
-
-            // TODO: remove onload/unload js
-
-            this._setContentScripts(null);
-            this._setHeadTags({});
-
-            if ( _.isEmpty(this.contentView) === false ) {
-                this.contentView.remove();
-                this.contentView = {};
-            }
-
-            for (var i=0; i < this.blocksView.length; i++) {
-                this.blocksView[i].remove();
-            }
-            this.blocksView = [];
-        },
-
-        /**
-         * Retrieves a default Object used to configure CSS/Javascript includes for the
-         * ScriptLoader class.
-         *
-         * @return {Object} The CSS/Javascript configuration object
-         */
-        _getScriptsObject: function() {
-            return JSON.parse( JSON.stringify(this.DEFAULT_SCRIPTS) );
-        },
-
-        /**
-         * Loads CSS/Javascript includes for the page, including the content view. Note,
-         * will load content view includes separately if content view is updated.
-         *
-         */
-        _loadScripts: function() {
-            var cssInc = [];
-            var jsInc = [];
-            var jsOnload = '';
-            var jsUnload = '';
-            var js = this.scripts['js'] ? this.scripts['js'] : {};
-
-            if (this.hasLoadedScripts) {
-                cssInc = this.contentScripts.css;
-                jsInc = this.contentScripts.js.src;
-            } else {
-                var css = this.scripts['css'] ? this.scripts['css'] : [];
-                var src = js['src'] ? js['src'] : [];
-                cssInc = css.concat(this.contentScripts.css);
-                jsInc = src.concat(this.contentScripts.js.src);
-                this.hasLoadedScripts = true;
-            }
-
-            var cvOnload = this.contentScripts.js.onload ? "\n\n" + this.contentScripts.js.onload : '';
-            jsOnload = js['onload'] ? js['onload'] + cvOnload : '';
-            var cvUnload = this.contentScripts.js.unload ? "\n\n" + this.contentScripts.js.unload : '';
-            jsUnload = js['unload'] ? js['unload'] + cvUnload : '';
-            this.scriptLoader.loadCss(cssInc);
-            this.scriptLoader.loadJs(jsInc, jsOnload, jsUnload);
-        },
 
         /**
          * Loads HTML block(s) for the main template view and content view.
@@ -429,7 +386,7 @@ define([
          * @param {Array} storage - Storage array for resulting jQuery objects from blocks, used to
          * update, remove etc.
          */
-        _setBlocks: function(blocks, storage) {
+        setBlocks: function(blocks, storage) {
             if ( _.isEmpty(blocks) ) {
                 return false;
             } else if ( $.isPlainObject(blocks) ) {
@@ -458,8 +415,9 @@ define([
             }
         },
 
-        _setContentScripts: function(scripts) {
-            this.contentScripts = this._getScriptsObject();
+
+        setContentScripts: function(scripts) {
+            this.contentScripts = this.getScriptsObject();
 
             if ( _.isObject(scripts) === false ) {
                 return;
@@ -523,7 +481,37 @@ define([
             }
         },
 
-        _setHeadTags: function(headTags) {
+
+        /**
+         * Sets or creates the DOM element container for the content view.
+         *
+         */
+        setEl: function() {
+            if ( $(this.id).length ) {
+            // check for element in current DOM
+                this.setElement( $(this.id)[0] );
+            } else if (this.template) {
+            // check for element in new template
+                var $template = $(this.template);
+                if ( '#' + $template.attr('id') === this.id ) {
+                    this.setElement($template[0]);
+                } else if ( $(this.id, $template).length ) {
+                    this.setElement( $(this.id, $template)[0] );
+                } else {
+                    this.tagName = 'div';
+                }
+            } else {
+            // create a new element appended to <body> tag
+                var $body = $('body');
+                var $el = $('<div/>').attr('id', this.id.substr(1) ).html( $body.html() );
+                $body.html('');
+                $el.appendTo($body);
+                this.setElement($el[0]);
+            }
+        },
+
+
+        setHeadTags: function(headTags) {
             if ( _.isObject(headTags) === false ) {
                 return;
             }
@@ -571,24 +559,33 @@ define([
             this.headSelectors = selectors;
         },
 
-        _transitionPage: function(view) {
+
+        /**
+         * Initializes the ScriptLoader class to load CSS/Javascript includes.
+         *
+         */
+        setScriptLoader: function() {
+            this.scriptLoader = new ScriptLoader();
+        },
+
+        transitionPage: function(view) {
             this.contentView = view;
             var contentScripts = this.contentView.scripts || {};
-            this._setContentScripts(contentScripts);
+            this.setContentScripts(contentScripts);
             this.listenTo(this.contentView, 'view:update:start', this.loading);
             this.listenTo(this.contentView, 'view:update:end', function() { this.loading('hide') } );
 
             var headTags = this.contentView.headTags || {};
-            this._setHeadTags(headTags);
+            this.setHeadTags(headTags);
             this.$el.prepend(this.contentView.$el);
 
             if (this.contentView.blocks) {
-                this._setBlocks(this.contentView.blocks, this.blocksView);
+                this.setBlocks(this.contentView.blocks, this.blocksView);
             }
 
             // want to make sure content loaded to DOM first
             // and then load any necessary css/js scripts
-            this._loadScripts();
+            this.loadScripts();
 
             if (this.useJqm) {
                 $.mobile.initializePage();

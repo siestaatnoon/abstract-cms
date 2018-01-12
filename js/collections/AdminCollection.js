@@ -3,8 +3,9 @@ define([
 	'underscore',
 	'backbone',
 	'backbone.paginator',
-	'models/AdminModel'
-], function(app, _, Backbone, PageableCollection, AdminModel) {
+	'models/AdminModel',
+    'collections/AbstractCollection'
+], function(app, _, Backbone, PageableCollection, AdminModel, AbstractCollection) {
 	
 	/**
 	 * Creates a PageableCollection of type Backbone Collection for use with
@@ -16,10 +17,11 @@ define([
 	 * @requires Backbone
 	 * @requires Backbone.Paginator
 	 * @requires models/AdminModel
+	 * @requires collections/AbstractCollection
 	 * @constructor
-	 * @augments Backbone.PageableCollection
+	 * @augments AbstractCollection
 	 */
-	var AdminCollection = Backbone.PageableCollection.extend(
+	var AdminCollection = AbstractCollection.extend(
 	/** @lends collections/AdminCollection.prototype **/
 	{
 		/**
@@ -40,13 +42,6 @@ define([
 		 * @type {Object}
 		 */
 		columns: {},
-		
-		/**
-		 * ID attribute for models of this collection.
-		 *
-		 * @type {String}
-		 */
-		idAttribute: '',
 
 		/**
 		 * The Backbone model used in this collection
@@ -62,26 +57,7 @@ define([
 		 * @type {String}
 		 */
 		mode: 'server',
-		
-        /**
-		 * Query params for module list filters
-		 *
-		 * @type {Object}
-		 */
-        queryParams: {
-        	filters: {}
-        },
 
-		/**
-		 * Initial state of Backgrid collection display table
-		 *
-		 * @type {Object}
-		 */
-		state: {
-			pageSize: 10,
-			sortKey: 'id',
-			order: -1
-        },
     
 		/**
 		 * Initializes this collection.
@@ -91,25 +67,14 @@ define([
 		 */
 		initialize: function(models, options) {
 			var options = options || {};
-			this.idAttribute = options.idAttribute || 'id';
-			this.url = options.url || '';
 			this.state.pageSize = app.adminPagerPerPage;
+            AbstractCollection.prototype.initialize.call(this, models, options);
 		},
 		
 		/**
-		 * Overwrites Backbone.PageableCollection.parseRecords(). Parses the server response 
-		 * from call to Collection.fetch().
-		 *
-		 * @param {Array} response - The server response
-		 * @param {Object} options - Collection options (Backbone)
-		 */
-		parseRecords: function (response, options) {
-			return Backbone.PageableCollection.prototype.parseRecords.call(this, response.items, options);
-		},
-		
-		/**
-		 * Overrides Backbone.PageableCollection.parseState(). Retrieves the pagination state
-		 * from the server response and formats it for use with Backbone.PageableCollection.
+		 * Overrides AbstractCollection.parseState(). Retrieves the pagination state from the server
+         * response and formats it for use with Backbone.PageableCollection, saving additional parameters
+         * for bulk list updates.
 		 *
 		 * @param {Array} response - The server response
 		 * @param {Object} queryParams A copy of #queryParams
@@ -122,10 +87,7 @@ define([
 			this.bulkUpdate.useArchive = response.bulk_update.use_archive;
 			this.bulkUpdate.useDelete = response.bulk_update.use_delete;
 			this.bulkUpdate.isArchive = response.bulk_update.is_archive;
-
-            this.queryParams.filters = _.extend(this.queryParams.filters, response.query_params);
-			var resp = [response.state, response.items];
-			return Backbone.PageableCollection.prototype.parseState.call(this, resp, queryParams, state, options);
+			return AbstractCollection.prototype.parseState.call(this, response, queryParams, state, options);
 		}
 	});
 	

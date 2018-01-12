@@ -36,8 +36,6 @@ define([
 		
 		paginator: {},
 		
-		scriptLoader: {},
-		
 		scripts: {},
 		
 		$sorter: {},
@@ -59,15 +57,19 @@ define([
 			this.template = _.template(tpl, {});
 			this.module = options.module || '';
 			this.blocks = options.blocks || this.blocks;
-			this.scripts = options.scripts || null;
+			this.scripts = options.scripts || {};
 			this.altListTmpl = options.altListTmpl || this.altListTmpl;
 			this.altListTmplData = options.altListTmplData || this.altListTmplData;
 			this.isDefaultListTmpl = ! this.altListTmpl;
 
+			var css = ['ext/backgrid.paginator.css'];
+			if (this.scripts.css) {
+                this.scripts.css = css.concat(this.scripts.css);
+			} else {
+                this.scripts['css'] = css;
+            }
 			this.setElement( $(this.template).first() );
 			this.$container = this.$el.find('.module-list');
-			this.scriptLoader = new ScriptLoader();
-			
 			this.listenTo(this.collection, 'remove', this.render);
 		},
 		
@@ -110,23 +112,6 @@ define([
 			});
 		},
 
-        loadScripts: function() {
-            var css = [
-                'ext/backgrid.paginator.css'
-            ];
-            if ( ! _.isUndefined(this.scripts['css']) ) {
-                css = css.concat(this.scripts['css']);
-            }
-            this.scriptLoader.loadCss(css);
-
-            if ( ! _.isUndefined(this.scripts['js']) ) {
-                var include = this.scripts['js'];
-                var scripts = include['src'] || [];
-                var onload = include['onload'] || '';
-                var unload = include['unload'] || '';
-                this.scriptLoader.loadJs(scripts, onload, unload);
-            }
-        },
 
 		refresh: function() {
 			if (this.isDefaultListTmpl) {
@@ -148,7 +133,6 @@ define([
 		
 		remove: function() {
 			$('.module-top-button', this.$el).off('click');
-            this.scriptLoader.unload();
 
 		    if (this.isDefaultListTmpl) {
 			    $('#abstract-sort-selector select', this.$el).off('change');

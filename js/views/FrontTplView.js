@@ -17,7 +17,7 @@ define([
 
         tplParams: '',
 
-        templateURL: '',
+        templateUrl: '',
 
         useJqm: false,
 
@@ -27,12 +27,34 @@ define([
         initialize: function(options) {
             options = options || {};
             this.loading('show');
-            this.templateURL = app.frontTemplateURL;
-            this._setScriptLoader();
+            this.templateUrl = app.frontTemplateURL;
+            this.setScriptLoader();
             if (options.skipLoad) {
                 return;
             }
             AbstractTplView.prototype.initialize.call(this, options);
+        },
+
+        closeContentView: function() {
+            this.setLoadingElementId(false);
+            this.loading('show');
+
+            // remove content view CSS/JS
+            if (this.contentScripts.css || this.contentScripts.js) {
+                if (this.contentScripts.css) {
+                    this.scriptLoader.removeCss(this.contentScripts.css);
+                }
+                if (this.contentScripts.js) {
+                    this.scriptLoader.removeJs(this.contentScripts.js.src);
+                }
+                this.scriptLoader.triggerUnload();
+            }
+
+            // TODO: remove onload/unload js
+
+            this.setContentScripts(null);
+            this.setHeadTags({});
+            AbstractTplView.prototype.closeContentView.call(this);
         },
 
         /**
@@ -61,7 +83,7 @@ define([
             if ( _.isEmpty(data) === false ) {
                 this.useJqm = data.useJqm || this.useJqm;
                 this.blocks = data.blocks || this.blocks;
-                this.scripts = data.scripts || this._getScriptsObject();
+                this.scripts = data.scripts || this.getScriptsObject();
                 this.tplParams = data.tpl_params || this.tplParams;
                 var template = data.template ? $.trim(data.template) : '';
                 if (template.length) {
@@ -102,7 +124,7 @@ define([
             this.loading('show');
 
             if (this.contentView.newTpl.blocks) {
-                this._setBlocks(this.contentView.newTpl.blocks, this.blocksApp);
+                this.setBlocks(this.contentView.newTpl.blocks, this.blocksApp);
             }
             this.trigger('template:reset:end');
         },
@@ -111,11 +133,52 @@ define([
             this.loadingEl = isNewPage ? 'body' : this.id;
         },
 
-        _closeContentView: function() {
-            this.setLoadingElementId(false);
-            this.loading('show');
-            AbstractTplView.prototype._closeContentView.call(this);
+
+        setScriptLoader: function() {
+            this.scriptLoader = new ScriptLoader({
+                cssRoot: app.frontCssRoot,
+                jsRoot: app.frontJsRoot,
+                legacyMode: false
+            });
         },
+
+
+        transitionPage: function(view) {
+            this.contentView = view;
+            var contentScripts = this.contentView.scripts || {};
+            this.setContentScripts(contentScripts);
+            //this.listenTo(this.contentView, 'view:update:start', this.loading);
+            //this.listenTo(this.contentView, 'view:update:end', function() { this.loading('hide') } );
+
+            var headTags = {};
+            if (this.contentView.isNewPage) {
+                this.reset();
+                if (this.contentView.newTpl.headTags) {
+                    headTags = this.contentView.newTpl.headTags;
+                }
+            }
+            if (this.contentView.headTags) {
+                headTags = this.contentView.headTags;
+            }
+
+            this.setHeadTags(headTags);
+            this.$el.prepend(this.contentView.$el);
+
+            if (this.contentView.blocks) {
+                this.setBlocks(this.contentView.blocks, this.blocksView);
+            }
+
+            // want to make sure content loaded to DOM first
+            // and then load any necessary css/js scripts
+            this.loadScripts();
+
+            if (this.useJqm) {
+                $.mobile.initializePage();
+                $('body').enhanceWithin();
+                $(document).trigger('pageinit');
+            }
+        },
+
 
         _findHeadScripts: function(dom) {
             var head = dom ? dom.head : $('head').get(0);
@@ -137,50 +200,6 @@ define([
                         this.docIncludes.link.push(href);
                     }
                 }
-            }
-        },
-
-        _setScriptLoader: function() {
-            this.scriptLoader = new ScriptLoader({
-                cssRoot: app.frontCssRoot,
-                jsRoot: app.frontJsRoot,
-                legacyMode: false
-            });
-        },
-
-        _transitionPage: function(view) {
-            this.contentView = view;
-            var contentScripts = this.contentView.scripts || {};
-            this._setContentScripts(contentScripts);
-            //this.listenTo(this.contentView, 'view:update:start', this.loading);
-            //this.listenTo(this.contentView, 'view:update:end', function() { this.loading('hide') } );
-
-            var headTags = {};
-            if (this.contentView.isNewPage) {
-                this.reset();
-                if (this.contentView.newTpl.headTags) {
-                    headTags = this.contentView.newTpl.headTags;
-                }
-            }
-            if (this.contentView.headTags) {
-                headTags = this.contentView.headTags;
-            }
-
-            this._setHeadTags(headTags);
-            this.$el.prepend(this.contentView.$el);
-
-            if (this.contentView.blocks) {
-                this._setBlocks(this.contentView.blocks, this.blocksView);
-            }
-
-            // want to make sure content loaded to DOM first
-            // and then load any necessary css/js scripts
-            this._loadScripts();
-
-            if (this.useJqm) {
-                $.mobile.initializePage();
-                $('body').enhanceWithin();
-                $(document).trigger('pageinit');
             }
         },
 

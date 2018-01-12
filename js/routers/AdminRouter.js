@@ -13,12 +13,13 @@ define([
 	'views/PageView',
 	'views/FormView',
 	'views/AdminListView',
-	'views/errors/AdminErrorView'
+	'views/errors/AdminErrorView',
+    'routers/AbstractRouter'
 ], function(app, $, _, Backbone, AdminModuleLoader, FormValidator, PageLoader, Utils, AdminModel,
-	AdminCollection, AdminAuthView, PageView, FormView, AdminListView, AdminErrorView) {
+	AdminCollection, AdminAuthView, PageView, FormView, AdminListView, AdminErrorView, AbstractRouter) {
 
 	/**
-	 * Extends Backbone.Router routing all URLs of the admin (CMS) pages.
+	 * Extends AbstractRouter routing all URLs of the admin (CMS) pages.
 	 *
 	 * @exports routers/AdminRouter
 	 * @requires config
@@ -36,18 +37,12 @@ define([
 	 * @requires views/FormView
 	 * @requires views/AdminListView
      * @requires views/errors/AdminErrorView
+     * @requires routers/AbstractRouter
 	 * @constructor
-	 * @augments Backbone.Router
+	 * @augments AbstractRouter
 	 */
-	var AdminRouter = Backbone.Router.extend({
+	var AdminRouter = AbstractRouter.extend({
 	/** @lends routers/AdminRouter.prototype **/
-
-        /**
-         * Backbone view for 401, 403 and 404 error pages in CMS.
-         *
-         * @type {Object}
-         */
-	    errorView: null,
 
 		/**
 		 * Route fragments used in the admin CMS pages.
@@ -128,98 +123,9 @@ define([
 		*/
 
 			app.ModuleLoader = new AdminModuleLoader();
-            app.Validator = new FormValidator({});
 			app.PageLoader = new PageLoader();
             app.PageLoader.init({isCms: true});
-		},
-
-		/**
-		 * Handles routing to a module list page and add/edit form pages.
-		 *
-		 * @param {String} module - The module name
-		 * @param {String} task - [list|add|edit] or other module defined page
-		 * @param {String} params - Parameter passed in to page (e.g. row id)
-		 */
-		moduleRoute: function(module, task, params) {
-			if ( ! app.Auth.isAuthenticated()) {
-				this.reset();
-				return false;
-			}
-
-			Utils.setCrsfToken();
-			app.AppView.render();
-			app.ModuleLoader.reset();
-			app.ModuleLoader.setModule({
-				module	: module,
-				task	: task,
-				params	: params
-			});
-
-            this.clearError();
-			if (_.isUndefined(app.appCache[module]) ||
-				_.isUndefined(app.appCache[module][task]) ||
-				app.appCache[module][task]['params'] !== params) {
-
-				$.mobile.loading('show');
-
-				app.ModuleLoader.loadData().done(
-					function(data) {
-						var model = {};
-						var collection = {};
-						var view = {};
-
-						if (app.ModuleLoader.isGetTask()) {
-							collection = new AdminCollection({}, {
-								idAttribute: data.pk_field,
-								url: data.collection_url
-							});
-							model = new AdminModel({}, {
-								collection: collection,
-								idAttribute: data.pk_field,
-								url: data.model_url
-							});
-							view = new AdminListView({
-								collection: collection,
-								module: module,
-								template: data.template,
-								altListTmpl: data.alt_list_tmpl || '',
-								altListTmplData: data.alt_list_tmpl_data || {},
-								blocks: data.blocks || null,
-								scripts: data.scripts || {}
-							});
-						} else {
-							app.Validator.reset();
-							model = new AdminModel({}, {
-								idAttribute: data.pk_field,
-								url: data.model_url,
-								fields: data.fields
-							});
-							view = new FormView({
-								model: model,
-								bootstrapModel: data.model,
-								template: data.template,
-								fields: data.fields,
-								scripts: data.scripts || {},
-								form_id: data.form_id,
-								blocks: data.blocks || null
-							});
-						}
-
-						//Cache module view then load it
-						if ( _.isUndefined(data.no_cache) || ! data.no_cache ) {
-							app.appCache[module] = app.appCache[module] || {};
-							app.appCache[module][task] 			 = {};
-							app.appCache[module][task]['view'] 	 = view;
-							app.appCache[module][task]['params'] = params;
-						}
-						app.AppView.gotoContentView(view);
-					}
-				);
-			} else {
-			//Load cached parser/model/collection/view
-				var view = app.appCache[module][task]['view'];
-				app.AppView.gotoContentView(view);
-			}
+            AbstractRouter.prototype.initialize.call(this, options);
 		},
 
 		/**
@@ -253,36 +159,6 @@ define([
 			view.render();
 		},
 
-        /**
-         * Clears an error view, if shown, before loading another view.
-         */
-        clearError: function() {
-            if (this.errorView !== null && this.errorView.hasError) {
-                this.errorView.remove();
-            }
-        },
-
-		/**
-		 * Handles a re-route to an Error 401, unauthorized page.
-		 */
-		error401: function() {
-			this.showError(401);
-		},
-
-		/**
-		 * Handles a re-route to an Error 403, forbidden page.
-		 */
-		error403: function() {
-			this.showError(403);
-		},
-
-		/**
-		 * Handles a route to an Error 404, page not found.
-		 */
-		error404: function() {
-			this.showError(404);
-		},
-
 		/**
 		 * Routes to the admin home page.
 		 */
@@ -310,30 +186,94 @@ define([
 			});
 		},
 
-		/**
-		 * Overrides the Backbone.Router.navigate function to accept an href attribute
-		 * clicked from a link and parse it as a fragment used for routing in Backbone.
-		 *
-		 * @param {String} models - The href attribute or Backbone fragment
-		 * @param {Object} options - options Backbone.Router.navigate (Backbone)
-		 * @return {Backbone} The Backbone reference
-		 */
-		navigate: function(fragment, options) {
-			//replace hashbang for backwards compatibility
-			fragment = fragment.replace("#!", "");
+        /**
+         * Handles routing to a module list page and add/edit form pages.
+         *
+         * @param {String} module - The module name
+         * @param {String} task - [list|add|edit] or other module defined page
+         * @param {String} params - Parameter passed in to page (e.g. row id)
+         */
+        moduleRoute: function(module, task, params) {
+            if ( ! app.Auth.isAuthenticated()) {
+                this.reset();
+                return false;
+            }
 
-			//remove document root from fragment
-			if (app.docRoot !== '/') {
-				fragment = fragment.replace(app.docRoot, "");
-			}
+            Utils.setCrsfToken();
+            app.AppView.render();
+            app.ModuleLoader.reset();
+            app.ModuleLoader.setModule({
+                module	: module,
+                task	: task,
+                params	: params
+            });
 
-			//remove leading slash
-			if ( fragment.substr(0, 1) === '/') {
-				fragment = fragment.substr(1);
-			}
+            this.clearError();
+            if (_.isUndefined(app.appCache[module]) ||
+                _.isUndefined(app.appCache[module][task]) ||
+                app.appCache[module][task]['params'] !== params) {
 
-			return Backbone.Router.prototype.navigate.call(this, fragment, options);
-		},
+                $.mobile.loading('show');
+
+                app.ModuleLoader.loadData().done(
+                    function(data) {
+                        var model = {};
+                        var collection = {};
+                        var view = {};
+
+                        if (app.ModuleLoader.isGetTask()) {
+                            collection = new AdminCollection({}, {
+                                idAttribute: data.pk_field,
+                                url: data.collection_url
+                            });
+                            model = new AdminModel({}, {
+                                collection: collection,
+                                idAttribute: data.pk_field,
+                                url: data.model_url
+                            });
+                            view = new AdminListView({
+                                collection: collection,
+                                module: module,
+                                template: data.template,
+                                altListTmpl: data.alt_list_tmpl || '',
+                                altListTmplData: data.alt_list_tmpl_data || {},
+                                blocks: data.blocks || null,
+                                scripts: data.scripts || {}
+                            });
+                        } else {
+                            app.Validator.reset();
+                            model = new AdminModel({}, {
+                                idAttribute: data.pk_field,
+                                url: data.model_url,
+                                fields: data.fields
+                            });
+                            view = new FormView({
+                                model: model,
+                                bootstrapModel: data.model,
+                                template: data.template,
+                                fields: data.fields,
+                                scripts: data.scripts || {},
+                                form_id: data.form_id,
+                                blocks: data.blocks || null
+                            });
+                        }
+
+                        //Cache module view then load it
+                        if ( _.isUndefined(data.no_cache) || ! data.no_cache ) {
+                            app.appCache[module] = app.appCache[module] || {};
+                            app.appCache[module][task] 			 = {};
+                            app.appCache[module][task]['view'] 	 = view;
+                            app.appCache[module][task]['params'] = params;
+                        }
+                        app.AppView.gotoContentView(view);
+                    }
+                );
+            } else {
+                //Load cached parser/model/collection/view
+                var view = app.appCache[module][task]['view'];
+                app.AppView.gotoContentView(view);
+            }
+        },
 
 		/**
 		 * Handles routing to a non-module page.

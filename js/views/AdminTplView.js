@@ -2,106 +2,88 @@ define([
 	'config',
 	'jquery',
 	'underscore', 
-	'backbone'
-], function(app, $, _, Backbone) {
-	var AdminTplView = Backbone.View.extend({
+	'backbone',
+    'views/AbstractTplView'
+], function(app, $, _, Backbone, AbstractTplView) {
+
+    /**
+     * Superclass for main template view in CMS and frontent.
+     *
+     * @exports models/AbstractModel
+     * @requires config
+     * @requires jquery
+     * @requires Underscore
+     * @requires Backbone
+     * @requires views/AbstractTplView
+     * @constructor
+     * @augments AbstractTplView
+     */
+	var AdminTplView = AbstractTplView.extend({
 
 		id: app.pageContentId,
-		
-		blocks: [],
-		
-		blocksApp: [],
-		
-		blocksView: [],
-		
-		contentView: {},
 		
 		deferred: null,
 		
 		template: null,
-		
-		contentId: app.pageContentId,
+
+        templateUrl: '',
+
+        useJqm: true,
 
 		events: {
 
 		},
 
 		initialize: function(options) {
-			if (this.deferred === null) {
-				var self = this;
-				var deferred = $.Deferred();
-				
-				$.ajax({
-					url:		app.adminTemplateURL,
-					type: 		'GET',
-					dataType: 	'json'
-				}).done(function(data) {
-					self.template = '';
-                    if (data.errors) {
-                        if(app.debug) {
-                            var message = "AdminTplView.initialize: an API error has occurred:\n";
-                            message += data.errors.join("\n");
-                            console.log(message);
-                        }
-					} else {
-                        self.postInit(data);
-					}
-					deferred.resolve();
-				}).fail(function(jqXHR, status) {
-					if (app.debug) {
-						console.log('AdminTplView.initialize: data retrieve failed: [' + status + "]\n" + jqXHR.responseText);
-					}
-				});
-				
-				this.deferred = deferred.promise();
-			} else {
-                self.postInit({});
-			}
+            this.templateUrl = app.adminTemplateURL;
+            AbstractTplView.prototype.initialize.call(this, options);
 		},
+
 
         gotoContentView: function(view) {
             if ( this.onInit(this.gotoContentView, view) === false) {
                 return false;
             }
 
-            this._closeContentView();
+            this.closeContentView();
             var render = view.render();
 
             if (render.promise) {
                 var self = this;
                 render.done(function() {
-                    self._transitionPage(view);
+                    self.transitionPage(view);
                 });
             } else {
-                this._transitionPage(view);
+                this.transitionPage(view);
             }
         },
+
 
         loading: function(showHide) {
             var task = showHide === 'hide' ? 'hide' : 'show';
             $.mobile.loading(task);
         },
 
-        onInit: function(callback, args) {
-            var state = this.deferred.state();
-            var is_loaded = true;
 
-            if (state !== 'resolved' ) {
-                if (state === 'pending' && _.isFunction(callback) ) {
-                    //need to wait until template loaded via ajax
-                    var self = this;
-                    if ( _.isArray(args) === false) {
-                        args = [args];
-                    }
-                    this.deferred.done(function() {
-                        callback.apply(self, args);
-                    });
-                }
-                is_loaded = false;
+        loadScripts: function() {
+		    if ( _.isUndefined(this.contentView.scripts) ) {
+		        return;
             }
 
-            return is_loaded;
+		    var scripts = this.contentView.scripts;
+            if ( ! _.isUndefined(scripts['css']) ) {
+                this.scriptLoader.loadCss(scripts['css']);
+            }
+
+            if ( ! _.isUndefined(scripts['js']) ) {
+                var include = scripts['js'];
+                var src = include['src'] || [];
+                var onload = include['onload'] || '';
+                var unload = include['unload'] || '';
+                this.scriptLoader.loadJs(src, onload, unload);
+            }
         },
+
 
         postInit: function(data) {
             if ( _.isEmpty(data) === false ) {
@@ -148,7 +130,8 @@ define([
         },
 		
 		remove: function() {
-			this._closeContentView();
+            this.scriptLoader.unload();
+			this.closeContentView();
 			for (var i=0; i < this.blocksApp.length; i++) {
 				this.blocksApp[i].remove();
 			}
@@ -163,108 +146,27 @@ define([
             $('.jqm-navmenu-link, .jqm-search-link').hide();
 		},
 
-        render: function() {
-            if ( this.onInit(this.render, null) === false) {
-                return false;
+
+        transitionPage: function(view) {
+            this.contentView = view;
+            this.listenTo(this.contentView, 'view:update:start', this.loading);
+            this.listenTo(this.contentView, 'view:update:end', function() { this.loading('hide') } );
+            this.$el.append(this.contentView.$el);
+
+            if (this.contentView.blocks) {
+                this.setBlocks(this.contentView.blocks, this.blocksView);
             }
 
-            //blocks only load once
-            if (this.blocksApp.length === 0) {
-                this._setBlocks(this.blocks, this.blocksApp);
-            }
-
-            this.$el.empty();
-            //this.$el.appendTo( $(this.contentId) );
+            //want to make sure content loaded to DOM first and
+            //JQM enhanced, then load any necessary css/js scripts
+            //
+            this.loadScripts();
 
             $.mobile.initializePage();
             $('body').enhanceWithin();
-            return this;
-        },
-
-        setEl: function() {
-            if ( $(this.id).length ) {
-                this.setElement( $(this.id)[0] );
-            } else if (this.template) {
-                var $template = $(this.template);
-                if ( '#' + $template.attr('id') === this.id ) {
-                    this.setElement($template[0]);
-                } else if ( $(this.id, $template).length ) {
-                    this.setElement( $(this.id, $template)[0] );
-                } else {
-                    this.tagName = 'div';
-                }
-            } else {
-                var $body = $('body');
-                var $el = $('<div/>').attr('id', this.id.substr(1) ).html( $body.html() );
-                $body.html('');
-                $el.appendTo($body);
-                this.setElement($el[0]);
-            }
-        },
-		
-		_closeContentView: function() {
-		    if ( _.isEmpty(this.contentView) === false ) {
-                this.contentView.remove();
-                this.contentView = {};
-            }
-
-			for (var i=0; i < this.blocksView.length; i++) {
-				this.blocksView[i].remove();
-			}
-			this.blocksView = [];
-		},
-		
-		_setBlocks: function(blocks, storage) {
-			if ( _.isEmpty(blocks) ) {
-				return false;
-			} else if ( $.isPlainObject(blocks) ) {
-				blocks = [blocks];
-			}
-
-			var validFunctions = ['insertAfter', 'insertBefore', 'appendTo', 'prependTo'];
-			for (var i=0; i < blocks.length; i++) {
-				var block = blocks[i];
-				var $el = $(block['selector']) || $(this.id);
-				var pos_func = $.inArray(block['pos_func'], validFunctions) ? block['pos_func'] : validFunctions[0];
-				var html = '';
-				
-				if (block['template']) {
-					var data = block['data'] || {};
-					html = _.template(block['template'], data);
-				} else if (block['html']) {
-					html = block['html'];
-				} else {
-					continue;
-				}
-				
-				$html = $(html);
-				$html[pos_func]($el);
-				storage.push($html);
-			}
-		},
-		
-		_transitionPage: function(view) {
-			this.contentView = view;
-			this.listenTo(this.contentView, 'view:update:start', this.loading);
-			this.listenTo(this.contentView, 'view:update:end', function() { this.loading('hide') } );
-			this.$el.append(this.contentView.$el);
-			
-			if (this.contentView.blocks) {
-				this._setBlocks(this.contentView.blocks, this.blocksView);
-			}
-			
-			//want to make sure content loaded to DOM first and
-			//JQM enhanced, then load any necessary css/js scripts
-			//
-			if (this.contentView.loadScripts) {
-				this.contentView.loadScripts();
-			}
-
-			$.mobile.initializePage();
-			$('body').enhanceWithin();
-			$(document).trigger('pageinit');
-			this.loading('hide');
-		}
+            $(document).trigger('pageinit');
+            this.loading('hide');
+        }
 	});
 	
 	return AdminTplView;
