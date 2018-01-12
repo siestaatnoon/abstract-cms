@@ -5,7 +5,7 @@ define([
 	'backbone',
     'views/AbstractContentView'
 ], function(app, $, _, Backbone, AbstractContentView) {
-	var PageView = AbstractContentView.extend({
+	var AdminPageView = AbstractContentView.extend({
 		
 		pageLoader: null,
 		
@@ -23,5 +23,5 @@ define([
 		}
 	});
 	
-	return PageView;
+	return AdminPageView;
 });

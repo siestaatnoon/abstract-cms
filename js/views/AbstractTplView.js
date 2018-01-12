@@ -116,7 +116,7 @@ define([
         scriptLoader: null,
 
         /**
-         * @property {Oject} template
+         * @property {Object} template
          * Object utilized to render a template using the Underscore yemplate function.
          */
         template: null,
@@ -140,6 +140,7 @@ define([
         events: {
 
         },
+
 
         /**
          * Initializes the main template view by retrieving the data via AJAX and
@@ -182,6 +183,7 @@ define([
                 self.postInit({});
             }
         },
+
 
         /**
          * Removes the content view from the main application template, removing associated
@@ -241,6 +243,7 @@ define([
             }
         },
 
+
         /**
          * Shows or hides the loading HTML between page transitions.
          *
@@ -286,6 +289,12 @@ define([
         },
 
 
+        /**
+         * Adds callback function to execute upon content data retrieval.
+         *
+         * @param {Function} callback - Callback function to execute after data loaded
+         * @param {*} args - Arguments to pass into callback
+         */
         onInit: function(callback, args) {
             if ( ! this.deferred) {
                 return true;
@@ -310,6 +319,7 @@ define([
             return is_loaded;
         },
 
+
         /**
          * Called before this.render() which sets the CSS/Javascript scrips and HTML
          * blocks in the main template.
@@ -329,6 +339,7 @@ define([
 
             this.setEl();
         },
+
 
         /**
          * Overwrites Backbone.View.render() and DOES NOT remove this view from the page DOM.
@@ -352,6 +363,7 @@ define([
             //then back in since template removed from DOM
             this.setEl();
         },
+
 
         /**
          * Renders this view and, if data still loading via AJAX, will be called again upon
@@ -416,6 +428,12 @@ define([
         },
 
 
+        /**
+         * Sets the javascript and CSS scripts from the content view. Checks for
+         * duplicate scripts loaded in the main template and omits those from
+         * loading.
+         *
+         */
         setContentScripts: function(scripts) {
             this.contentScripts = this.getScriptsObject();
 
@@ -511,6 +529,10 @@ define([
         },
 
 
+        /**
+         * Sets the title, meta and other tags within head tag of DOM.
+         *
+         */
         setHeadTags: function(headTags) {
             if ( _.isObject(headTags) === false ) {
                 return;
@@ -568,6 +590,13 @@ define([
             this.scriptLoader = new ScriptLoader();
         },
 
+
+        /**
+         * Sets javascript and CS scripts, head tags, content blocks and renders the Backbone.View
+         * content in the DOM.
+         *
+         * @param {Backbone.View} view - The Backbone content view.
+         */
         transitionPage: function(view) {
             this.contentView = view;
             var contentScripts = this.contentView.scripts || {};

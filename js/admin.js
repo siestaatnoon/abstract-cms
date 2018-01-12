@@ -101,9 +101,9 @@ require.config({
 			'classes/admin/AdminAuth'
 		],
 		
-		'views/PageView': ['config', 'jquery', 'underscore', 'backbone'],
+		'views/AdminPageView': ['config', 'jquery', 'underscore', 'backbone'],
 		
-		'views/FormView': 	[
+		'views/AdminFormView': 	[
 			'config', 
 			'jquery',
 			'underscore', 

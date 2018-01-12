@@ -19,27 +19,47 @@ define([
      * @augments AbstractTplView
      */
 	var AdminTplView = AbstractTplView.extend({
+    /** @lends views/AdminTplView.prototype **/
 
+        /**
+         * @property {String} id
+         * Element id for main template view container.
+         */
 		id: app.pageContentId,
-		
-		deferred: null,
-		
-		template: null,
 
-        templateUrl: '',
-
+        /**
+         * @property {Boolean} useJqm
+         * True if main template view and/or content view uses jQuery Mobile.
+         */
         useJqm: true,
 
+        /**
+         * @property {Object} events
+         * Backbone events utilized in the main template view.
+         */
 		events: {
 
 		},
 
+
+        /**
+         * Overwrites AbstractTplView.initialize() setting the template retrieval URL
+         * for the main admin template.
+         *
+         * @param {Object} options - View options (Backbone).
+         */
 		initialize: function(options) {
             this.templateUrl = app.adminTemplateURL;
             AbstractTplView.prototype.initialize.call(this, options);
 		},
 
 
+        /**
+         * Renders the template content view. If loaded by AJAX, will wait until
+         * resolved to render.
+         *
+         * @param {Backbone.View} view - The Backbone content view.
+         */
         gotoContentView: function(view) {
             if ( this.onInit(this.gotoContentView, view) === false) {
                 return false;
@@ -59,12 +79,22 @@ define([
         },
 
 
+        /**
+         * Shows or hides the loading HTML between page transitions.
+         *
+         * @param {String} showHide - If "hide" will hide the loading HTML, otherwise will show it.
+         */
         loading: function(showHide) {
             var task = showHide === 'hide' ? 'hide' : 'show';
             $.mobile.loading(task);
         },
 
 
+        /**
+         * Loads CSS/Javascript includes for the page, including the content view. Note,
+         * will load content view includes separately if content view is updated.
+         *
+         */
         loadScripts: function() {
 		    if ( _.isUndefined(this.contentView.scripts) ) {
 		        return;
@@ -85,6 +115,12 @@ define([
         },
 
 
+        /**
+         * Called before this.render() which sets the CSS/Javascript scrips and HTML
+         * blocks in the main template. Also initializes the menu and search panels.
+         *
+         * @param {Object} data - Template data to render on page.
+         */
         postInit: function(data) {
             if ( _.isEmpty(data) === false ) {
                 this.useJqm = data.useJqm || this.useJqm;
@@ -128,7 +164,14 @@ define([
                 }).filterable();
             });
         },
-		
+
+
+        /**
+         * Overwrites AbstractTplView.render() and DOES NOT remove this view from the page DOM.
+         * Instead clears the template of CSS/Javascript includes and HTML blocks and resets
+         * the main app template.
+         *
+         */
 		remove: function() {
             this.scriptLoader.unload();
 			this.closeContentView();
@@ -147,6 +190,12 @@ define([
 		},
 
 
+        /**
+         * Sets javascript and CS scripts, content blocks and renders the Backbone.View
+         * content in the DOM.
+         *
+         * @param {Backbone.View} view - The Backbone content view.
+         */
         transitionPage: function(view) {
             this.contentView = view;
             this.listenTo(this.contentView, 'view:update:start', this.loading);

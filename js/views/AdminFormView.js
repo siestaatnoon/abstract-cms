@@ -6,7 +6,7 @@ define([
 	'classes/ScriptLoader',
 	'classes/Utils'
 ], function(app, $, _, Backbone, ScriptLoader, Utils) {
-	var FormView = Backbone.View.extend({
+	var AdminFormView = Backbone.View.extend({
 
 		id: '#tpl-form-view',
 		
@@ -215,5 +215,5 @@ define([
 
 	});
 	
-	return FormView;
+	return AdminFormView;
 });

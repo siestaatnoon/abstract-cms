@@ -10,13 +10,13 @@ define([
 	'models/AdminModel',
 	'collections/AdminCollection',
 	'views/AdminAuthView',
-	'views/PageView',
-	'views/FormView',
+	'views/AdminPageView',
+	'views/AdminFormView',
 	'views/AdminListView',
 	'views/errors/AdminErrorView',
     'routers/AbstractRouter'
 ], function(app, $, _, Backbone, AdminModuleLoader, FormValidator, PageLoader, Utils, AdminModel,
-	AdminCollection, AdminAuthView, PageView, FormView, AdminListView, AdminErrorView, AbstractRouter) {
+	AdminCollection, AdminAuthView, AdminPageView, AdminFormView, AdminListView, AdminErrorView, AbstractRouter) {
 
 	/**
 	 * Extends AbstractRouter routing all URLs of the admin (CMS) pages.
@@ -33,8 +33,8 @@ define([
 	 * @requires models/AdminModel
 	 * @requires collections/AdminCollection
 	 * @requires views/AdminAuthView
-	 * @requires views/PageView
-	 * @requires views/FormView
+	 * @requires views/AdminPageView
+	 * @requires views/AdminFormView
 	 * @requires views/AdminListView
      * @requires views/errors/AdminErrorView
      * @requires routers/AbstractRouter
@@ -247,7 +247,7 @@ define([
                                 url: data.model_url,
                                 fields: data.fields
                             });
-                            view = new FormView({
+                            view = new AdminFormView({
                                 model: model,
                                 bootstrapModel: data.model,
                                 template: data.template,
@@ -293,7 +293,7 @@ define([
 			app.AppView.render();
 
 			if ( _.isUndefined(app.appCache[module]) || _.isUndefined(app.appCache[module][slug]) ) {
-				view = new PageView({
+				view = new AdminPageView({
 					slug: slug,
 					pageLoader: app.PageLoader
 				});
