@@ -7,7 +7,7 @@ define([
 ], function(app, $, _, Backbone, AbstractTplView) {
 
     /**
-     * Superclass for main template view in CMS and frontent.
+     * Subclass for main template view in admin.
      *
      * @exports models/AbstractModel
      * @requires config
@@ -19,23 +19,23 @@ define([
      * @augments AbstractTplView
      */
 	var AdminTplView = AbstractTplView.extend({
-    /** @lends views/AdminTplView.prototype **/
+    /** @lends AdminTplView.prototype **/
 
         /**
          * @property {String} id
-         * Element id for main template view container.
+         * Element id for main template view container
          */
 		id: app.pageContentId,
 
         /**
          * @property {Boolean} useJqm
-         * True if main template view and/or content view uses jQuery Mobile.
+         * True if main template view and/or content view uses jQuery Mobile
          */
         useJqm: true,
 
         /**
          * @property {Object} events
-         * Backbone events utilized in the main template view.
+         * Backbone events utilized in the main template view
          */
 		events: {
 
@@ -46,7 +46,7 @@ define([
          * Overwrites AbstractTplView.initialize() setting the template retrieval URL
          * for the main admin template.
          *
-         * @param {Object} options - View options (Backbone).
+         * @param {Object} options - View options (Backbone)
          */
 		initialize: function(options) {
             this.templateUrl = app.adminTemplateURL;
@@ -58,7 +58,7 @@ define([
          * Renders the template content view. If loaded by AJAX, will wait until
          * resolved to render.
          *
-         * @param {Backbone.View} view - The Backbone content view.
+         * @param {Backbone.View} view - The Backbone content view
          */
         gotoContentView: function(view) {
             if ( this.onInit(this.gotoContentView, view) === false) {
@@ -82,7 +82,7 @@ define([
         /**
          * Shows or hides the loading HTML between page transitions.
          *
-         * @param {String} showHide - If "hide" will hide the loading HTML, otherwise will show it.
+         * @param {String} showHide - If "hide" will hide the loading HTML, otherwise will show it
          */
         loading: function(showHide) {
             var task = showHide === 'hide' ? 'hide' : 'show';
@@ -119,7 +119,7 @@ define([
          * Called before this.render() which sets the CSS/Javascript scrips and HTML
          * blocks in the main template. Also initializes the menu and search panels.
          *
-         * @param {Object} data - Template data to render on page.
+         * @param {Object} data - Template data to render on page
          */
         postInit: function(data) {
             if ( _.isEmpty(data) === false ) {
@@ -191,10 +191,10 @@ define([
 
 
         /**
-         * Sets javascript and CS scripts, content blocks and renders the Backbone.View
+         * Sets javascript and CSS scripts, content blocks and renders the Backbone.View
          * content in the DOM.
          *
-         * @param {Backbone.View} view - The Backbone content view.
+         * @param {Backbone.View} view - The Backbone content view
          */
         transitionPage: function(view) {
             this.contentView = view;

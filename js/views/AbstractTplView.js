@@ -19,12 +19,12 @@ define([
      * @augments Backbone.View
      */
     var AbstractTplView = Backbone.View.extend({
-    /** @lends views/AbstractTplView.prototype **/
+    /** @lends AbstractTplView.prototype **/
 
         /**
          * @property {Object} DEFAULT_SCRIPTS
          * Default object containing CSS and Javascript script includes as well as
-         * Javascript onload and unload code blocks.
+         * Javascript onload and unload code blocks
          */
         DEFAULT_SCRIPTS: {
             css: [],
@@ -37,105 +37,105 @@ define([
 
         /**
          * @property {String} id
-         * Element id for main template view container.
+         * Element id for main template view container
          */
         id: app.pageContentId,
 
         /**
          * @property {Array} blocks
-         * Array containing HTML blocks for main template view or content view.
+         * Array containing HTML blocks for main template view or content view
          */
         blocks: [],
 
         /**
          * @property {Array} blocksApp
-         * Storage for HTML blocks in main template view.
+         * Storage for HTML blocks in main template view
          */
         blocksApp: [],
 
         /**
          * @property {Array} blocksView
-         * Storage for HTML blocks in template content view.
+         * Storage for HTML blocks in template content view
          */
         blocksView: [],
 
         /**
          * @property {Backbone.View} contentView
-         * View that is updated/changed when navigating to other pages.
+         * View that is updated/changed when navigating to other pages
          */
         contentView: {},
 
         /**
          * @property {Object} contentScripts
-         * CSS and Javascript scripts include in the content view.
+         * CSS and Javascript scripts include in the content view
          */
         contentScripts: {},
 
         /**
          * @property {jqXHR} deferred
          * The jQuery promise object returned returned in render() function if view retrieving
-         * page data by AJAX.
+         * page data by AJAX
          */
         deferred: null,
 
         /**
          * @property {Boolean} hasLoadedScripts
          * True if main template view has loaded CSS and Javascript includes as to not
-         * repeat loading upon updating the content view.
+         * repeat loading upon updating the content view
          */
         hasLoadedScripts: false,
 
         /**
          * @property {Array} headSelectors
-         * HoldsjQuery selector strings for current page head tag elements.
+         * Holds jQuery selector strings for current page head tag elements
          */
         headSelectors: [],
 
         /**
          * @property {String} loadingId
-         * Element id for "loading" HTML used in page transitions.
+         * Element id for "loading" HTML used in page transitions
          */
         loadingId: app.loadingId,
 
         /**
          * @property {String} requireId
-         * Element id for the RequireJS script include.
+         * Element id for the RequireJS script include
          */
         requireId: app.requireJsId,
 
         /**
          * @property {Object} contentScripts
-         * CSS and Javascript scripts include in the main template view.
+         * CSS and Javascript scripts include in the main template view
          */
         scripts: {},
 
         /**
          * @property {classes/ScriptLoader} scriptLoader
-         * The class utilized to load CSS and Javascript includes.
+         * The class utilized to load CSS and Javascript includes
          */
         scriptLoader: null,
 
         /**
          * @property {Object} template
-         * Object utilized to render a template using the Underscore yemplate function.
+         * Object utilized to render a template using the Underscore yemplate function
          */
         template: null,
 
         /**
          * @property {String} templateURL
-         * API url to retrieve main template data.
+         * API url to retrieve main template data
          */
         templateUrl: '',
 
         /**
          * @property {Boolean} useJqm
-         * True if main template view and/or content view uses jQuery Mobile.
+         * True if main template view and/or content view uses jQuery Mobile
          */
         useJqm: app.useFrontJqm,
 
         /**
          * @property {Object} events
-         * Backbone events utilized in the main template view.
+         * Backbone events utilized in the main template view
          */
         events: {
 
@@ -146,7 +146,7 @@ define([
          * Initializes the main template view by retrieving the data via AJAX and
          * setting the Backbone view element.
          *
-         * @param {Object} options - View options (Backbone).
+         * @param {Object} options - View options (Backbone)
          */
         initialize: function(options) {
             this.setScriptLoader();
@@ -218,7 +218,7 @@ define([
          * Renders the template content view. If loaded by AJAX, will wait until
          * resolved to render.
          *
-         * @param {Backbone.View} view - The Backbone content view.
+         * @param {Backbone.View} view - The Backbone content view
          */
         gotoContentView: function(view) {
             if ( this.onInit(this.gotoContentView, view) === false) {
@@ -247,7 +247,7 @@ define([
         /**
          * Shows or hides the loading HTML between page transitions.
          *
-         * @param {String} showHide - If "hide" will hide the loading HTML, otherwise will show it.
+         * @param {String} showHide - If "hide" will hide the loading HTML, otherwise will show it
          */
         loading: function(showHide) {
             var task = showHide === 'hide' ? 'hide' : 'show';
@@ -324,7 +324,7 @@ define([
          * Called before this.render() which sets the CSS/Javascript scrips and HTML
          * blocks in the main template.
          *
-         * @param {Object} data - Template data to render on page.
+         * @param {Object} data - Template data to render on page
          */
         postInit: function(data) {
             if ( _.isEmpty(data) === false ) {
@@ -394,9 +394,9 @@ define([
         /**
          * Loads HTML block(s) for the main template view and content view.
          *
-         * @param {Array} blocks - Array of HTML block configurations.
+         * @param {Array} blocks - Array of HTML block configurations
          * @param {Array} storage - Storage array for resulting jQuery objects from blocks, used to
-         * update, remove etc.
+         * update, remove etc
          */
         setBlocks: function(blocks, storage) {
             if ( _.isEmpty(blocks) ) {
@@ -595,7 +595,7 @@ define([
          * Sets javascript and CS scripts, head tags, content blocks and renders the Backbone.View
          * content in the DOM.
          *
-         * @param {Backbone.View} view - The Backbone content view.
+         * @param {Backbone.View} view - The Backbone content view
          */
         transitionPage: function(view) {
             this.contentView = view;
