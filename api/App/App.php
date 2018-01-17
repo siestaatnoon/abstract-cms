@@ -399,6 +399,43 @@ class App {
 		
 		return isset($this->lang[$name]) ? $this->lang[$name] : $name;
 	}
+
+
+    /**
+     * lang_text
+     *
+     * Returns the text of a language translation (.txt) file from the current locale from the
+     * ./App/Lang/[lang]/[country]/text directory with a given filename parameter. This method
+     * is used for text translations for HTML or, in general, text too long to be placed in the
+     * main translation file.
+     *
+     * @access public
+     * @param string $filename The language file name, optionally minus .txt extension
+     * @return string The corresponding text from $filename or an empty string if
+     * $filename not found or parameter is empty
+     */
+    public function lang_text($filename) {
+        if ( empty($filename) ) {
+            return '';
+        }
+
+        $text = '';
+        $locale = empty($this->config['locale']) ? '' : $this->config['locale'];
+        $parts = explode('_', $locale);
+        if ( count($parts) === 2 ) {
+            $ext_check = strtolower( substr($filename, -4) );
+            if ($ext_check !== '.txt') {
+                $filename .= '.txt';
+            }
+            $dir =  dirname(__FILE__).DIRECTORY_SEPARATOR.'Lang'.DIRECTORY_SEPARATOR.$parts[0];
+            $dir .= DIRECTORY_SEPARATOR.$parts[1].DIRECTORY_SEPARATOR.'text'.DIRECTORY_SEPARATOR;
+            if ( is_file($dir.$filename) ) {
+                $text = file_get_contents($dir.$filename);
+            }
+        }
+
+        return empty($text) ? '' : $text;
+    }
 	
 	
 	/**
