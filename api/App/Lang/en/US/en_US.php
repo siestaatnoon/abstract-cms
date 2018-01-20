@@ -24,6 +24,7 @@ $lang['field.multiselect'] 	        = 'Dropdown Menu (multiple selections)';
 $lang['field.name_values_widget']	= 'Name/Value Pairs Widget';
 $lang['field.object'] 	            = 'Object Data (PHP/Javascript/JSON)';
 $lang['field.password'] 	        = 'Password Field';
+$lang['field.provinces'] 	        = 'Provinces Dropdown (International)';
 $lang['field.radio'] 		        = 'Radio Buttons';
 $lang['field.regions'] 		        = 'U.S. States/Canadian Provinces Dropdown';
 $lang['field.relation'] 	        = 'Database Relation';

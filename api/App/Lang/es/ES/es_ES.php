@@ -24,6 +24,7 @@ $lang['field.multiselect'] 	        = 'Menú desplegable (selección multiple)';
 $lang['field.name_values_widget']   = 'Herramienta pares nombre/valor';
 $lang['field.object'] 	            = 'Data de objeto (PHP/Javascript/JSON)';
 $lang['field.password'] 	        = 'Campo de contranseña';
+$lang['field.provinces'] 	        = 'Menú desplegable de provincias de España';
 $lang['field.radio'] 		        = 'Botones radio';
 $lang['field.regions'] 		        = 'Menú desplegable de comunidades autónomas de España';
 $lang['field.relation'] 	        = 'Relación de base de datos';
