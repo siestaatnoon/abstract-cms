@@ -173,7 +173,7 @@ class Form {
 			$errors[] = '$config[module_name] empty, must be name of module';
 		}
 		if ( empty($config['fields']) || ! is_array($config['fields']) ) {
-			$errors[] = '$config[fields] empty, must be array of \\App\\Form\\Field\\Form_field';
+			$errors[] = '$config[fields] empty, must be array of \\App\\Html\\Form\\Form\\Field\\Form_field';
 		}
 		if ( ! empty($errors) ) {
 			$message = 'Invalid param (array) $config: '.implode("\n", $errors);

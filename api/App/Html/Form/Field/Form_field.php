@@ -685,6 +685,9 @@ class Form_field {
             case 'object' :
                 $html = $this->field_object();
                 break;
+            case 'provinces' :
+                $html = $this->field_provinces();
+                break;
 			case 'regions' :
 				$html = $this->field_regions();
 				break;
