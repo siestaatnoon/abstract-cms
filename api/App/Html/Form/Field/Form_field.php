@@ -210,23 +210,30 @@ class Form_field {
 		$errors = array();
 	
 		if ( empty($config['field_type']) || ! is_array($config['field_type']) ) {
-			$errors[] = '$config[field_type] empty, must be array of field parameters';
+            $errors[] = error_str('error.param.array', array('$config[field_type]', 'field parameters'));
 		} else if ( $this->validate_params($config) === false) {
-			$errors[] = '$config[field_type] contains invalid field parameters';
+            $errors[] = error_str('error.param.fields', array('$config[field_type]'));
 		} else {
 			$this->type = key($config['field_type']);
 			$this->params = current($config['field_type']);
 		}
 
 		if ( empty($config['label']) && ! in_array($this->type, array('hidden', 'object') ) ) {
-			$errors[] = '$config[label] empty, must be label tag text for field';
+            $errors[] = error_str('error.param.field.label', array('$config[label]'));
 		}
 		if ( empty($config['name']) ) {
-			$errors[] = '$config[name] empty, must be field name attribute';
+            $errors[] = error_str('error.param.field.attr', array('$config[name]'));
+
 		}
 		if ( empty($config['module']) ) {
-			$errors[] = '$config[module] empty, must be module name (slug) for field';
+            $errors[] = error_str('error.param.module', array('$config[module]'));
 		}
+
+        if ( ! empty($errors) ) {
+            $message = error_str('error.type.param.invalid', array('(array) $config: '));
+            $message .= implode(",\n", $errors);
+            //throw new AppException($message, AppException::ERROR_FATAL);
+        }
 		
 		$label = empty($config['label']) ? '' : $config['label'];
 		if ( ! empty($config['lang']) ) {
@@ -302,9 +309,9 @@ class Form_field {
 			$module = Module::load($this->data['module']);
 			$relations = $module->get_relations();
 			if ( empty($relations[$relation_name]) ) {
-				$message = 'Invalid relation ['.$relation_name.'] in module ['.$this->params['module'].'] ';
-				$message .= 'for field type "relation" ['.$this->name.']';
-				throw new AppException($message, AppException::ERROR_FATAL);
+                $message = error_str('error.type.relation', array($relation_name, $this->data['module'])).' ';
+                $message .= error_str('error.for.field.type', array('[relation]'));
+                throw new AppException($message, AppException::ERROR_FATAL);
 			}
 
 			$relation = $relations[$relation_name];
@@ -905,9 +912,10 @@ class Form_field {
 			empty($this->params['config_key']) ) &&
 			empty($this->params['lang_config']) && 
 			empty($this->params['module']) ) {
-			$message = 'Param $config[type] in __construct() missing one of the following for field type ';
-			$message .= '"'.$this->type.'": (array) values, (string) config_file + (string) config_key, ';
-			$message .= '(string) lang_config, (string) module ['.$this->name.']';
+		    $msg_part = '['.$this->type.']: (array) values, (string) config_file + (string) config_key, ';
+            $msg_part .= '(string) lang_config, (string) module ['.$this->name.']';
+		    $message = error_str('error.param.field.type', array('$config[type] in __construct()')).' ';
+		    $message .= error_str('error.for.field.type', array($msg_part));
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 
@@ -1013,13 +1021,14 @@ class Form_field {
 		
 		$errors = array();
 		if ( ! isset($this->params['is_ajax']) ) {
-			$errors[] = '[is_ajax] var not defined ['.$this->name.']';
+            $errors[] = error_str('error.param.undefined', array('is_ajax', $this->name));
 		} else if ( empty($this->params['is_ajax']) && empty($this->params['html']) && empty($this->params['template']) ) {
-			$errors[] = '[html] or [template] param HTML must be defined and not empty ['.$this->name.']';
+            $errors[] = error_str('error.param.undefined', array('html] or [template', $this->name));
 		} 
 		if ( ! empty($errors) ) {
-			$message = 'Invalid param $config[type] in __construct() for field type "custom": ';
-			$message .= implode("\n", $errors).' ['.$this->name.']';
+            $message = error_str('error.type.param.invalid', array('$config[type] in __construct()')).' ';
+            $message .= error_str('error.for.field.type', array('custom')).': ';
+			$message .= implode("\n", $errors);
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 		
@@ -1183,7 +1192,8 @@ class Form_field {
 		if ($this->type !== 'info') {
 			return '';
 		} else if ( ! isset($this->params['content']) ) {
-			$message = 'Param $config[type] in __construct() missing parameter [content] for field type "info" ['.$this->name.']';
+            $message = error_str('error.type.param.missing', array('[content]')).' ';
+            $message .= error_str('error.for.field.type', array('[info]'));
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 
@@ -1453,9 +1463,10 @@ NVP;
 			empty($this->params['dir']) &&
 			empty($this->params['lang_config']) && 
 			empty($this->params['module']) ) {
-			$message = 'Param $config[type] in __construct() missing one of the following for field type "radio": ';
-			$message .= '(array) values, (string) config_file + (string) config_key, (string) dir, ';
-			$message .= '(string) lang_config, (string) module ['.$this->name.']';
+            $msg_part = '['.$this->type.']: (array) values, (string) config_file + (string) config_key, (string) dir, ';
+            $msg_part .= '(string) lang_config, (string) module ['.$this->name.']';
+            $message = error_str('error.param.field.type', array('$config[type] in __construct()')).' ';
+            $message .= error_str('error.for.field.type', array($msg_part));
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 
@@ -1541,19 +1552,20 @@ NVP;
 
         $errors = array();
 		if (empty($this->params['module']) ) {          //note: module of relation
-			$errors[] = '[module] relation name not defined';
+            $errors[] = error_str('error.param.relation', array('[module]'));
 		}
 		if ( ! empty($errors) ) {
-			$message = 'Invalid param $config[type] in __construct() for field type "relation": ';
-			$message .= implode("\n", $errors).' ['.$this->name.']';
+            $msg_part = '['.$this->type.']: '.implode("\n", $errors).', ['.$this->name.']';
+            $message = error_str('error.param.field.type', array('$config[type] in __construct()')).' ';
+            $message .= error_str('error.for.field.type', array($msg_part));
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 
 		$module = Module::load($this->data['module']); //note: module containing this field
 		$relations = $module->get_relations();
 		if ( empty($relations[$this->name]) ) {
-			$message = 'Invalid relation ['.$this->name.'] in module ['.$this->data['module'].'] ';
-			$message .= 'for field type "relation" ['.$this->name.']';
+            $message = error_str('error.type.relation', array($this->name, $this->data['module'])).' ';
+            $message .= error_str('error.for.field.type', array('['.$this->type.']'));
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 		
@@ -1666,9 +1678,10 @@ NVP;
 			empty($this->params['dir']) && 
 			empty($this->params['lang_config']) && 
 			empty($this->params['module']) ) {
-			$message = 'Param $config[type] in __construct() missing one of the following for field type ';
-			$message .= '"'.$this->type.'": (array) values, (string) config_file + (string) config_key, ';
-			$message .= '(string) dir, (string) lang_config, (string) module ['.$this->name.']';
+            $msg_part = '['.$this->type.']: (array) values, (string) config_file + (string) config_key, (string) dir, ';
+            $msg_part .= '(string) lang_config, (string) module ['.$this->name.']';
+            $message = error_str('error.param.field.type', array('$config[type] in __construct()')).' ';
+            $message .= error_str('error.for.field.type', array($msg_part));
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 		
@@ -1837,7 +1850,8 @@ NVP;
 		if ( ! in_array($this->type, $valid_types) ) {
 			return '';
 		} else if ( empty($this->params['config_name']) ) {
-			$message = 'Param $config[type] in __construct() missing [config_name] for field type "'.$this->type.'" ['.$this->name.']';
+            $message = error_str('error.type.param.missing', array('[config_name] in parameter $config[type]')).' ';
+            $message .= error_str('error.for.field.type', array('['.$this->type.']'));
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 	
@@ -1845,7 +1859,8 @@ NVP;
 		$cfg_name = $this->params['config_name'];
 		$config = $this->App->upload_config($cfg_name, $is_image);
 		if ( empty($config) ) {
-			$message = 'Upload configuration ['.$this->type.'] missing for field "'.$this->name.'" ['.$this->name.']';
+            $message = error_str('error.type.upload.config', array('['.$cfg_name.']')).' ';
+            $message .= error_str('error.for.field.type', array('['.$this->type.']'));
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 		
@@ -2125,7 +2140,8 @@ HTML;
 	 */
 	protected function values_config($config_name, $config_index=false, $sort=false) {
 		if ( empty($config_name) ) {
-		    $message = 'Param $config_name empty, must be name of config file ['.$this->name.']';
+            $msg_part = error_str('error.param.config', array('$config_name', ', ['.$this->name.']'));
+            $message = error_str('error.type.param.empty', array($msg_part));
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 		
@@ -2174,8 +2190,10 @@ HTML;
 	 * @throws \App\Exception\AppException if $dir param empty or directory not found
 	 */
 	protected function values_dir($dir, $sort=true, $show_ext, $orig_dir='') {
-		if ( empty($dir) ) { 
-			throw new AppException('Param $dir empty, must be name of directory ['.$this->name.']', AppException::ERROR_FATAL);
+		if ( empty($dir) ) {
+            $msg_part = error_str('error.param.directory', array('$dir', ': ['.$this->name.']'));
+            $message = error_str('error.type.param.empty', array($msg_part));
+			throw new AppException($message, AppException::ERROR_FATAL);
 		} else if ( empty($orig_dir) ) {
             $orig_dir = $dir;
         }
@@ -2186,7 +2204,7 @@ HTML;
 		}
 		
 		if ( ! is_dir(WEB_ROOT.$dir) ) {
-			$error = 'Param $dir directory not found ['.$dir.'], must be web root relative path ['.$this->name.']';
+            $error = error_str('error.type.directory', array('$dir', $dir, ': ['.$this->name.']'));
 			throw new AppException($error, AppException::ERROR_FATAL);
 		}
 
@@ -2236,7 +2254,9 @@ HTML;
      */
     protected function values_dir_filename($dir, $sort=true, $show_ext=true) {
         if ( empty($dir) ) {
-            throw new AppException('Param $dir empty, must be name of directory ['.$this->name.']', AppException::ERROR_FATAL);
+            $msg_part = error_str('error.param.directory', array('$dir', ': ['.$this->name.']'));
+            $message = error_str('error.type.param.empty', array($msg_part));
+            throw new AppException($message, AppException::ERROR_FATAL);
         } else if ( empty($orig_dir) ) {
             $orig_dir = $dir;
         }
@@ -2247,7 +2267,7 @@ HTML;
         }
 
         if ( ! is_dir(WEB_ROOT.$dir) ) {
-            $error = 'Param $dir directory not found ['.$dir.'], must be web root relative path ['.$this->name.']';
+            $error = error_str('error.type.directory', array('$dir', $dir, '['.$this->name.']'));
             throw new AppException($error, AppException::ERROR_FATAL);
         }
 
@@ -2288,9 +2308,10 @@ HTML;
 	 * @throws \App\Exception\AppException if $lang_file param empty
 	 */
 	protected function values_lang($lang_file, $sort=false) {
-		if ( empty($lang_file) ) { 
-			$error = 'Param $lang_file empty, must be name of locale lang file ['.$this->name.']';
-			throw new AppException($error, AppException::ERROR_FATAL);
+		if ( empty($lang_file) ) {
+            $msg_part = error_str('error.param.lang', array('$lang_file', ': ['.$this->name.']'));
+            $message = error_str('error.type.param.empty', array($msg_part));
+			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 		
 		$values = $this->App->load_lang($lang_file);
@@ -2317,8 +2338,8 @@ HTML;
 	 */
 	protected function values_model($model, $sort=false) {
 		$error = '';
-		if ($model instanceof \App\Model\Model === false) { 
-			$error = 'Param $model must be of type \\App\\Model\\Model ['.$this->name.']';
+		if ($model instanceof \App\Model\Model === false) {
+            $error = error_str('error.type.type', array('$model', '\\App\\Model\\Model'));
 			throw new AppException($error, AppException::ERROR_FATAL);
 		}
 

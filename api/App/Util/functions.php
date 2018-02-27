@@ -39,5 +39,35 @@ if ( ! function_exists('__'))
     }
 }
 
+
+/**
+ * error_str
+ *
+ * Returns an I18n error string given a key from the current lang locale file. If
+ * the error text contains "%s" parameters, the second parameter is an array of
+ * corresponding values used with the PHP vsprintf() function.
+ *
+ * @param string $str The lang error key
+ * @param array $args The string parameters to add to error string
+ * @return string The I18n error string in the current lang locale or empty
+ * string if key not found or invalid
+ */
+if ( ! function_exists('error_str'))
+{
+    function error_str($key, $args=array()) {
+        if ( empty($key) || substr($key, 0, 6) !== 'error.' ) {
+            return '';
+        }
+
+        $App = App::get_instance();
+        $i18n = $App->lang($key);
+        if ( ! empty($i18n) && ! empty($args) ) {
+            $i18n = vsprintf($i18n, $args);
+        }
+
+        return $i18n;
+    }
+}
+
 /* End of file functions.php */
 /* Location: ./App/Util/functions.php */

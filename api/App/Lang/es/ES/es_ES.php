@@ -179,5 +179,28 @@ $lang['validate.natural_not_zero'] 	= 'Valor de número entero más de cero';
 $lang['validate.strong_password'] 	= 'Contraseña fuerte';
 $lang['validate.custom'] 			= 'Validación customizado';
 
+// Errors
+$lang['error.for.field.type'] 		= 'para tipo del campo %s';
+$lang['error.param.general']        = '%s debe ser %s';
+$lang['error.param.array']          = '%s debe ser array de %s';
+$lang['error.param.config']         = '%s debe ser el nombre del fichero de config %s';
+$lang['error.param.directory']      = '%s debe ser la ruta del directorio %s';
+$lang['error.param.missing']        = '%s falta parametro [%s]';
+$lang['error.param.module']         = '%s debe ser identificador de modulo';
+$lang['error.param.field.attr']     = '%s debe ser nombre del atributo del campo';
+$lang['error.param.field.label']    = '%s debe ser texto de la etiqueta <label>';
+$lang['error.param.field.type']     = '%s falta uno de los siguientes';
+$lang['error.param.fields']         = '%s contains parametros de campo inválidos';
+$lang['error.param.lang']           = '%s debe ser nombre del fichero del locale "lang" %s';
+$lang['error.param.relation']       = '%s no definido el nombre del relación del modulo';
+$lang['error.param.undefined']      = '[%s] parametro no definido [%s]';
+$lang['error.type.directory']       = 'Parametro %s no se encuentra diretorio [%s], debe ser la ruta relativa a la raíz %s';
+$lang['error.type.param.empty']     = 'Parametro vacío %s';
+$lang['error.type.param.invalid'] 	= 'Parametro inválido %s';
+$lang['error.type.param.missing']   = 'Falta parametro %s';
+$lang['error.type.relation']        = 'Relación inválido [%s] en modulo [%s]';
+$lang['error.type.type']            = 'Parametro %s debe ser del tipo %s';
+$lang['error.type.upload.config']   = 'Configuración de la carga del ficheros inválido %s';
+
 /* Fin del fichero es_ES.php */
 /* Ubicación: ./App/Lang/es/ES/es_ES.php */

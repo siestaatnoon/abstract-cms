@@ -179,5 +179,28 @@ $lang['validate.natural_not_zero'] 	= 'Integer value greater than zero';
 $lang['validate.strong_password'] 	= 'Strong password';
 $lang['validate.custom'] 			= 'Custom validation';
 
+// Errors
+$lang['error.for.field.type'] 		= 'for field type %s';
+$lang['error.param.general']        = '%s must be %s';
+$lang['error.param.array']          = '%s must be array of %s';
+$lang['error.param.config']         = '%s must be name of config file %s';
+$lang['error.param.directory']      = '%s must be the directory path %s';
+$lang['error.param.missing']        = '%s missing parameter [%s]';
+$lang['error.param.module']         = '%s must be module slug';
+$lang['error.param.field.attr']     = '%s must be field name attribute';
+$lang['error.param.field.label']    = '%s must be label tag text for field';
+$lang['error.param.field.type']     = '%s missing one of the following';
+$lang['error.param.fields']         = '%s contains invalid field parameters';
+$lang['error.param.lang']           = '%s must be name of locale lang file %s';
+$lang['error.param.relation']       = '%s relation module name not defined';
+$lang['error.param.undefined']      = '[%s] parameter must be defined [%s]';
+$lang['error.type.directory']       = 'Parameter %s directory not found [%s], must be web root relative path %s';
+$lang['error.type.param.empty']     = 'Empty parameter %s';
+$lang['error.type.param.invalid'] 	= 'Invalid parameter %s';
+$lang['error.type.param.missing']   = 'Missing parameter %s';
+$lang['error.type.relation']        = 'Invalid relation [%s] in module [%s]';
+$lang['error.type.type']            = 'Parameter %s must be of type %s';
+$lang['error.type.upload.config']   = 'Invalid upload configuration %s';
+
 /* End of file en_US.php */
 /* Location: ./App/Lang/en/US/en_US.php */

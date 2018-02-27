@@ -764,13 +764,20 @@ $testo_data = array(
     'is_active' 	=> 1
 );
 
-
-//$parts = Template::get_content('home', 'default', NULL, true);
-//print_r($parts);
-//echo Template::get('home', 'default');
-$parts = Template::get_content('page', 'test-page', array(), true);
-print_r($parts);
-
+use App\Html\Form\Field\Form_field;
+$config = array(
+    'name' => 'gizmos',
+    'module' => 'gizmos',
+    'field_type' => array(
+        'image' => array(
+            'module' => 'widgetz',
+            'config_name' => 'testorooni'
+        )
+    ),
+    'is_filter' => true
+);
+$FF = new Form_field($config);
+$FF->html();
 
 /*
 
