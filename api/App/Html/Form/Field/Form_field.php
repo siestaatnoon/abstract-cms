@@ -232,7 +232,7 @@ class Form_field {
         if ( ! empty($errors) ) {
             $message = error_str('error.type.param.invalid', array('(array) $config: '));
             $message .= implode(",\n", $errors);
-            //throw new AppException($message, AppException::ERROR_FATAL);
+            throw new AppException($message, AppException::ERROR_FATAL);
         }
 		
 		$label = empty($config['label']) ? '' : $config['label'];

@@ -11,12 +11,16 @@ use App\App;
  * parameter is returned.
  *
  * @param string $str The lang key or en_US word for I18n value
- * @return string The I18n value in the current lang locale or $str param if
- * value not found
+ * @return string The I18n value in the current lang locale OR
+ * $str param if value not found or invalid
  */
 if ( ! function_exists('__'))
 {
     function __($str) {
+        if ( empty($str) || substr($str, 0, 6) === 'error.' ) {
+            return $str;
+        }
+
         $App = App::get_instance();
 
         // first check main lang file
