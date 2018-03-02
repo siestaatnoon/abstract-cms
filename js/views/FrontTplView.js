@@ -39,6 +39,18 @@ define([
         loadingEl: 'body',
 
         /**
+         * @property {Function} loadingHideFunc
+         * Custom function for after page transition (e.g. hide loading spinner)
+         */
+        loadingHideFunc: null,
+
+        /**
+         * @property {Function} loadingShowFunc
+         * Custom function for initializing a page transition (e.g. show loading spinner)
+         */
+        loadingShowFunc: null,
+
+        /**
          * @property {String} tplParams
          * Parameters for template in current content view
          */
@@ -82,7 +94,6 @@ define([
          *
          */
         closeContentView: function() {
-            this.setLoadingElementId(false);
             this.loading('show');
 
             // remove content view CSS/JS
@@ -114,15 +125,38 @@ define([
             if (this.useJqm) {
                 $.mobile.loading(task);
             } else if (task === 'show') {
-                if ( $(this.loadingId).length ) {
-                    return;
+                if ( _.isFunction(this.loadingShowFunc) ) {
+                    this.loadingShowFunc.call(this);
+                } else {
+                    if ( $(this.loadingId).length ) {
+                        return;
+                    }
+                    var id = this.loadingId.substr(1);
+                    $('<div/>').attr('id', id).appendTo(this.loadingEl);
                 }
-                var id = this.loadingId.substr(1);
-                $('<div/>').attr('id', id).appendTo(this.loadingEl);
             } else {
-                $(this.loadingId).fadeOut(500, function() {
-                    $(this).remove();
-                });
+                if ( _.isFunction(this.loadingHideFunc) ) {
+                    this.loadingHideFunc.call(this);
+                } else {
+                    $(this.loadingId).fadeOut(300, function () {
+                        $(this).remove();
+                    });
+                }
+            }
+        },
+
+
+        /**
+         * Sets the loading element custom show and hide functionality for page transitions.
+         * Note that both parameters must be defined for use.
+         *
+         * @param {Function} showCallback - Defined function for showing the loading element.
+         * @param {Function} hideCallback - Defined function for hiding the loading element.
+         */
+        setLoading: function(showCallback, hideCallback) {
+            if ( _.isFunction(showCallback) && _.isFunction(hideCallback) ) {
+                this.loadingShowFunc = showCallback;
+                this.loadingHideFunc = hideCallback;
             }
         },
 
@@ -180,24 +214,12 @@ define([
             //
             // (loading doesn't seem to show if placed above)
             //
-            this.setLoadingElementId(true);
             this.loading('show');
 
             if (this.contentView.newTpl.blocks) {
                 this.setBlocks(this.contentView.newTpl.blocks, this.blocksApp);
             }
             this.trigger('template:reset:end');
-        },
-
-
-        /**
-         * Sets the DOM loading element to place the loader widget while the
-         * page transition occurs.
-         *
-         * @param {Boolean} isNewPage - True if new page template to be loaded
-         */
-        setLoadingElementId: function(isNewPage) {
-            this.loadingEl = isNewPage ? 'body' : this.id;
         },
 
 
