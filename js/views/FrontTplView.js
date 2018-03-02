@@ -39,18 +39,6 @@ define([
         loadingEl: 'body',
 
         /**
-         * @property {Function} loadingHideFunc
-         * Custom function for after page transition (e.g. hide loading spinner)
-         */
-        loadingHideFunc: null,
-
-        /**
-         * @property {Function} loadingShowFunc
-         * Custom function for initializing a page transition (e.g. show loading spinner)
-         */
-        loadingShowFunc: null,
-
-        /**
          * @property {String} tplParams
          * Parameters for template in current content view
          */
@@ -125,38 +113,15 @@ define([
             if (this.useJqm) {
                 $.mobile.loading(task);
             } else if (task === 'show') {
-                if ( _.isFunction(this.loadingShowFunc) ) {
-                    this.loadingShowFunc.call(this);
-                } else {
-                    if ( $(this.loadingId).length ) {
-                        return;
-                    }
-                    var id = this.loadingId.substr(1);
-                    $('<div/>').attr('id', id).appendTo(this.loadingEl);
+                if ( $(this.loadingId).length ) {
+                    return;
                 }
+                var id = this.loadingId.substr(1);
+                $('<div/>').attr('id', id).appendTo(this.loadingEl);
             } else {
-                if ( _.isFunction(this.loadingHideFunc) ) {
-                    this.loadingHideFunc.call(this);
-                } else {
-                    $(this.loadingId).fadeOut(300, function () {
-                        $(this).remove();
-                    });
-                }
-            }
-        },
-
-
-        /**
-         * Sets the loading element custom show and hide functionality for page transitions.
-         * Note that both parameters must be defined for use.
-         *
-         * @param {Function} showCallback - Defined function for showing the loading element.
-         * @param {Function} hideCallback - Defined function for hiding the loading element.
-         */
-        setLoading: function(showCallback, hideCallback) {
-            if ( _.isFunction(showCallback) && _.isFunction(hideCallback) ) {
-                this.loadingShowFunc = showCallback;
-                this.loadingHideFunc = hideCallback;
+                $(this.loadingId).fadeOut(300, function () {
+                    $(this).remove();
+                });
             }
         },
 
