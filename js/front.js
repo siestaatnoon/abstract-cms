@@ -41,6 +41,7 @@ require([
         var href = $(this).attr('href');
         if ( ! e.altKey && ! e.ctrlKey && ! e.metaKey && ! e.shiftKey) {
             e.preventDefault();
+            app.AppView.loading('show');
             app.Router.navigate(href, {trigger: true});
             return false;
         }

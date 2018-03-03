@@ -72,7 +72,6 @@ define([
          */
         initialize: function(options) {
             options = options || {};
-            this.loading('show');
             this.templateUrl = app.frontTemplateURL;
             this.useLoading = app.useFrontLoading || this.useLoading;
             this.setScriptLoader();
@@ -127,7 +126,7 @@ define([
                 }
                 var id = this.loadingId.substr(1);
                 $('<div/>').attr('id', id).appendTo(this.loadingEl);
-            } else {
+            } else if ( $(this.loadingId).length ) {
                 $(this.loadingId).fadeOut(600, function () {
                     $(this).remove();
                 });
@@ -176,12 +175,6 @@ define([
                 return false;
             }
 
-            // TODO: should this be before this.postInit call?
-            //
-            // (loading doesn't seem to show if placed above)
-            //
-            this.loading('show');
-
             this.trigger('template:reset:start');
             for (var i=0; i < this.blocksApp.length; i++) {
                 this.blocksApp[i].remove();
@@ -220,8 +213,6 @@ define([
             this.contentView = view;
             var contentScripts = this.contentView.scripts || {};
             this.setContentScripts(contentScripts);
-            //this.listenTo(this.contentView, 'view:update:start', this.loading);
-            //this.listenTo(this.contentView, 'view:update:end', function() { this.loading('hide') } );
 
             var headTags = {};
             if (this.contentView.isNewPage) {
