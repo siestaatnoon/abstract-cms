@@ -12,6 +12,7 @@
   "requireJsId":       "#require-js",
   "tplInfoHeader":     "X-Tpl",
   "useFrontJqm":       false,
+  "useFrontLoading":   true,
   "frontNavConfig":    [
       { "label": "Home", "url": "/" },
       { "label": "Gizmos", "url": "/gizmos" ,

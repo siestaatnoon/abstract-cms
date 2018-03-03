@@ -6,28 +6,75 @@ define([
     'views/AbstractTplView',
     'classes/ScriptLoader'
 ], function(app, $, _, Backbone, AbstractTplView, ScriptLoader) {
-    var FrontTplView = AbstractTplView.extend({
 
+    /**
+     * Subclass for main template view in admin.
+     *
+     * @exports models/AbstractModel
+     * @requires config
+     * @requires jquery
+     * @requires Underscore
+     * @requires Backbone
+     * @requires views/AbstractTplView
+     * @constructor
+     * @augments AbstractTplView
+     */
+    var FrontTplView = AbstractTplView.extend({
+    /** @lends FrontTplView.prototype **/
+
+        /**
+         * @property {Object} docIncludes
+         * Storage for link and script tags from page template, NOT included
+         * through RequireJS
+         */
         docIncludes: {
             link: [],
             script: []
         },
 
+        /**
+         * @property {String} loadingEl
+         * Element identifier to place loader for page transitions
+         */
         loadingEl: 'body',
 
+        /**
+         * @property {String} tplParams
+         * Parameters for template in current content view
+         */
         tplParams: '',
 
+        /**
+         * @property {String} templateUrl
+         * URL for initial AJAX call to retrieve page template data
+         */
         templateUrl: '',
 
+        /**
+         * @property {Boolean} useJqm
+         * True if main template view and/or content view uses jQuery Mobile
+         */
         useJqm: false,
+
+        /**
+         * @property {Boolean} useLoading
+         * True to use default loading element in application
+         */
+        useLoading: true,
 
         // TODO: class needs to execute embedded js within changed page content
 
-
+        /**
+         * Overwrites AbstractTplView.initialize() setting the template retrieval URL
+         * for the main admin template.
+         *
+         * @param {Object} options - View options (Backbone)
+         */
         initialize: function(options) {
             options = options || {};
             this.loading('show');
             this.templateUrl = app.frontTemplateURL;
+            this.useLoading = app.useFrontLoading || this.useLoading;
             this.setScriptLoader();
             if (options.skipLoad) {
                 return;
@@ -35,10 +82,13 @@ define([
             AbstractTplView.prototype.initialize.call(this, options);
         },
 
-        closeContentView: function() {
-            this.setLoadingElementId(false);
-            this.loading('show');
 
+        /**
+         * Removes the content view from the main application template, removing associated
+         * CSS, Javascript and HTML blocks.
+         *
+         */
+        closeContentView: function() {
             // remove content view CSS/JS
             if (this.contentScripts.css || this.contentScripts.js) {
                 if (this.contentScripts.css) {
@@ -57,12 +107,17 @@ define([
             AbstractTplView.prototype.closeContentView.call(this);
         },
 
+
         /**
-         * Shows or hides the loading HTML between page transitions.
+         * Shows or hides the loading HTML between page transitions. Note this function may
+         * be disabled with the useFrontLoading parameter in abstract.json config.
          *
          * @param {String} showHide - If "hide" will hide the loading HTML, otherwise will show it.
          */
         loading: function(showHide) {
+            if ( ! this.useLoading) {
+                return;
+            }
             var task = showHide === 'hide' ? 'hide' : 'show';
             if (this.useJqm) {
                 $.mobile.loading(task);
@@ -73,12 +128,19 @@ define([
                 var id = this.loadingId.substr(1);
                 $('<div/>').attr('id', id).appendTo(this.loadingEl);
             } else {
-                $(this.loadingId).fadeOut(500, function() {
+                $(this.loadingId).fadeOut(600, function () {
                     $(this).remove();
                 });
             }
         },
 
+
+        /**
+         * Called before this.render() which sets the CSS/Javascript scrips and HTML
+         * blocks in the main template. Also initializes the menu and search panels.
+         *
+         * @param {Object} data - Template data to render on page
+         */
         postInit: function(data) {
             if ( _.isEmpty(data) === false ) {
                 this.useJqm = data.useJqm || this.useJqm;
@@ -103,10 +165,22 @@ define([
             this.setEl();
         },
 
+
+        /**
+         * If a template change occurs (distinct from content view change), will reset
+         * the main front template before rendering the content view.
+         *
+         */
         reset: function() {
             if ( ! this.contentView.isNewPage) {
                 return false;
             }
+
+            // TODO: should this be before this.postInit call?
+            //
+            // (loading doesn't seem to show if placed above)
+            //
+            this.loading('show');
 
             this.trigger('template:reset:start');
             for (var i=0; i < this.blocksApp.length; i++) {
@@ -116,24 +190,17 @@ define([
 
             this.postInit(this.contentView.newTpl);
 
-            // TODO: should this be before this.postInit call?
-            //
-            // (loading doesn't seem to show if placed above)
-            //
-            this.setLoadingElementId(true);
-            this.loading('show');
-
             if (this.contentView.newTpl.blocks) {
                 this.setBlocks(this.contentView.newTpl.blocks, this.blocksApp);
             }
             this.trigger('template:reset:end');
         },
 
-        setLoadingElementId: function(isNewPage) {
-            this.loadingEl = isNewPage ? 'body' : this.id;
-        },
 
-
+        /**
+         * Sets the ScriptLoader object that loads javascript and CSS into the DOM.
+         *
+         */
         setScriptLoader: function() {
             this.scriptLoader = new ScriptLoader({
                 cssRoot: app.frontCssRoot,
@@ -143,6 +210,12 @@ define([
         },
 
 
+        /**
+         * Sets javascript and CSS scripts, content blocks and renders the Backbone.View
+         * content in the DOM. Also updates the head tag elements (e.g. meta/title tags).
+         *
+         * @param {Backbone.View} view - The Backbone content view
+         */
         transitionPage: function(view) {
             this.contentView = view;
             var contentScripts = this.contentView.scripts || {};
@@ -180,6 +253,12 @@ define([
         },
 
 
+        /**
+         * Searches the main template for link and script tags and saves a reference to them
+         * for later template manipulation.
+         *
+         * @param {XMLDocument} dom - The template (new, to render) DOM
+         */
         _findHeadScripts: function(dom) {
             var head = dom ? dom.head : $('head').get(0);
             this.docIncludes.link = [];
@@ -204,6 +283,14 @@ define([
         },
 
 
+        /**
+         * Accepts the new main template HTML and replaces the head tag script and link
+         * elements with the new template elements. Also executes newly added javascript
+         * script src files or executable code by temporarily adding the script as a head
+         * element and removing it.
+         *
+         * @param {String} html - The template HTML as string
+         */
         _updateDOM: function(html) {
             var newDoc = new DOMParser().parseFromString(html, "text/html");
             var $head = $('head');

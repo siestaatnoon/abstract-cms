@@ -692,6 +692,9 @@ class Form_field {
             case 'object' :
                 $html = $this->field_object();
                 break;
+            case 'provinces' :
+                $html = $this->field_provinces();
+                break;
 			case 'regions' :
 				$html = $this->field_regions();
 				break;
@@ -1428,6 +1431,31 @@ NVP;
         }
 		return form_input($params, $attr);
 	}
+
+
+    /**
+     * field_provinces
+     *
+     * Creates a select dropdown menu of provinces or regions in
+     * [province code] => [province name] format. This function uses the provinces.php
+     * file in the current locale directory in ./App/Lang. Note that the province list
+     * is sorted by name before populating the select list. NOTE: for countries outside
+     * of the United States
+     *
+     * @access protected
+     * @return string The provinces select list and enclosing div container
+     */
+    protected function field_provinces() {
+        if ($this->type !== 'provinces') {
+            return '';
+        }
+
+        if ( isset($this->params['values']) ) {
+            unset($this->params['values']);
+        }
+        $this->params['lang_config'] = 'provinces';
+        return $this->field_select();
+    }
 	
 
 	/**
@@ -1516,7 +1544,7 @@ NVP;
 	/**
 	 * field_regions
 	 *
-	 * Creates a select dropdown menu of states, provinces or regions in
+	 * Creates a select dropdown menu of states or regions in
 	 * [region code] => [region name] format. This function uses the regions.php
 	 * file in the current locale directory in ./App/Lang. Note that the region list
 	 * is sorted by name before populating the select list.
