@@ -2,8 +2,9 @@ define([
 	'config',
     'jquery',
 	'underscore',
-	'backbone'
-], function(app, $, _, Backbone) {
+	'backbone',
+	'models/AbstractModel'
+], function(app, $, _, Backbone, AbstractModel) {
 	
 	/**
 	 * Creates an admin module model extended from Backbone.Model.
@@ -12,26 +13,14 @@ define([
 	 * @requires config
      * @requires jQuery
 	 * @requires Underscore
-	 * @requires BackBone
+	 * @requires Backbone
+     * @requires models/AbstractModel
 	 * @constructor
-	 * @augments Backbone.Model
+	 * @augments AbstractModel
 	 */
-	var AdminModel = Backbone.Model.extend(
+	var AdminModel = AbstractModel.extend(
 	/** @lends models/AdminModel.prototype **/
 	{
-		/**
-		 * @property {String} deleteUrl
-		 * URL to delete model on DELETE request.
-		 */
-		deleteUrl: '',
-		
-		/**
-		 * @property {Array} fields
-		 * Array of fields and validation parameters
-		 */
-		fields: [],
-
-
 		/**
 		 * Initializes this model.
 		 *
@@ -40,24 +29,10 @@ define([
 		 */
 		initialize: function(attr, options) {
 			options = options || {};
-			this.idAttribute = options.idAttribute || 'id';
+            this.idAttribute = options.idAttribute || 'id';
+            this.fields = options.fields || [];
 			this.url =  options.url || '';
-			this.fields = options.fields || [];
-		},
-
-		/**
-		 * Overrides the Backbone.Model.destroy function to use a special URL
-		 * for the DELETE request.
-		 *
-		 * @param {Object} options - options Backbone.Router.navigate (Backbone)
-		 * @return {XHR} The XHR object
-		 */
-		destroy: function(options) {
-			options = options || {};
-			var id = this.id === undefined ? this.get(this.collection.idAttribute) : this.id;
-			var url = this.url.replace('list', id).replace('add', id).replace('/edit', '');
-			var opts = _.extend({ url: url }, options);
-			return Backbone.Model.prototype.destroy.call(this, opts);
+            //AdminModel.prototype.initialize.call(this, attr, options);
 		},
 		
 		/**
@@ -73,31 +48,17 @@ define([
 
             var attr = this.attributes;
 			var idAttribute = this.collection && this.collection.idAttribute ? this.collection.idAttribute : this.idAttribute;
-			return _.isUndefined(attr[idAttribute]) === true || attr[idAttribute].toString().length === 0;
+			return _.isUndefined(attr[idAttribute]) || attr[idAttribute].toString().length === 0;
 		},
-		
-		/**
-		 * Validates the model upon form submission.
-		 *
-		 * @param {Object} attributes - The changed attributes on this model.
-		 * @param {Object} options - Options for validation.
-		 */
-		validate: function(attributes, options) {
-			if ( _.isObject(this.fields) ) {
-				var validate = {};
-				for (field in this.fields) {
-					if (attributes[field] !== undefined && this.fields[field]['valid'] !== undefined) {
-						validate[field] = this.fields[field]['valid'];
-					}
-				}
 
-				app.Validator.init(validate);
-				var errors = app.Validator.validate(attributes);
-				if ( ! _.isEmpty(errors) ) {
-					return errors;
-				}
-			}
-		}
+        /**
+         * Overrides the Backbone.Model.url function. Appends the ID attribute to the defined URL root.
+         *
+         * @return {String} The model API url
+         */
+        url: function() {
+            return this.url;
+        },
 	});
 	
 	return AdminModel;

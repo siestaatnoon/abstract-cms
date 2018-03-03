@@ -48,7 +48,7 @@ class Module_gizmos extends \App\Module\Abstract_module {
      * @return array The data converted to an assoc array for form_fields table row
      */
     protected function module_form_data_to_row($data) {
-        return parent::module_form_data_to_row($data);
+        return $data;
     }
 
 
@@ -63,7 +63,7 @@ class Module_gizmos extends \App\Module\Abstract_module {
      * @return array The row converted to CMS form data
      */
     protected function row_to_module_form_data($data) {
-        return parent::row_to_module_form_data($data);
+        return $data;
     }
 
 
@@ -78,7 +78,7 @@ class Module_gizmos extends \App\Module\Abstract_module {
      * @return mixed True if row data validated or an array of validation errors
      */
     protected function validate($data, $has_id=false) {
-        return parent::validate($data, $has_id);
+        return true;
     }
 
 }

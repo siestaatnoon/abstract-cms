@@ -50,7 +50,6 @@ define([
                 }
 
                 // sets the loading spinner while items load
-                app.AppView.setLoadingElementId(false);
                 app.AppView.loading('show');
                 app.AppView.trigger('content:update:start');
                 this.render();

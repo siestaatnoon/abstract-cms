@@ -1,6 +1,8 @@
 <?php
 
-
+use
+App\App,
+App\Module\Module;
 
 /**
  * pages_tree_menu_html

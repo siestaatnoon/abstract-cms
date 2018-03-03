@@ -40,7 +40,7 @@ function get_title() {
  * hostname and, optionally, without web root. Note that the leading slash is included.
  *
  * @param bool True to strip the application web root
- * @return The current page URL
+ * @return string The current page URL
  */
 if ( ! function_exists('template_app_path'))
 {
@@ -48,6 +48,9 @@ if ( ! function_exists('template_app_path'))
         $referrer = $_SERVER['HTTP_REFERER'];
         $base_url = template_app_url();
         $path = str_replace($base_url, '', $referrer);
+        if ( substr($path, 0, 1) !== '/' ) {
+            $path = '/'.$path;
+        }
         return $strip_webroot ? $path : WEB_BASE.$path;
     }
 }
@@ -58,13 +61,14 @@ if ( ! function_exists('template_app_path'))
  *
  * Returns the base URL for the application, including web root. Note that the trailing slash is omitted.
  *
- * @return The application base URL
+ * @return string The application base URL
  */
 if ( ! function_exists('template_app_url'))
 {
     function template_app_url() {
-        $protocol = strtolower( substr($_SERVER["SERVER_PROTOCOL"],0,5) ) === 'https' ? 'https' : 'http';
-        return $protocol.'://'.$_SERVER['HTTP_HOST'].WEB_BASE;
+        $protocol = ( ! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] === 443 ?
+            'https' : 'http';
+        return rtrim($protocol.'://'.$_SERVER['HTTP_HOST'].WEB_BASE, '/');
     }
 }
 
@@ -79,7 +83,7 @@ if ( ! function_exists('template_app_url'))
  * crumb and current page crumb
  * @param array $replace Array of url => title crumbs to replace between Home page
  * crumb and current page crumb
- * @return The breadcrumbs HTML
+ * @return string The breadcrumbs HTML
  */
 if ( ! function_exists('template_breadcrumbs'))
 {
@@ -657,7 +661,8 @@ if ( ! function_exists('template_onload'))
  * @param string $param The URL to convert
  * @return string The root relative URL or $param if a full path or special URL
  */
-if ( ! function_exists('template_root_relative_url')) {
+if ( ! function_exists('template_root_relative_url'))
+{
     function template_root_relative_url($param) {
         if ( empty($param) ) {
             return '';
@@ -671,7 +676,7 @@ if ( ! function_exists('template_root_relative_url')) {
             substr($param, 0, 11) === 'javascript:' ||
             substr($param, 0, 7) === 'mailto:' ||
             substr($param, 0, 4) === 'tel:' ||
-            substr($uri, 0, strlen($base_url) ) === $base_url ) {
+            ( ! empty($base_url) && substr($uri, 0, strlen($base_url) ) === $base_url) ) {
             return $param;
         }
 

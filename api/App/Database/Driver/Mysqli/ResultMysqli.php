@@ -33,7 +33,7 @@ class ResultMysqli extends \App\Database\Driver\Result {
 	 * 
 	 * @access public
 	 * @param \mysqli_result $mysqli_result The object containing the query result set
-	 * @see \App\Model\Database\Driver\Result
+	 * @see \App\Database\Driver\Result
 	 * @throws \App\Exception\AppException if $mysqli_result param not of class mysqli_result
 	 */
 	public function __construct($mysqli_result) {

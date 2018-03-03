@@ -124,6 +124,9 @@ $config['field_types'] = array(
     'object' => array(
         'lang'			=> 'field.object'
     ),
+    'provinces' => array(
+        'lang'			=> 'field.provinces'
+    ),
 	'regions' => array(
 		'lang'			=> 'field.regions'
 	),

@@ -2,8 +2,9 @@ define([
     'config',
     'jquery',
     'underscore',
-    'backbone'
-], function(app, $, _, Backbone) {
+    'backbone',
+    'classes/ScriptLoader'
+], function(app, $, _, Backbone, ScriptLoader) {
 
     /**
      * Superclass for main template view in CMS and frontent.
@@ -13,16 +14,17 @@ define([
      * @requires jquery
      * @requires Underscore
      * @requires Backbone
+     * @requires classes/ScriptLoader
      * @constructor
      * @augments Backbone.View
      */
     var AbstractTplView = Backbone.View.extend({
-    /** @lends views/AbstractTplView.prototype **/
+    /** @lends AbstractTplView.prototype **/
 
         /**
          * @property {Object} DEFAULT_SCRIPTS
          * Default object containing CSS and Javascript script includes as well as
-         * Javascript onload and unload code blocks.
+         * Javascript onload and unload code blocks
          */
         DEFAULT_SCRIPTS: {
             css: [],
@@ -35,131 +37,132 @@ define([
 
         /**
          * @property {String} id
-         * Element id for main template view container.
+         * Element id for main template view container
          */
         id: app.pageContentId,
 
         /**
          * @property {Array} blocks
-         * Array containing HTML blocks for main template view or content view.
+         * Array containing HTML blocks for main template view or content view
          */
         blocks: [],
 
         /**
          * @property {Array} blocksApp
-         * Storage for HTML blocks in main template view.
+         * Storage for HTML blocks in main template view
          */
         blocksApp: [],
 
         /**
          * @property {Array} blocksView
-         * Storage for HTML blocks in template content view.
+         * Storage for HTML blocks in template content view
          */
         blocksView: [],
 
         /**
          * @property {Backbone.View} contentView
-         * View that is updated/changed when navigating to other pages.
+         * View that is updated/changed when navigating to other pages
          */
         contentView: {},
 
         /**
          * @property {Object} contentScripts
-         * CSS and Javascript scripts include in the content view.
+         * CSS and Javascript scripts include in the content view
          */
         contentScripts: {},
 
         /**
          * @property {jqXHR} deferred
          * The jQuery promise object returned returned in render() function if view retrieving
-         * page data by AJAX.
+         * page data by AJAX
          */
         deferred: null,
 
         /**
          * @property {Boolean} hasLoadedScripts
          * True if main template view has loaded CSS and Javascript includes as to not
-         * repeat loading upon updating the content view.
+         * repeat loading upon updating the content view
          */
         hasLoadedScripts: false,
 
         /**
          * @property {Array} headSelectors
-         * HoldsjQuery selector strings for current page head tag elements.
+         * Holds jQuery selector strings for current page head tag elements
          */
         headSelectors: [],
 
         /**
          * @property {String} loadingId
-         * Element id for "loading" HTML used in page transitions.
+         * Element id for "loading" HTML used in page transitions
          */
         loadingId: app.loadingId,
 
         /**
          * @property {String} requireId
-         * Element id for the RequireJS script include.
+         * Element id for the RequireJS script include
          */
         requireId: app.requireJsId,
 
         /**
          * @property {Object} contentScripts
-         * CSS and Javascript scripts include in the main template view.
+         * CSS and Javascript scripts include in the main template view
          */
         scripts: {},
 
         /**
          * @property {classes/ScriptLoader} scriptLoader
-         * The class utilized to load CSS and Javascript includes.
+         * The class utilized to load CSS and Javascript includes
          */
         scriptLoader: null,
 
         /**
-         * @property {Oject} template
-         * Object utilized to render a template using the Underscore yemplate function.
+         * @property {Object} template
+         * Object utilized to render a template using the Underscore yemplate function
          */
         template: null,
 
         /**
          * @property {String} templateURL
-         * API url to retrieve main template data.
+         * API url to retrieve main template data
          */
-        templateURL: '',
+        templateUrl: '',
 
         /**
          * @property {Boolean} useJqm
-         * True if main template view and/or content view uses jQuery Mobile.
+         * True if main template view and/or content view uses jQuery Mobile
          */
         useJqm: app.useFrontJqm,
 
         /**
          * @property {Object} events
-         * Backbone events utilized in the main template view.
+         * Backbone events utilized in the main template view
          */
         events: {
 
         },
 
+
         /**
          * Initializes the main template view by retrieving the data via AJAX and
          * setting the Backbone view element.
          *
-         * @param {Object} options - View options (Backbone).
+         * @param {Object} options - View options (Backbone)
          */
         initialize: function(options) {
-            this._setScriptLoader();
+            this.setScriptLoader();
 
             if (this.deferred === null) {
                 var self = this;
                 var deferred = $.Deferred();
 
                 $.ajax({
-                    url:		this.templateURL,
+                    url:		this.templateUrl,
                     type: 		'GET',
                     dataType: 	'json'
                 }).done(function(data) {
                     if (data.errors) {
                         if(app.debug) {
-                            var message = "TplView.initialize: an API error has occurred:\n";
+                            var message = "AbstractTplView.initialize: an API error has occurred:\n";
                             message += data.errors.join("\n");
                             console.log(message);
                         }
@@ -169,7 +172,9 @@ define([
                     deferred.resolve();
                 }).fail(function(jqXHR, status) {
                     if (app.debug) {
-                        console.log('TplView.initialize: data retrieve failed: [' + status + "]\n" + jqXHR.responseText);
+                        var msg = 'AbstractTplView.initialize: data retrieve failed: [' + jqXHR.status + "] ";
+                        msg += jqXHR.responseText;
+                        console.log(msg);
                     }
                 });
 
@@ -179,197 +184,13 @@ define([
             }
         },
 
-        /**
-         * Renders the template content view. If loaded by AJAX, will wait until
-         * resolved to render.
-         *
-         * @param {Backbone.View} view - The Backbone content view.
-         */
-        gotoContentView: function(view) {
-            if ( this.onInit(this.gotoContentView, view) === false) {
-                return false;
-            }
-
-            this.trigger('content:update:start');
-            this._closeContentView();
-            var render = view.render();
-
-            if (render.promise) {
-                var self = this;
-                render.done(function() {
-                    self._transitionPage(view);
-                    self.trigger('content:update:end');
-                    self.loading('hide');
-                });
-            } else {
-                this._transitionPage(view);
-                this.trigger('content:update:end');
-                this.loading('hide');
-            }
-        },
-
-        /**
-         * Shows or hides the loading HTML between page transitions.
-         *
-         * @param {String} showHide - If "hide" will hide the loading HTML, otherwise will show it.
-         */
-        loading: function(showHide) {
-            var task = showHide === 'hide' ? 'hide' : 'show';
-            if (this.useJqm) {
-                $.mobile.loading(task);
-            }
-        },
-
-        onInit: function(callback, args) {
-            if ( ! this.deferred) {
-                return true;
-            }
-            var state = this.deferred.state();
-            var is_loaded = true;
-
-            if (state !== 'resolved' ) {
-                if (state === 'pending' && _.isFunction(callback) ) {
-                    //need to wait until template loaded via ajax
-                    var self = this;
-                    if ( _.isArray(args) === false) {
-                        args = [args];
-                    }
-                    this.deferred.done(function() {
-                        callback.apply(self, args);
-                    });
-                }
-                is_loaded = false;
-            }
-
-            return is_loaded;
-        },
-
-        /**
-         * Called before this.render() which sets the CSS/Javascript scrips and HTML
-         * blocks in the main template.
-         *
-         * @param {Object} data - Template data to render on page.
-         */
-        postInit: function(data) {
-            if ( _.isEmpty(data) === false ) {
-                this.useJqm = data.useJqm || this.useJqm;
-                this.blocks = data.blocks || this.blocks;
-                this.scripts = data.scripts || this._getScriptsObject();
-                var template = data.template ? $.trim(data.template) : '';
-                if (template.length) {
-                    this.template = _.template(template, {});
-                }
-            }
-
-            this.setEl();
-        },
-
-        /**
-         * Overwrites Backbone.View.render() and DOES NOT remove this view from the page DOM.
-         * Instead clears the template of CSS/Javascript includes and HTML blocks and resets
-         * the main app template.
-         *
-         */
-        remove: function() {
-            this.scriptLoader.unload();
-            this.hasLoadedScripts = false;
-            this._closeContentView();
-            for (var i=0; i < this.blocksApp.length; i++) {
-                this.blocksApp[i].remove();
-            }
-            this.blocksApp = [];
-            this.undelegateEvents();
-            this.$el.empty();
-            //Backbone.View.prototype.remove.call(this);
-
-            //reset the template in case user logged out
-            //then back in since template removed from DOM
-            this.setEl();
-        },
-
-        /**
-         * Renders this view and, if data still loading via AJAX, will be called again upon
-         * AJAX call being resolved.
-         *
-         * @return {AbstractTplView} This View object
-         */
-        render: function() {
-            if ( this.onInit(this.render, null) === false) {
-                return null;
-            }
-
-            //blocks only load once
-            if (this.blocksApp.length === 0) {
-                this._setBlocks(this.blocks, this.blocksApp);
-            }
-
-            this.$el.empty();
-            if (this.useJqm) {
-                $.mobile.initializePage();
-                $('body').enhanceWithin();
-            }
-
-            return this;
-        },
-
-        /**
-         * Sets or creates the DOM element container for the content view.
-         *
-         */
-        setEl: function() {
-            if ( $(this.id).length ) {
-            // check for element in current DOM
-                this.setElement( $(this.id)[0] );
-            } else if (this.template) {
-            // check for element in new template
-                var $template = $(this.template);
-                if ( '#' + $template.attr('id') === this.id ) {
-                    this.setElement($template[0]);
-                } else if ( $(this.id, $template).length ) {
-                    this.setElement( $(this.id, $template)[0] );
-                } else {
-                    this.tagName = 'div';
-                }
-            } else {
-            // create a new element appended to <body> tag
-                var $body = $('body');
-                var $el = $('<div/>').attr('id', this.id.substr(1) ).html( $body.html() );
-                $body.html('');
-                $el.appendTo($body);
-                this.setElement($el[0]);
-            }
-        },
-
-        /**
-         * Initializes the ScriptLoader class to load CSS/Javascript includes.
-         *
-         */
-        _setScriptLoader: function() {
-            this.scriptLoader = new ScriptLoader();
-        },
 
         /**
          * Removes the content view from the main application template, removing associated
          * CSS, Javascript and HTML blocks.
          *
          */
-        _closeContentView: function() {
-            // remove content view CSS/JS
-            if (this.contentScripts.css || this.contentScripts.js) {
-                if (this.contentScripts.css) {
-                    this.scriptLoader.removeCss(this.contentScripts.css);
-                }
-                if (this.contentScripts.js) {
-                    this.scriptLoader.removeJs(this.contentScripts.js.src);
-                }
-                this.scriptLoader.triggerUnload();
-            }
-
-            // TODO: remove onload/unload js
-
-            this._setContentScripts(null);
-            this._setHeadTags({});
-
+        closeContentView: function() {
             if ( _.isEmpty(this.contentView) === false ) {
                 this.contentView.remove();
                 this.contentView = {};
@@ -381,22 +202,68 @@ define([
             this.blocksView = [];
         },
 
+
         /**
          * Retrieves a default Object used to configure CSS/Javascript includes for the
          * ScriptLoader class.
          *
          * @return {Object} The CSS/Javascript configuration object
          */
-        _getScriptsObject: function() {
+        getScriptsObject: function() {
             return JSON.parse( JSON.stringify(this.DEFAULT_SCRIPTS) );
         },
+
+
+        /**
+         * Renders the template content view. If loaded by AJAX, will wait until
+         * resolved to render.
+         *
+         * @param {Backbone.View} view - The Backbone content view
+         */
+        gotoContentView: function(view) {
+            if ( this.onInit(this.gotoContentView, view) === false) {
+                return false;
+            }
+
+            this.loading('show');
+            this.trigger('content:update:start');
+            this.closeContentView();
+            var render = view.render();
+
+            if (render.promise) {
+                var self = this;
+                render.done(function() {
+                    self.transitionPage(view);
+                    self.trigger('content:update:end');
+                    self.loading('hide');
+                });
+            } else {
+                this.transitionPage(view);
+                this.trigger('content:update:end');
+                this.loading('hide');
+            }
+        },
+
+
+        /**
+         * Shows or hides the loading HTML between page transitions.
+         *
+         * @param {String} showHide - If "hide" will hide the loading HTML, otherwise will show it
+         */
+        loading: function(showHide) {
+            var task = showHide === 'hide' ? 'hide' : 'show';
+            if (this.useJqm) {
+                $.mobile.loading(task);
+            }
+        },
+
 
         /**
          * Loads CSS/Javascript includes for the page, including the content view. Note,
          * will load content view includes separately if content view is updated.
          *
          */
-        _loadScripts: function() {
+        loadScripts: function() {
             var cssInc = [];
             var jsInc = [];
             var jsOnload = '';
@@ -422,14 +289,117 @@ define([
             this.scriptLoader.loadJs(jsInc, jsOnload, jsUnload);
         },
 
+
+        /**
+         * Adds callback function to execute upon content data retrieval.
+         *
+         * @param {Function} callback - Callback function to execute after data loaded
+         * @param {*} args - Arguments to pass into callback
+         */
+        onInit: function(callback, args) {
+            if ( ! this.deferred) {
+                return true;
+            }
+            var state = this.deferred.state();
+            var is_loaded = true;
+
+            if (state !== 'resolved' ) {
+                if (state === 'pending' && _.isFunction(callback) ) {
+                    //need to wait until template loaded via ajax
+                    var self = this;
+                    if ( _.isArray(args) === false) {
+                        args = [args];
+                    }
+                    this.deferred.done(function() {
+                        callback.apply(self, args);
+                    });
+                }
+                is_loaded = false;
+            }
+
+            return is_loaded;
+        },
+
+
+        /**
+         * Called before this.render() which sets the CSS/Javascript scrips and HTML
+         * blocks in the main template.
+         *
+         * @param {Object} data - Template data to render on page
+         */
+        postInit: function(data) {
+            if ( _.isEmpty(data) === false ) {
+                this.useJqm = data.useJqm || this.useJqm;
+                this.blocks = data.blocks || this.blocks;
+                this.scripts = data.scripts || this.getScriptsObject();
+                var template = data.template ? $.trim(data.template) : '';
+                if (template.length) {
+                    this.template = _.template(template, {});
+                }
+            }
+
+            this.setEl();
+        },
+
+
+        /**
+         * Overwrites Backbone.View.render() and DOES NOT remove this view from the page DOM.
+         * Instead clears the template of CSS/Javascript includes and HTML blocks and resets
+         * the main app template.
+         *
+         */
+        remove: function() {
+            this.scriptLoader.unload();
+            this.hasLoadedScripts = false;
+            this.closeContentView();
+            for (var i=0; i < this.blocksApp.length; i++) {
+                this.blocksApp[i].remove();
+            }
+            this.blocksApp = [];
+            this.undelegateEvents();
+            this.$el.empty();
+            //Backbone.View.prototype.remove.call(this);
+
+            //reset the template in case user logged out
+            //then back in since template removed from DOM
+            this.setEl();
+        },
+
+
+        /**
+         * Renders this view and, if data still loading via AJAX, will be called again upon
+         * AJAX call being resolved.
+         *
+         * @return {AbstractTplView} This View object
+         */
+        render: function() {
+            if ( this.onInit(this.render, null) === false) {
+                return null;
+            }
+
+            //blocks only load once
+            if (this.blocksApp.length === 0) {
+                this.setBlocks(this.blocks, this.blocksApp);
+            }
+
+            this.$el.empty();
+            if (this.useJqm) {
+                $.mobile.initializePage();
+                $('body').enhanceWithin();
+            }
+
+            return this;
+        },
+
+
         /**
          * Loads HTML block(s) for the main template view and content view.
          *
-         * @param {Array} blocks - Array of HTML block configurations.
+         * @param {Array} blocks - Array of HTML block configurations
          * @param {Array} storage - Storage array for resulting jQuery objects from blocks, used to
-         * update, remove etc.
+         * update, remove etc
          */
-        _setBlocks: function(blocks, storage) {
+        setBlocks: function(blocks, storage) {
             if ( _.isEmpty(blocks) ) {
                 return false;
             } else if ( $.isPlainObject(blocks) ) {
@@ -458,8 +428,15 @@ define([
             }
         },
 
-        _setContentScripts: function(scripts) {
-            this.contentScripts = this._getScriptsObject();
+
+        /**
+         * Sets the javascript and CSS scripts from the content view. Checks for
+         * duplicate scripts loaded in the main template and omits those from
+         * loading.
+         *
+         */
+        setContentScripts: function(scripts) {
+            this.contentScripts = this.getScriptsObject();
 
             if ( _.isObject(scripts) === false ) {
                 return;
@@ -523,7 +500,41 @@ define([
             }
         },
 
-        _setHeadTags: function(headTags) {
+
+        /**
+         * Sets or creates the DOM element container for the content view.
+         *
+         */
+        setEl: function() {
+            if ( $(this.id).length ) {
+            // check for element in current DOM
+                this.setElement( $(this.id)[0] );
+            } else if (this.template) {
+            // check for element in new template
+                var $template = $(this.template);
+                if ( '#' + $template.attr('id') === this.id ) {
+                    this.setElement($template[0]);
+                } else if ( $(this.id, $template).length ) {
+                    this.setElement( $(this.id, $template)[0] );
+                } else {
+                    this.tagName = 'div';
+                }
+            } else {
+            // create a new element appended to <body> tag
+                var $body = $('body');
+                var $el = $('<div/>').attr('id', this.id.substr(1) ).html( $body.html() );
+                $body.html('');
+                $el.appendTo($body);
+                this.setElement($el[0]);
+            }
+        },
+
+
+        /**
+         * Sets the title, meta and other tags within head tag of DOM.
+         *
+         */
+        setHeadTags: function(headTags) {
             if ( _.isObject(headTags) === false ) {
                 return;
             }
@@ -571,24 +582,40 @@ define([
             this.headSelectors = selectors;
         },
 
-        _transitionPage: function(view) {
+
+        /**
+         * Initializes the ScriptLoader class to load CSS/Javascript includes.
+         *
+         */
+        setScriptLoader: function() {
+            this.scriptLoader = new ScriptLoader();
+        },
+
+
+        /**
+         * Sets javascript and CS scripts, head tags, content blocks and renders the Backbone.View
+         * content in the DOM.
+         *
+         * @param {Backbone.View} view - The Backbone content view
+         */
+        transitionPage: function(view) {
             this.contentView = view;
             var contentScripts = this.contentView.scripts || {};
-            this._setContentScripts(contentScripts);
+            this.setContentScripts(contentScripts);
             this.listenTo(this.contentView, 'view:update:start', this.loading);
             this.listenTo(this.contentView, 'view:update:end', function() { this.loading('hide') } );
 
             var headTags = this.contentView.headTags || {};
-            this._setHeadTags(headTags);
+            this.setHeadTags(headTags);
             this.$el.prepend(this.contentView.$el);
 
             if (this.contentView.blocks) {
-                this._setBlocks(this.contentView.blocks, this.blocksView);
+                this.setBlocks(this.contentView.blocks, this.blocksView);
             }
 
             // want to make sure content loaded to DOM first
             // and then load any necessary css/js scripts
-            this._loadScripts();
+            this.loadScripts();
 
             if (this.useJqm) {
                 $.mobile.initializePage();

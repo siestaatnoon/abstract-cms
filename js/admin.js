@@ -69,6 +69,7 @@ require.config({
 			'config', 
 			'underscore', 
 			'backbone',
+            'models/AbstractModel',
 			'classes/admin/AdminModuleLoader',
 			'classes/FormValidator'
 		],
@@ -79,7 +80,8 @@ require.config({
 			'backbone',
 			'backbone.paginator',
 			'classes/admin/AdminModuleLoader',
-			'models/AdminModel'
+			'models/AdminModel',
+            'collections/AbstractCollection'
 		],
 		
 		'views/AdminListUpdaterView': 	[
@@ -99,15 +101,14 @@ require.config({
 			'classes/admin/AdminAuth'
 		],
 		
-		'views/PageView': ['config', 'jquery', 'underscore', 'backbone'],
+		'views/AdminPageView': ['config', 'jquery', 'underscore', 'backbone'],
 		
-		'views/FormView': 	[
+		'views/AdminFormView': 	[
 			'config', 
 			'jquery',
 			'underscore', 
 			'backbone',
 			'classes/admin/AdminModuleLoader',
-			'classes/ScriptLoader',
 			'classes/FormValidator',
 			'models/AdminModel'
 		],
@@ -122,7 +123,6 @@ require.config({
 			'abstract.paginator',
 			'backgrid.textcell',
 			'classes/admin/AdminModuleLoader',
-			'classes/ScriptLoader',
 			'collections/AdminCollection',
 			'views/AdminListUpdaterView'
 		],
@@ -140,11 +140,14 @@ require.config({
 			'jquery',
 			'underscore',
 			'backbone',
-			'classes/admin/AdminModuleLoader'
+			'classes/admin/AdminModuleLoader',
+            'classes/ScriptLoader',
+            'classes/AbstractTplView'
 		],
 		
 		'routers/AdminRouter': 	[
-			'views/AdminTplView'
+			'views/AdminTplView',
+            'routers/AbstractRouter'
 		]
 	}
 

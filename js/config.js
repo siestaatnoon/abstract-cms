@@ -39,6 +39,7 @@ define([
 	app.frontPageRoot 		= app.frontApiRoot + '/page';
     app.frontTemplateURL 	= app.frontDataRoot + '/app';
     app.useFrontJqm         = abstractCfg.useFrontJqm;
+    app.useFrontLoading     = abstractCfg.useFrontLoading;
 
 	app.hashChange 			= false;
 	app.pushState 			= true;

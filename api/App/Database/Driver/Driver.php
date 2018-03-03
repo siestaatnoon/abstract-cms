@@ -137,8 +137,8 @@ abstract class Driver {
 	 * 
 	 * @access public
 	 * @param string $query The query to perform
-	 * @return \App\Model\Database\Driver\Result The query result
-	 * @see \App\Model\Database\Driver\Result The result set abstract class definition
+	 * @return \App\Database\Driver\Result The query result
+	 * @see \App\Database\Driver\Result The result set abstract class definition
 	 */
 	abstract public function query($query);
 	
