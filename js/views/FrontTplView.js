@@ -56,6 +56,12 @@ define([
          */
         useJqm: false,
 
+        /**
+         * @property {Boolean} useLoading
+         * True to use default loading element in application
+         */
+        useLoading: true,
+
         // TODO: class needs to execute embedded js within changed page content
 
         /**
@@ -68,6 +74,7 @@ define([
             options = options || {};
             this.loading('show');
             this.templateUrl = app.frontTemplateURL;
+            this.useLoading = app.useFrontLoading || this.useLoading;
             this.setScriptLoader();
             if (options.skipLoad) {
                 return;
@@ -82,8 +89,6 @@ define([
          *
          */
         closeContentView: function() {
-            this.loading('show');
-
             // remove content view CSS/JS
             if (this.contentScripts.css || this.contentScripts.js) {
                 if (this.contentScripts.css) {
@@ -104,11 +109,15 @@ define([
 
 
         /**
-         * Shows or hides the loading HTML between page transitions.
+         * Shows or hides the loading HTML between page transitions. Note this function may
+         * be disabled with the useFrontLoading parameter in abstract.json config.
          *
          * @param {String} showHide - If "hide" will hide the loading HTML, otherwise will show it.
          */
         loading: function(showHide) {
+            if ( ! this.useLoading) {
+                return;
+            }
             var task = showHide === 'hide' ? 'hide' : 'show';
             if (this.useJqm) {
                 $.mobile.loading(task);
@@ -119,7 +128,7 @@ define([
                 var id = this.loadingId.substr(1);
                 $('<div/>').attr('id', id).appendTo(this.loadingEl);
             } else {
-                $(this.loadingId).fadeOut(300, function () {
+                $(this.loadingId).fadeOut(600, function () {
                     $(this).remove();
                 });
             }
@@ -167,6 +176,12 @@ define([
                 return false;
             }
 
+            // TODO: should this be before this.postInit call?
+            //
+            // (loading doesn't seem to show if placed above)
+            //
+            this.loading('show');
+
             this.trigger('template:reset:start');
             for (var i=0; i < this.blocksApp.length; i++) {
                 this.blocksApp[i].remove();
@@ -174,12 +189,6 @@ define([
             this.blocksApp = [];
 
             this.postInit(this.contentView.newTpl);
-
-            // TODO: should this be before this.postInit call?
-            //
-            // (loading doesn't seem to show if placed above)
-            //
-            this.loading('show');
 
             if (this.contentView.newTpl.blocks) {
                 this.setBlocks(this.contentView.newTpl.blocks, this.blocksApp);

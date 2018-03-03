@@ -225,6 +225,7 @@ define([
                 return false;
             }
 
+            this.loading('show');
             this.trigger('content:update:start');
             this.closeContentView();
             var render = view.render();
