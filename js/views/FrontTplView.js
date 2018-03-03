@@ -72,7 +72,6 @@ define([
          */
         initialize: function(options) {
             options = options || {};
-            this.loading('show');
             this.templateUrl = app.frontTemplateURL;
             this.useLoading = app.useFrontLoading || this.useLoading;
             this.setScriptLoader();
@@ -127,7 +126,7 @@ define([
                 }
                 var id = this.loadingId.substr(1);
                 $('<div/>').attr('id', id).appendTo(this.loadingEl);
-            } else {
+            } else if ( $(this.loadingId).length ) {
                 $(this.loadingId).fadeOut(600, function () {
                     $(this).remove();
                 });
@@ -176,12 +175,6 @@ define([
                 return false;
             }
 
-            // TODO: should this be before this.postInit call?
-            //
-            // (loading doesn't seem to show if placed above)
-            //
-            this.loading('show');
-
             this.trigger('template:reset:start');
             for (var i=0; i < this.blocksApp.length; i++) {
                 this.blocksApp[i].remove();
@@ -220,8 +213,6 @@ define([
             this.contentView = view;
             var contentScripts = this.contentView.scripts || {};
             this.setContentScripts(contentScripts);
-            //this.listenTo(this.contentView, 'view:update:start', this.loading);
-            //this.listenTo(this.contentView, 'view:update:end', function() { this.loading('hide') } );
 
             var headTags = {};
             if (this.contentView.isNewPage) {
@@ -368,12 +359,22 @@ define([
             });
 
             // remove all content from <body> tag except for Require JS script and loading spinner
-            $body.children(':not(' + this.requireId + ',' + this.loadingId + ')').each(function() {
+            $body.children(':not(header,' + this.requireId + ',' + this.loadingId + ')').each(function() {
                 $(this).remove();
             });
 
-            // Add new content to <body> tag
-            $body.prepend(newDoc.body.innerHTML);
+            //remove the <header> element from new body
+            if ( $body.find('header').length ) {
+                newDoc.getElementsByTagName('header')[0].remove();
+            }
+
+            // Add new content to <body> tag, after header if there or prepend to body
+            var $header = $body.find('header');
+            if ($header.length) {
+                $header.after(newDoc.body.innerHTML);
+            } else {
+                $body.prepend(newDoc.body.innerHTML);
+            }
         }
     });
 
