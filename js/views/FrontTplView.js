@@ -359,12 +359,22 @@ define([
             });
 
             // remove all content from <body> tag except for Require JS script and loading spinner
-            $body.children(':not(' + this.requireId + ',' + this.loadingId + ')').each(function() {
+            $body.children(':not(header,' + this.requireId + ',' + this.loadingId + ')').each(function() {
                 $(this).remove();
             });
 
-            // Add new content to <body> tag
-            $body.prepend(newDoc.body.innerHTML);
+            //remove the <header> element from new body
+            if ( $body.find('header').length ) {
+                newDoc.getElementsByTagName('header')[0].remove();
+            }
+
+            // Add new content to <body> tag, after header if there or prepend to body
+            var $header = $body.find('header');
+            if ($header.length) {
+                $header.after(newDoc.body.innerHTML);
+            } else {
+                $body.prepend(newDoc.body.innerHTML);
+            }
         }
     });
 

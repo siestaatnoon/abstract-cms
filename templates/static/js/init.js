@@ -12,13 +12,13 @@ define([
     // Sets the navbar active menu items
     //
     var setActiveMenuItems = function() {
+        var selector = '.top-bar-section li';
+        $(selector).removeClass('active');
         if ( $('meta[name="data-url"]').length ) {
-            var selector = '.top-bar-section li';
             var currentUrl = $('meta[name="data-url"]').attr('content');
             var parts = currentUrl.replace(app.docRoot, '').split('/');
             var currentRootUrl = app.docRoot + parts[0];
 
-            $(selector).removeClass('active');
             $('a[href="' + currentRootUrl + '"]').parents(selector).addClass('active');
 
             if ( $(selector + ' a[href="' + currentUrl + '"]').length ) {
