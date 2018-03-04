@@ -148,8 +148,8 @@ define([
                 this.tplParams = data.tpl_params || this.tplParams;
                 var template = data.template ? $.trim(data.template) : '';
                 if (template.length) {
-                    this.template = _.template(template, {});
-                    this._updateDOM(this.template);
+                    this.template = _.template(template);
+                    this._updateDOM(this.template({}));
                 }
             }
 

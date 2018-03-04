@@ -6,8 +6,8 @@ require.config({
 	paths: {
 		'jquery': 				'lib/jquery.min', 				//1.11.1
 		'jquerymobile': 		'lib/jquery.mobile.min',		//1.4.5
-		'underscore':			'lib/underscore.min',			//1.6.0
-		'backbone': 			'lib/backbone.min',				//1.1.2
+		'underscore':			'lib/underscore.min',			//1.8.3
+		'backbone': 			'lib/backbone.min',				//1.3.3
 		'backbone.paginator': 	'lib/ext/backbone.paginator',	//2.0.0
 		'backgrid': 			'lib/backgrid.min',				//0.3.5
 		'abstract.paginator': 	'lib/ext/abstract.paginator',
@@ -142,7 +142,7 @@ require.config({
 			'backbone',
 			'classes/admin/AdminModuleLoader',
             'classes/ScriptLoader',
-            'classes/AbstractTplView'
+            'views/AbstractTplView'
 		],
 		
 		'routers/AdminRouter': 	[
