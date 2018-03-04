@@ -187,11 +187,13 @@
             'jquery',
             'underscore',
             'backbone',
-            'classes/admin/AdminModuleLoader'
+            'classes/admin/AdminModuleLoader',
+            'views/AbstractTplView'
         ],
 
         'routers/AdminRouter': 	[
-            'views/AdminTplView'
+            'views/AdminTplView',
+            'routers/AbstractRouter'
         ]
 	}
 })
