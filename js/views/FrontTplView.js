@@ -359,7 +359,7 @@ define([
             });
 
             // remove all content from <body> tag except for Require JS script and loading spinner
-            $body.children(':not(header,' + this.requireId + ',' + this.loadingId + ')').each(function() {
+            $body.children(':not(header,' + this.noRemoveClass + ',' + this.loadingId + ')').each(function() {
                 $(this).remove();
             });
 

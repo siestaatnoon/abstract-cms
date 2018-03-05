@@ -98,10 +98,10 @@ define([
         loadingId: app.loadingId,
 
         /**
-         * @property {String} requireId
-         * Element id for the RequireJS script include
+         * @property {String} noRemoveClass
+         * Element class to remain in DOM during page transition
          */
-        requireId: app.requireJsId,
+        noRemoveClass: app.frontNoRemoveClass,
 
         /**
          * @property {Object} contentScripts
