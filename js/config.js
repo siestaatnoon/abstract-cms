@@ -11,7 +11,6 @@ define([
     app.pageContentId 	    = abstractCfg.pageContentId;
     app.pageDynContentId    = abstractCfg.pageDynContentId;
     app.tplInfoHeader       = abstractCfg.tplInfoHeader;
-    app.requireJsId         = abstractCfg.requireJsId;
 
     app.adminPagerPerPage 	= abstractCfg.adminPagerPerPage;
     app.adminURI 		    = abstractCfg.adminUri;
@@ -40,6 +39,7 @@ define([
     app.frontTemplateURL 	= app.frontDataRoot + '/app';
     app.useFrontJqm         = abstractCfg.useFrontJqm;
     app.useFrontLoading     = abstractCfg.useFrontLoading;
+    app.frontNoRemoveClass  = abstractCfg.frontNoRemoveClass;
 
 	app.hashChange 			= false;
 	app.pushState 			= true;

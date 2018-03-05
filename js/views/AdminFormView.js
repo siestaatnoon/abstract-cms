@@ -172,7 +172,7 @@ define([
 			if ( _.isEmpty(hiddenFields) === false ) {
 				this.model.set(hiddenFields);
 			}
-		
+
 			this.model.save(null, {
 				validate: false,
 	            success: function(model) {

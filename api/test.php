@@ -381,7 +381,7 @@ $gizmos_data = array(
 	'use_slug' 		=> 1,
     'use_cms_form' 	=> 1,
     'use_frontend_form' => 0,
-    'use_frontend_list' => 0,
+    'use_frontend_list' => 1,
 	'is_active' 	=> 1
 );
 

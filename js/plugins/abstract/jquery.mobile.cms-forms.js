@@ -12,6 +12,12 @@ define([
 			$('.form-save', $form).addClass('activate');
 			hasEdits = true;
 		};
+
+		var showLeavingMesssage = function() {
+            if (hasEdits) {
+                return leaveMsg;
+            }
+		};
 		
 		$('body').on('click', "a[href^='/']", function(e) {
 			if ( ! hasEdits) {
@@ -33,16 +39,12 @@ define([
 			activateFormEdits( $(this) );
 		});
 		
-		$(window).on('beforeunload', function(e) {
-			if (hasEdits) {
-				return leaveMsg;
-			}
-		});
+		$(window).on('beforeunload', showLeavingMesssage);
 		
 		$(window).on('page:unload', function() {
 			$('.abstract-form:input').off('change', ':input');
 			$('body').off('click', "a[href^='/']");
-			$(this).off('beforeunload page:unload');
+			$(window).off('beforeunload', showLeavingMesssage);
 		});
 	});
 });

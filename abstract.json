@@ -9,7 +9,7 @@
   "loadingId":         "#abstract-spinner",
   "pageContentId":     "#main-content",
   "pageDynContentId":  "#abstract-content",
-  "requireJsId":       "#require-js",
+  "frontNoRemoveClass":".tpl-permanent",
   "tplInfoHeader":     "X-Tpl",
   "useFrontJqm":       false,
   "useFrontLoading":   true,
