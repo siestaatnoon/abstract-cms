@@ -127,7 +127,7 @@ define([
                 this.blocks = data.blocks || this.blocks;
                 var template = data.template ? $.trim(data.template) : '';
                 if (template.length) {
-                    this.template = _.template(template, {});
+                    this.template = _.template(template);
                 }
             }
             this.setEl();

@@ -191,6 +191,7 @@ define([
          *
          */
         closeContentView: function() {
+            this.scriptLoader.unload();
             if ( _.isEmpty(this.contentView) === false ) {
                 this.contentView.remove();
                 this.contentView = {};
@@ -334,7 +335,7 @@ define([
                 this.scripts = data.scripts || this.getScriptsObject();
                 var template = data.template ? $.trim(data.template) : '';
                 if (template.length) {
-                    this.template = _.template(template, {});
+                    this.template = _.template(template);
                 }
             }
 
@@ -415,7 +416,8 @@ define([
 
                 if (block['template']) {
                     var data = block['data'] || {};
-                    html = _.template(block['template'], data);
+                    var _template = _.template(block['template']);
+                    html = _template(data);
                 } else if (block['html']) {
                     html = block['html'];
                 } else {
@@ -511,7 +513,8 @@ define([
                 this.setElement( $(this.id)[0] );
             } else if (this.template) {
             // check for element in new template
-                var $template = $(this.template);
+                var html = this.template({});
+                var $template = $(html);
                 if ( '#' + $template.attr('id') === this.id ) {
                     this.setElement($template[0]);
                 } else if ( $(this.id, $template).length ) {
