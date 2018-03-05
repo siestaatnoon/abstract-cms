@@ -1,8 +1,8 @@
 /*
   backgrid
-  http://github.com/wyuenho/backgrid
+  http://github.com/cloudflare/backgrid
 
-  Copyright (c) 2013 Jimmy Yuen Ho Wong and contributors
+  Copyright (c) 2013-present Cloudflare, Inc. and contributors
   Licensed under the MIT license.
 */
 
@@ -62,8 +62,11 @@
   background-color: #f9f9f9;
 }
 
-.backgrid thead th a {
+.backgrid thead th button {
   display: block;
+  padding: 0;
+  background: none;
+  border: none;
 }
 
 .backgrid.backgrid-striped tbody tr:nth-child(even) {
@@ -76,7 +79,7 @@
 }
 
 .backgrid tbody tr.empty td {
-  display: inherit;
+  display: table-cell;
   text-align: center;
 }
 

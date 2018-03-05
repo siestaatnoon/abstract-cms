@@ -8,8 +8,8 @@ require.config({
 		'jquerymobile': 		'lib/jquery.mobile.min',		//1.4.5
 		'underscore':			'lib/underscore.min',			//1.8.3
 		'backbone': 			'lib/backbone.min',				//1.3.3
-		'backbone.paginator': 	'lib/ext/backbone.paginator',	//2.0.0
-		'backgrid': 			'lib/backgrid.min',				//0.3.5
+		'backbone.paginator': 	'lib/ext/backbone.paginator',	//2.0.6
+		'backgrid': 			'lib/backgrid.min',				//0.3.8
 		'abstract.paginator': 	'lib/ext/abstract.paginator',
 		'backgrid.textcell': 	'lib/ext/backgrid.textcell'
 	},
