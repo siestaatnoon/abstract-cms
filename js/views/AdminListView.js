@@ -54,7 +54,7 @@ define([
 		initialize: function(options) {
 			var options = options || {};
 			var tpl = options.template || '';
-			this.template = _.template(tpl, {});
+            this.template = _.template(tpl);
 			this.module = options.module || '';
 			this.blocks = options.blocks || this.blocks;
 			this.scripts = options.scripts || {};
@@ -68,7 +68,9 @@ define([
 			} else {
                 this.scripts['css'] = css;
             }
-			this.setElement( $(this.template).first() );
+
+            var el = this.template({});
+			this.setElement( $(el).first() );
 			this.$container = this.$el.find('.module-list');
 			this.listenTo(this.collection, 'remove', this.render);
 		},
@@ -148,7 +150,8 @@ define([
 			Backbone.View.prototype.remove.call(this);
 			
 			//reset the template in case of browse back to page
-			this.setElement( $(this.template).first(this.id) );
+            var el = this.template({});
+			this.setElement( $(el).first(this.id) );
 			this.$container = this.$el.find('.module-list');
 		},
 
@@ -208,7 +211,8 @@ define([
                     } else {
                         //alternative template used so render with alt data + collection
                         self.altListTmplData = _.extend(self.altListTmplData, {collection: self.collection});
-                        var template = _.template(self.altListTmpl, self.altListTmplData);
+                        var _template = _.template(self.altListTmpl);
+                        var template = _template(self.altListTmplData);
                         $(template).appendTo(self.$container);
                         self.$container.enhanceWithin();
                     }

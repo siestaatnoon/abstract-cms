@@ -33,6 +33,7 @@ $Slim->get('/admin/form_field_custom/:module(/:params+)', 'authorize', 'form_fie
 $Slim->get('/admin/:module/(add|defaults)(/:params+)', 'form_defaults');
 $Slim->get('/admin/:module/edit/:id(/:params+)', 'authorize', 'form_data');
 $Slim->get('/admin/:module/list(/:archive)', 'authorize', 'list_page');
+$Slim->get('/admin/:module/update', 'authorize', 'form_data');
 $Slim->get('/admin/:module/:fn(/:params+)', 'authorize', 'form_custom_func');
 
 $Slim->put('/admin/bulk_update/:module', 'authorize', 'bulk_update');
@@ -259,7 +260,7 @@ function form_arrange_save($module_name, $field_name='', $relation_id=false) {
 
 function form_custom_func($module_name, $fn, $params=array()) {
 	global $Slim, $App;
-	
+
 	if ( Module::is_module($module_name) === false ) {
 	//module not found
 		$Slim->halt(404);
@@ -301,7 +302,7 @@ function form_custom_func($module_name, $fn, $params=array()) {
 }
 
 
-function form_data($module_name, $id, $params=array()) {
+function form_data($module_name, $id='', $params=array()) {
 	global $Slim;
 	
 	if ( Module::is_module($module_name) === false ) {
@@ -310,7 +311,7 @@ function form_data($module_name, $id, $params=array()) {
 	}
 	
 	$module = Module::load($module_name);
-	$data = $module->get_field_values($id, $params);
+	$data = $module->is_options() ? $module->get_options() : $module->get_field_values($id, $params);
 	
 	set_headers();
 	echo json_encode($data);
