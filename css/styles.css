@@ -514,6 +514,7 @@ h3.grid-header {
 }
 #grid table tbody td {
 	font-size: .9em;
+    padding-left: 1.2em;
 }
 #grid table tbody tr {
 	cursor: pointer;
@@ -656,6 +657,7 @@ h3.grid-header {
 		float: none;
 	}
 	#grid table tbody td {
+        padding-left: .4em;
 		display: block;
 	}
 	#grid table thead,

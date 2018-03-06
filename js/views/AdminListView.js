@@ -302,12 +302,16 @@ define([
 			var $select = $('<select/>');
 			var sort = ['descending', 'ascending'];
 			var self = this;
-			
+
 			for (var i=0; i < columns.length; i++) {
 				var column = columns[i];
 				if (column.sortable) {
-					var is_selected = column.name === state.sortKey;
+					var has_key = column.name === state.sortKey;
 					for (var j=0; j < sort.length; j++) {
+					    var is_selected = has_key && (
+					        (j === 0 && state.order === 1) ||
+                            (j === 1 && state.order === -1)
+                        );
 						$('<option/>', {
 							text: 'Sort by: ' + column.label + ' ' + sort[j],
 							val: column.name + ':' + sort[j],
