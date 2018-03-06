@@ -574,9 +574,9 @@ class Module extends \App\Module\Abstract_module {
 		$modify_params = array();
 		
 		$use_model = $data['use_model'];
-		if ($use_model !== $old_module_data['use_model']) {
+		if ($use_model != $old_module_data['use_model']) {
             if ($can_update_immutable === false) {
-                $error = 'Module "create database table" cannot be updated';
+                $error = 'Module ['.$old_module_name.'] cannot switch type model/options';
                 return array('errors' => array($error) );
             } else {
             //module switched from using model to options, drop and return newly created

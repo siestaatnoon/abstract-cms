@@ -553,10 +553,15 @@ h3.grid-header {
 #grid table thead th a {
 	cursor: pointer;
 }
-#grid table thead th.ascending a:after {
+#grid table thead th button {
+	font-size: 14px;
+}
+#grid table thead th.ascending a:after,
+#grid table thead th.ascending button:after {
 	content:  " \25B2";
 }
-#grid table thead th.descending a:after {
+#grid table thead th.descending a:after,
+#grid table thead th.descending button:after {
 	content:  " \25BC";
 }
 #grid th.bulk-select-cell,
@@ -660,6 +665,19 @@ h3.grid-header {
 	#grid td b.ui-table-cell-label {
 		display: inline-block;
 	}
+    #grid td b.ui-table-cell-label button.ui-btn { /* "Hide" button since does nothing anyway */
+        font-size: 14px;
+        margin: 0 0 0 10px;
+        padding: 0;
+        display: inline-block;
+        text-align: left;
+        box-shadow: none;
+        -webkit-box-shadow: none;
+        border: 0;
+        background-color: transparent;
+        text-shadow: none;
+        cursor: default;
+    }
 	#grid td.bulk-select-cell {
 		width: 100%;
 		padding-left: 0;
@@ -671,8 +689,8 @@ h3.grid-header {
 		margin-top: 0;
 	}
 	#grid td.bulk-select-cell label {
-		margin-left: 1%;
-		margin-right: 1%;
+		margin-left: .75%;
+		margin-right: .75%;
 	}
 	#grid span.bulk-select-label {
 		font-size: 1.0em;

@@ -156,7 +156,7 @@ define([
 		},
 
         render: function() {
-            self = this;
+            var self = this;
             var deferred = $.Deferred();
             this.trigger('view:update:start');
             this.$container.empty();
