@@ -5,7 +5,8 @@ namespace App\Model;
 use 
 App\App,
 App\Database\Database,
-App\Exception\AppException;
+App\Exception\AppException,
+App\Module\Module;
 
 /**
  * Model class
@@ -1220,7 +1221,7 @@ class Model {
 		$count = 1;
 		
 		while ($has_dupe) {
-			if ( ! in_array($to_check, $reserved_uris, true)) {
+			if ($this->module === Module::MAIN || ! in_array($to_check, $reserved_uris, true)) {
 				$query = "SELECT COUNT(*) AS count FROM ";
 				$query .= $this->db->escape_identifier(self::$SLUG_TABLE)." ";
 				$query .= "WHERE slug=".$this->db->escape($to_check)." ";

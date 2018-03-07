@@ -3,7 +3,7 @@ require.config({
     waitSeconds: 			60,
 
     paths: {
-        'jquery': 				'lib/jquery.min', 				//1.11.1
+        'jquery': 				'lib/jquery.min', 				//1.12.4
         'jquerymobile':         'lib/jquery.mobile.min',        //1.4.5
         'underscore':			'lib/underscore.min',			//1.8.3
         'backbone': 			'lib/backbone.min',				//1.3.3
