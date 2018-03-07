@@ -551,7 +551,13 @@ if ( ! function_exists('form_select'))
             }
 
 			if ( ! empty($field_name) && $use_template_vars ) {
-				$op = $is_multiple ? $field_name.'.lastIndexOf("'.$val.'")!==-1' : $field_name."==='".$val."'";
+
+                // this could be a potential point for a bug if a value is
+                // a string representation of an integer but better than using
+                // the == in javascript evaluation... we'll see
+                $v = is_numeric($val) ? $val : '"'.$val.'"';
+
+				$op = $is_multiple ? $field_name.'.lastIndexOf('.$v.')!==-1' : $field_name.'==='.$v;
 				$html .= '<% if ('.$op.') { %> selected="selected"<% } %>';
 			} else if ( isset($params['value']) && ! $use_template_vars ) {
 				if ( ( is_array($params['value']) && in_array($val, $params['value']) ) || $params['value'] == $val) {
