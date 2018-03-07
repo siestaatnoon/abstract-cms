@@ -45,6 +45,11 @@ class Module extends \App\Module\Abstract_module {
     const LIST_URI = 'list';
 
     /**
+     * @const string The primary core module name/slug
+     */
+    const MAIN = 'modules';
+
+    /**
      * @const string URI used for module sort page in CMS
      */
     const SORT_URI = 'sort';
@@ -573,10 +578,11 @@ class Module extends \App\Module\Abstract_module {
 		$old_module_data = $module->get_module_data();
 		$modify_params = array();
 		
-		$use_model = $data['use_model'];
-		if ($use_model !== $old_module_data['use_model']) {
+		$use_model = ! empty($data['use_model']);
+		$old_use_model = ! empty($old_module_data['use_model']);
+		if ($use_model !== $old_use_model) {
             if ($can_update_immutable === false) {
-                $error = 'Module "create database table" cannot be updated';
+                $error = 'Module ['.$old_module_name.'] cannot switch type model/options';
                 return array('errors' => array($error) );
             } else {
             //module switched from using model to options, drop and return newly created
