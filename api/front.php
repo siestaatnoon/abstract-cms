@@ -3,19 +3,15 @@ use App\App;
 use App\Html\Template\Template;
 use App\Module\Module;
 use App\Model\Model;
-use Slim\Slim;
 
-require 'Slim/Slim.php';
+// Abstract initialization
 require 'App/App.php';
-require 'common.php';
-
 define('ERROR_LOG', '../logs/errors.log');
-Slim::registerAutoloader();
 App::register_autoload();
-$Slim = new Slim();
 $App = App::get_instance();
 $Pages = Module::load('pages');
 
+// script variables
 $APIURI = 'api/front/data';
 $CSRF_FIELD = 'csrf_token';
 $GET_FORM_TASK = 'form';
@@ -26,32 +22,305 @@ $MODULE_PAGES = 'pages';
 $PAGE_TEMPLATE = Template::get_default_template();
 $TPL_COOKIE = 'abs_front_tpl';
 
-$Slim->get('/front/data/app(/:template)(/:file)', 'app_template');
-$Slim->get('/front/session/ping', 'session_ping');
-$Slim->get('/front/home', 'session_ping', 'app_home');
-$Slim->get('/front/data(/pages)/home', 'session_ping', 'app_home');
-$Slim->get('/front/data/pages/:uri(/:params+)', 'session_ping', 'app_data_pages');
-$Slim->get('/front/data/:module/get/:id(/:params+)', 'session_ping', 'app_data_module');
-$Slim->get('/front/data/:module/list(/:archive)', 'session_ping', 'app_data_list');
-$Slim->get('/front/data/:module/:fn(/:params+)', 'session_ping', 'app_custom_func');
-$Slim->get('/front/:uri(/:params+)', 'session_ping', 'app_page_module');
+//*****************
+// SLIM FRAMEWORK *
+//*****************
+require '../vendor/autoload.php';
 
-$Slim->put('/front/data/:module/:fn(/:params+)', 'session_ping', 'app_form_handler');
+/**
+ * $mw_ping
+ *
+ * Slim Middleware that keeps a session alive, resetting the timeout or creates a new session if inactive.
+ *
+ */
+$mw_ping = function($request, $response, $next) {
+    session_ping();
+    return $next($request, $response);
+};
 
-$Slim->post('/front/data/:module/form(/:params+)', 'session_ping', 'app_form_handler');
-$Slim->post('/front/data/:module/:fn(/:params+)', 'session_ping', 'app_form_handler');
-$Slim->post('(/:params+)', 'session_ping', 'app_404');
+/**
+ * $route_404
+ *
+ * Handles any invalid (unknown route) for GET, POST and PUT requests,
+ * triggers the Slim 404 error handler.
+ *
+ */
+$route_404 = function($request, $response, $args) {
+    throw new \Slim\Exception\NotFoundException($request, $response);
+};
 
-$Slim->run();
+/**
+ * $route_custom_func
+ *
+ * Handles a GET request to retrieve page data and template along with any module data associated
+ * with the page.
+ *
+ */
+$route_custom_func = function($request, $response, $args)  {
+    $module = empty($args['module']) ? '' : $args['module'];
+    $fn = empty($args['fn']) ? '' : $args['fn'];
+    $params = empty($args['params']) ? array() : get_params_from_uri($args['params']);
+    $vars = $request->getParsedBody();
+    $data = app_custom_func($module, $fn, $params, $vars,true);
+    if ($data === NULL) {
+        // module not found, 404 page
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
 
-$Slim->error(function (\Exception $e) use ($Slim) {
-    $errors = array(
-        'errors' => array('['.$e->getCode().'] '.$e->getMessage()."<br/>in ".$e->getFile() )
-    );
-    $Slim->halt(500, json_encode($errors) );
-    exit;
-});
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
 
+/**
+ * $route_data_list
+ *
+ * Handles a GET request to return module list page data.
+ *
+ */
+$route_data_list = function($request, $response, $args) use ($App) {
+    $module_name = empty($args['module']) ? '' : $args['module'];
+    $archive = empty($args['archive']) ? '' : $args['archive'];
+
+    if ( check_for_module($module_name) === false ) {
+        // module not found, 404 page
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $module = Module::load($module_name);
+    $get = $request->getQueryParams();
+    $is_archive = $archive === 'archive';
+    $data = $module->get_front_list($get, $is_archive);
+    $uri = $request->getUri();
+
+    //save sort params to session
+    $cookie = $module->get_session_name().'_front';
+    $session = $App->session();
+    $params = $session->get_data($cookie);
+    if ( ! empty($params['sort_by']) ) {
+        if ($params['sort_by'] !== $data['state']['sort_by']) {
+            //if sort column changed, set to first page
+            $data['state']['page'] = 1;
+        }
+    } else {
+        $params = array();
+    }
+    $params = $data['state'] + $params;
+    $session->set_data($cookie, $params);
+
+    $config = $data['state'] + $data['query_params'];
+    $page = $config['page'];
+    $total_pages = $config['total_pages'];
+    $base_url = $uri->getBasePath().$uri->getPath().'?';
+    $config['page'] = 1;
+    $q = http_build_query($config);
+    $header = '<'.$base_url.$q.'>; rel="first", ';
+    $config['page'] = $total_pages;
+    $q = http_build_query($config);
+    $header .= '<'.$base_url.$q.'>; rel="last"';
+    if ($page > 1) {
+        $config['page'] = $page - 1;
+        $q = http_build_query($config);
+        $header .= ', <'.$base_url.$q.'>; rel="prev"';
+    }
+    if ($page < $total_pages) {
+        $config['page'] = $page + 1;
+        $q = http_build_query($config);
+        $header .= ', <'.$base_url.$q.'>; rel="next"';
+    }
+
+    $App->load_util('template');
+    $data['data'] = array('pagination' => template_pagination($total_pages, $page) );
+    $response = set_headers($response, array('Link' => $header));
+    return $response->withJson($data);
+};
+
+/**
+ * $route_data_module
+ *
+ * Handles a GET request to retrieve module item data from database.
+ *
+ */
+$route_data_module = function($request, $response, $args)  {
+    $module = empty($args['module']) ? '' : $args['module'];
+    $id = empty($args['id']) ? '' : $args['id'];
+    $params = empty($args['params']) ? array() : get_params_from_uri($args['params']);
+    $data = app_data_module($module, $id, $params);
+    if ($data === NULL) {
+    //page not found, 404 page
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_data_pages
+ *
+ * Handles a GET request to retrieve page data and template along with any module data associated
+ * with the page.
+ *
+ */
+$route_data_pages = function($request, $response, $args)  {
+    $uri = empty($args['uri']) ? '' : $args['uri'];
+    $params = empty($args['params']) ? array() : get_params_from_uri($args['params']);
+    $data = app_data_pages($uri, $params, true);
+    if ($data === NULL) {
+        //page not found, 404 page
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_home
+ *
+ * Handles a GET request to retrieve the home page data and template.
+ *
+ */
+$route_home = function($request, $response, $args) use ($GET_ITEM_TASK, $HOME_TEMPLATE, $PAGE_TEMPLATE, $MODULE_PAGES) {
+    $tpl = $PAGE_TEMPLATE;
+    $tpl_file = $HOME_TEMPLATE;
+    if ( Template::is_template($tpl, $tpl_file, true) === false ) {
+        $tpl = $HOME_TEMPLATE;
+        $tpl_file = $PAGE_TEMPLATE;
+    }
+
+    $data = get_template($tpl, $tpl_file, NULL, false, false, true);
+    $data['module'] = $MODULE_PAGES;
+    $data['task'] = $GET_ITEM_TASK;
+
+    //prevents a repeat API call for data already set in this call
+    $data['bootstrapModel'] = array();
+
+    $data['model_url'] = get_data_api_url($MODULE_PAGES, '');
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_page_module
+ *
+ * Handles a GET request to retrieve page data and template along with any module data associated
+ * with the page.
+ *
+ */
+$route_page_module = function($request, $response, $args) use ($Pages, $GET_ITEM_TASK, $GET_LIST_TASK, $GET_FORM_TASK)  {
+    $uri = empty($args['uri']) ? '' : $args['uri'];
+    $params = empty($args['params']) ? array() : get_params_from_uri($args['params']);
+    if ( $Pages->is_page($uri) ) {
+        $data = app_data_pages($uri, $params, false);
+        if ($data === NULL) {
+            throw new \Slim\Exception\NotFoundException($request, $response);
+        }
+        $response = set_headers($response);
+        return $response->withJson($data);
+    }
+
+    // verify module exists, 404 page if not
+    if ( check_for_module($uri, true) === false ) {
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $task = $GET_LIST_TASK; // default task
+    if ( ! empty($params) ) {
+        $task = $params[0];
+        unset($params[0]);
+        $params = array_values($params);
+    }
+
+    $module_name = $uri;
+    $Module = Module::load($module_name);
+    $id_field = $Module->has_slug() ? Model::MODEL_SLUG_FIELD : $Module->get_pk_field();
+    $tpl_file = $uri;
+    $model = array();
+    $data = array();
+    $is_list = false;
+    $func = '';
+
+    switch ($task) {
+        case $GET_ITEM_TASK:
+        case 'item':
+        case 'detail':
+            $func = $GET_ITEM_TASK;
+            $id_or_slug = false;
+            if ( ! empty($params[0]) ) {
+                $id_or_slug = $params[0];
+                unset($params[0]);
+                $params = array_values($params);
+            }
+
+            $model = empty($id_or_slug) ? array() : $Module->get_data($id_or_slug, $Module->has_slug() );
+            if ( empty($model) ) {
+                // page object not found or not active, 404
+                throw new \Slim\Exception\NotFoundException($request, $response);
+            }
+
+            $tpl_file .= '_detail';
+            break;
+        case $GET_FORM_TASK:
+            $func = $GET_FORM_TASK;
+            $data = get_form_data($module_name, $params);
+            $model = $data['defaults'];
+            $id_field = $data['idAttribute'];
+            unset($data['defaults']);
+            unset($data['idAttribute']);
+        case $GET_LIST_TASK:
+        case 'items':
+            $func = $GET_LIST_TASK;
+            $is_list = true;
+            break;
+        default:
+            app_custom_func($module_name, $task, $params, array(),false);
+            return;
+    }
+
+    $json = get_template($module_name, $tpl_file, $model, false, true, true);
+    $json['module'] = $module_name;
+    $json['task'] = $task;
+    $json['idAttribute'] = $id_field;
+    if ( ! empty($model) ) {
+        $json['bootstrapModel'] = $model;
+    }
+    if ( ! empty($data) ) {
+        $json['data'] = $data;
+    }
+
+    $url_param = $is_list ? 'collection_url' : 'model_url';
+    $json[$url_param] = get_data_api_url($module_name, $func, $params);
+    $response = set_headers($response);
+    return $response->withJson($json);
+};
+
+/**
+ * $route_ping
+ *
+ * Handles a GET request to keeps a session alive, resetting the timeout or creates a new
+ * session if inactive. Returns JSON with session_active: true|false. False is if session
+ * was restarted.
+ *
+ */
+$route_ping = function($request, $response, $args) {
+    $data = array('session_active' => session_ping() );
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_template
+ *
+ * Handles a GET request to retrieve the app template JSON.
+ *
+ */
+$route_template = function($request, $response, $args) {
+    $template = empty($args['template']) ? '' : $args['template'];
+    $file = empty($args['file']) ? '' : $args['file'];
+    $data = app_template($template, $file, true, true);
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
 
 /**
  * app_404
@@ -60,22 +329,17 @@ $Slim->error(function (\Exception $e) use ($Slim) {
  *
  * @return void
  */
-function app_404($return_json=false) {
+function app_404() {
     global $GET_ITEM_TASK, $PAGE_TEMPLATE, $MODULE_PAGES;
-    $json = get_template($PAGE_TEMPLATE, '404', NULL, false, false, true);
-    $json['module'] = $PAGE_TEMPLATE;
-    $json['task'] = $GET_ITEM_TASK;
+    $data = get_template($PAGE_TEMPLATE, '404', NULL, false, false, true);
+    $data['module'] = $PAGE_TEMPLATE;
+    $data['task'] = $GET_ITEM_TASK;
 
     //prevents a repeat API call for data already set in this call
-    $json['bootstrapModel'] = array();
+    $data['bootstrapModel'] = array();
 
-    $json['model_url'] = get_data_api_url($MODULE_PAGES, '');
-
-    if ($return_json) {
-        return json_encode($json);
-    }
-    set_headers();
-    echo json_encode($json);
+    $data['model_url'] = get_data_api_url($MODULE_PAGES, '');
+    return $data;
 }
 
 /**
@@ -87,26 +351,20 @@ function app_404($return_json=false) {
  * @param string $fn Custom function within Module class, front_func_{$fn}, that handles
  * request and returns data for resulting page
  * @param array $params Numerical array of additional parameters to pass into custom function call
+ * @param array $args GET or POST values to pass into function
  * @param bool $data_only True if call to method is for data only, not including template
- * @return void
+ * @return array The assoc array for custom module data OR null if invalid module
+ * @throws \Exception if an error occurs in the application processing
  */
-function app_custom_func($module_name, $fn, $params=array(), $data_only=true) {
-    global $Slim, $App;
+function app_custom_func($module_name, $fn, $params=array(), $args=array(), $data_only=true) {
+    global $App;
 
-    // verify module exists, exit if not
-    check_for_module($module_name);
-
-    $Module = Module::load($module_name);
-    $request = $Slim->request;
-    $method = $request->getMethod();
-    $args = array();
-    if (strtoupper($method) === 'GET') {
-        $args = $request->get();
-    } else {
-        $req_body = $request->getBody();
-        $args = json_decode($req_body, true);
+    // verify module exists, return if not
+    if ( check_for_module($module_name) === false ) {
+        return NULL;
     }
 
+    $Module = Module::load($module_name);
     $function = 'front_func_'.$fn;
     $tpl_file = $module_name.'_fn_'.$fn;
     $var = array($Module, $function);
@@ -138,134 +396,56 @@ function app_custom_func($module_name, $fn, $params=array(), $data_only=true) {
     }
 
     if ( ! empty($errors) ) {
-        $json = array('errors' => $errors);
-        $Slim->halt(500, json_encode($json) );
-        exit;
+        throw new \Exception( implode("<br/>\n", $errors) );
     }
 
-    set_headers();
-    echo json_encode($json);
+    return $json;
 }
-
-
-/**
- * app_data_list
- *
- * Handles a GET request to return module list page data.
- *
- * @param string $module_name The module name (slug)
- * @param string $archive If $archive === 'archive' then show items marked as archived
- * @param bool $return_data True to return data as array instead of echo output
- * @return void
- */
-function app_data_list($module_name, $archive='', $return_data=false) {
-    global $Slim, $App;
-
-    // verify module exists, exit if not
-    check_for_module($module_name);
-
-    $module = Module::load($module_name);
-    $request = $Slim->request;
-    $get = $request->get();
-    $is_archive = $archive === 'archive';
-    $data = $module->get_front_list($get, $is_archive);
-
-    //save sort params to session
-    $cookie = $module->get_session_name().'_front';
-    $session = $App->session();
-    $params = $session->get_data($cookie);
-    if ( ! empty($params['sort_by']) ) {
-        if ($params['sort_by'] !== $data['state']['sort_by']) {
-        //if sort column changed, set to first page
-            $data['state']['page'] = 1;
-        }
-    } else {
-        $params = array();
-    }
-    $params = $data['state'] + $params;
-    $session->set_data($cookie, $params);
-
-    $config = $data['state'] + $data['query_params'];
-    $page = $config['page'];
-    $total_pages = $config['total_pages'];
-    $base_url = $request->getRootUri().$request->getResourceUri().'?';
-    $config['page'] = 1;
-    $q = http_build_query($config);
-    $header = '<'.$base_url.$q.'>; rel="first", ';
-    $config['page'] = $total_pages;
-    $q = http_build_query($config);
-    $header .= '<'.$base_url.$q.'>; rel="last"';
-    if ($page > 1) {
-        $config['page'] = $page - 1;
-        $q = http_build_query($config);
-        $header .= ', <'.$base_url.$q.'>; rel="prev"';
-    }
-    if ($page < $total_pages) {
-        $config['page'] = $page + 1;
-        $q = http_build_query($config);
-           $header .= ', <'.$base_url.$q.'>; rel="next"';
-    }
-
-    $App->load_util('template');
-    $data['data'] = array('pagination' => template_pagination($total_pages, $page) );
-
-    if ($return_data) {
-        $data['headers'] = array('Link' => $header);
-        return $data;
-    }
-
-    set_headers( array('Link' => $header) );
-    echo json_encode($data);
-}
-
 
 /**
  * app_data_module
  *
- * Handles a GET request to retrieve module item data from database.
+ * Retrieves module item data from database.
  *
  * @param string $module_name The module name (slug)
  * @param string $id_or_slug Row ID or slug to identify item
  * @param array $params Numerical array of additional parameters to pass into function call
- * @return void
+ * @return mixed Assoc array for module item data OR null if item not found or module not found or invalid
  */
 function app_data_module($module_name, $id_or_slug, $params=array()) {
-    global $Slim;
-
-    // verify module exists, exit if not
-    check_for_module($module_name);
+    // verify module exists, return if not
+    if ( check_for_module($module_name) === false) {
+        return NULL;
+    }
 
     $Module = Module::load($module_name);
     $model = empty($id_or_slug) ? array() : $Module->get_data($id_or_slug, $Module->has_slug() );
     if ( empty($model) ) {
-    // page object not found or not active, 404
-        $Slim->halt(404, app_404(true) );
-        exit;
+        // page object not found or not active, 404
+        return NULL;
     }
 
-    $json = array('model' => $model);
-    set_headers();
-    echo json_encode($json);
+    $data = array('model' => $model);
+    return $data;
 }
-
 
 /**
  * app_data_pages
  *
- * Handles a GET request to retrieve page data and template along with any module data associated
+ * Retrieves page data and template along with any module data associated
  * with the page.
  *
  * @param string $uri The page uri (slug)
  * @param array $params Numerical array of additional parameters to pass into function call
  * @param bool $data_only True to echo model data only and NOT include template data
- * @return void
+ * @return mixed The assoc array of page or page/module data or NULL if page and/or module
+ * data not found
  */
 function app_data_pages($uri, $params=array(), $data_only=true) {
-    global $Slim, $Pages, $MODULE_PAGES, $GET_FORM_TASK, $GET_ITEM_TASK, $GET_LIST_TASK, $PAGE_TEMPLATE;
+    global $Pages, $MODULE_PAGES, $GET_FORM_TASK, $GET_ITEM_TASK, $GET_LIST_TASK, $PAGE_TEMPLATE;
     if ( $Pages->is_page($uri) === false ) {
-    //page not found, 404 page
-        $Slim->halt(404, app_404(true) );
-        exit;
+    //page not found, end of story
+        return NULL;
     }
 
     $Module = Module::load();
@@ -290,8 +470,7 @@ function app_data_pages($uri, $params=array(), $data_only=true) {
 
     if ( empty($page) || empty($page['is_active']) ) {
     // page object not found or not active, 404
-        $Slim->halt(404, app_404(true) );
-        exit;
+        return NULL;
     } else if ( ! empty($page['module_id_list']) ) {
         $mod = $Module->get_data($page['module_id_list']);
         $module_name = empty($mod) ? '' : $mod['name'];
@@ -308,9 +487,8 @@ function app_data_pages($uri, $params=array(), $data_only=true) {
 
             $model = empty($id_or_slug) ? array() : $M1->get_data($id_or_slug, $M1->has_slug() );
             if ( empty($model) ) {
-                // page object not found or not active, 404
-                $Slim->halt(404, app_404(true) );
-                exit;
+            // page object not found or not active, 404
+                return NULL;
             }
 
             $tpl_file .= '_detail';
@@ -361,10 +539,8 @@ function app_data_pages($uri, $params=array(), $data_only=true) {
         $json['data'] = $data;
     }
 
-    set_headers();
-    echo json_encode($json);
+    return $json;
 }
-
 
 /**
  * app_form_handler
@@ -467,126 +643,7 @@ function app_form_handler($module_name, $params=array()) {
 }
 
 
-/**
- * app_home
- *
- * Handles a GET request to retrieve the home page data and template.
- *
- * @return void
- */
-function app_home() {
-    global $GET_ITEM_TASK, $HOME_TEMPLATE, $PAGE_TEMPLATE, $MODULE_PAGES;
-    $tpl = $PAGE_TEMPLATE;
-    $tpl_file = $HOME_TEMPLATE;
-    if ( Template::is_template($tpl, $tpl_file, true) === false ) {
-        $tpl = $HOME_TEMPLATE;
-        $tpl_file = $PAGE_TEMPLATE;
-    }
 
-    $json = get_template($tpl, $tpl_file, NULL, false, false, true);
-    $json['module'] = $MODULE_PAGES;
-    $json['task'] = $GET_ITEM_TASK;
-
-    //prevents a repeat API call for data already set in this call
-    $json['bootstrapModel'] = array();
-
-    $json['model_url'] = get_data_api_url($MODULE_PAGES, '');
-    set_headers();
-    echo json_encode($json);
-}
-
-/**
- * app_page_module
- *
- * Handles a GET request to return module list, item or form data and template. NOTE
- * that if $uri parameter is a slug for a page, the page data will be used instead in
- * case there is a module with the same slug.
- *
- * @param string $uri The module name (slug)
- * @param array $params Numerical array of additional parameters to pass into function call
- * @return void
- */
-function app_page_module($uri, $params=array()) {
-    global $Slim, $Pages, $GET_ITEM_TASK, $GET_LIST_TASK, $GET_FORM_TASK;
-    $is_page = $Pages->is_page($uri);
-    if ($is_page) {
-        app_data_pages($uri, $params, false);
-        return;
-    }
-
-    // verify module exists, 404 page if not
-    check_for_module($uri, true);
-
-    $task = $GET_LIST_TASK; // default task
-    if ( ! empty($params) ) {
-        $task = $params[0];
-        unset($params[0]);
-        $params = array_values($params);
-    }
-
-    $module_name = $uri;
-    $Module = Module::load($module_name);
-    $id_field = $Module->has_slug() ? Model::MODEL_SLUG_FIELD : $Module->get_pk_field();
-    $tpl_file = $uri;
-    $model = array();
-    $data = array();
-    $is_list = false;
-    $func = '';
-
-    switch ($task) {
-        case $GET_ITEM_TASK:
-        case 'item':
-        case 'detail':
-            $func = $GET_ITEM_TASK;
-            $id_or_slug = false;
-            if ( ! empty($params[0]) ) {
-                $id_or_slug = $params[0];
-                unset($params[0]);
-                $params = array_values($params);
-            }
-
-            $model = empty($id_or_slug) ? array() : $Module->get_data($id_or_slug, $Module->has_slug() );
-            if ( empty($model) ) {
-                // page object not found or not active, 404
-                $Slim->halt(404, app_404(true) );
-                exit;
-            }
-
-            $tpl_file .= '_detail';
-            break;
-        case $GET_FORM_TASK:
-            $func = $GET_FORM_TASK;
-            $data = get_form_data($module_name, $params);
-            $model = $data['defaults'];
-            $id_field = $data['idAttribute'];
-            unset($data['defaults']);
-            unset($data['idAttribute']);
-        case $GET_LIST_TASK:
-        case 'items':
-            $func = $GET_LIST_TASK;
-            $is_list = true;
-            break;
-        default:
-            app_custom_func($module_name, $task, $params, false);
-            return;
-    }
-
-    $json = get_template($module_name, $tpl_file, $model, false, true, true);
-    $json['module'] = $module_name;
-    $json['task'] = $task;
-    $json['idAttribute'] = $id_field;
-    if ( ! empty($model) ) {
-        $json['bootstrapModel'] = $model;
-    }
-    if ( ! empty($data) ) {
-        $json['data'] = $data;
-    }
-
-    $url_param = $is_list ? 'collection_url' : 'model_url';
-    $json[$url_param] = get_data_api_url($module_name, $func, $params);
-    set_headers();
-    echo json_encode($json);
-}
 
 
 /**
@@ -633,10 +690,10 @@ function app_template($template='page', $file='default', $reset_current=true, $r
  * not a valid module, will exit script and echo the specific error.
  *
  * @param string $module_name The module name (slug)
- * @return void
+ * @return bool True if valid module found, false if invalid and $show_404 param set to true
+ * @throws \Exception if $show_404 false and module does not exist or invalid
  */
 function check_for_module($module_name, $show_404=false) {
-    global $Slim;
     $error = '';
 
     if ( Module::is_module($module_name) === false ) {
@@ -654,12 +711,13 @@ function check_for_module($module_name, $show_404=false) {
 
     if ( ! empty($error) ) {
         if ($show_404) {
-            $Slim->halt(404, app_404(true) );
-            exit;
+            return false;
+        } else {
+            throw new \Exception($error);
         }
-        $errors = array('errors' => [$error]);
-        $Slim->halt(500, json_encode($errors));
     }
+
+    return true;
 }
 
 
@@ -730,6 +788,26 @@ function get_form_data($module_name, $params=array() ) {
     $data['fields'] = $fields;
     $data[$CSRF_FIELD] = $csrf_token;
     return $data;
+}
+
+
+/**
+ * get_params_from_uri
+ *
+ * Returns an array of parameters extracted from a URI. Since a URI may have
+ * zero, one or multiple segments, this will return an empty array for zero
+ * segments, an array with one element for one segment and so on.
+ *
+ * @param mixed $mixed A URI segment string for parameters
+ * @return array The parameters as numeric array or an empty array if $mixed is empty
+ */
+function get_params_from_uri($mixed) {
+    if ( empty($mixed) ) {
+        return array();
+    } else if ( is_array($mixed) ) {
+        return $mixed;
+    }
+    return explode('/', $mixed);
 }
 
 
@@ -873,3 +951,99 @@ function session_ping() {
 
     return $session_active;
 }
+
+/**
+ * set_headers
+ *
+ * Sets the response headers.
+ *
+ * @param Psr\Http\Message\ResponseInterface $response The Slim response object
+ * @param array $add Assoc array of header name => header value headers to add
+ * @param array $remove Array of header names to remove
+ * @return Psr\Http\Message\ResponseInterface The Slim response object with updated headers
+ */
+function set_headers($response, $add=array(), $remove=array()) {
+    //$response = $response->withHeader('Content-Type', 'application/json');
+    $response = $response->withHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    $response = $response->withHeader('Pragma', 'no-cache');
+    $response = $response->withHeader('Expires', '0');
+
+    if ( ! empty($add) ) {
+        foreach ($add as $name => $value) {
+            $response = $response->withHeader($name, $value);
+        }
+    }
+
+    if ( ! empty($remove) ) {
+        foreach ($remove as $name) {
+            $response = $response->withoutHeader($name);
+        }
+    }
+
+    return $response;
+}
+
+
+$slim_config = [
+    'settings' => [
+        'displayErrorDetails' => $App->config('debug'),
+    ],
+];
+$Container = new \Slim\Container($slim_config);
+
+// Default error handler
+$Container['errorHandler'] = function ($Container) {
+    return function ($request, $response, $exception) use ($Container) {
+        $errors = array(
+            'errors' => array('['.$exception->getCode().'] '.$exception->getMessage()." in ".$exception->getFile() )
+        );
+        return $Container['response']->withStatus(500)->withJson($errors);
+    };
+};
+
+// PHP runtime error handler
+$Container['phpErrorHandler'] = function ($Container) {
+    return function ($request, $response, $error) use ($Container) {
+        $errors = array(
+            'errors' => array($error)
+        );
+        return $Container['response']->withStatus(500)->withJson($errors);
+    };
+};
+
+// 404 error handler
+$Container['notFoundHandler'] = function ($Container) {
+    return function ($request, $response) use ($Container) {
+        $data = app_404();
+        return $Container['response']->withStatus(404)->withJson($data);
+    };
+};
+
+// Initialize Slim
+$Slim = new \Slim\App($Container);
+
+// Slim routes
+$Slim->get('/front/data/app[/{template}[/{file}]]', $route_template);
+$Slim->get('/front/session/ping', $route_ping);
+$Slim->get('/front/home', $route_home)->add($mw_ping);
+$Slim->get('/front/data/home', $route_home)->add($mw_ping);
+$Slim->get('/front/data/pages/home', $route_home)->add($mw_ping);
+$Slim->get('/front/data/pages[/{uri}[/{params:.*}]]', $route_data_pages)->add($mw_ping);
+
+$Slim->get('/front/data/{module}/get/{id}[/{params:.*}]', $route_data_module)->add($mw_ping);
+$Slim->get('/front/data/{module}/list[/{archive}]', $route_data_list)->add($mw_ping);
+$Slim->get('/front/data/{module}/{fn}[/{params:.*}]', $route_custom_func)->add($mw_ping);
+$Slim->get('/front/{uri}[/{params:.*}]', $route_page_module)->add($mw_ping);
+
+// fallback route to 404 page
+$Slim->any('/{params:.*}', $route_404)->add($mw_ping);
+
+$Slim->run();
+/*
+$Slim->put('/front/data/:module/:fn(/:params+)', 'session_ping', 'app_form_handler');
+
+$Slim->post('/front/data/:module/form(/:params+)', 'session_ping', 'app_form_handler');
+$Slim->post('/front/data/:module/:fn(/:params+)', 'session_ping', 'app_form_handler');
+
+
+*/
