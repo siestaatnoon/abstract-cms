@@ -319,8 +319,12 @@ define([
             // add new head elements to DOM,
             // trim and add line breaks for debugging
             $head.children(':not(link,script)').remove();
+
             var head = $head.get(0);
-            head.innerHTML = "\n" + $.trim(newDoc.head.innerHTML) + "\n" + $.trim(head.innerHTML) + "\n";
+
+            // NOTE: fix below to prevent flicker on page transitions
+            //head.innerHTML = "\n" + $.trim(newDoc.head.innerHTML) + "\n" + $.trim(head.innerHTML) + "\n";
+            $head.prepend(newDoc.head.innerHTML);
 
             // workaround to execute newly added template scripts
             var scriptTags = newDoc.head.getElementsByTagName('script');
