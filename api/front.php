@@ -21,6 +21,7 @@ $HOME_TEMPLATE = Template::get_default_home_template();
 $MODULE_PAGES = 'pages';
 $PAGE_TEMPLATE = Template::get_default_template();
 $TPL_COOKIE = 'abs_front_tpl';
+$ERROR_DELIMETER = '%|%';
 
 //*****************
 // SLIM FRAMEWORK *
@@ -201,6 +202,100 @@ $route_home = function($request, $response, $args) use ($GET_ITEM_TASK, $HOME_TE
 };
 
 /**
+ * $route_form_handler
+ *
+ * Handles a PUT or POST request to process a form submit.
+ *
+ */
+$route_form_handler = function($request, $response, $args) use ($App, $CSRF_FIELD, $ERROR_DELIMETER) {
+    $module_name = empty($args['module']) ? '' : $args['module'];
+    $params = empty($args['params']) ? array() : get_params_from_uri($args['params']);
+
+    // verify module exists, 404 page if not
+    if ( check_for_module($module_name, true) === false ) {
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $Module = Module::load($module_name);
+    $Csrf = $App->get_csrf();
+    $post = $request->getParsedBody();
+    $json = array();
+    if ( empty($post[$CSRF_FIELD]) || $Csrf->is_valid($post[$CSRF_FIELD]) === false ) {
+        //CSRF token invalid, cannot continue
+        throw new \Exception('Please refresh this page and fill out the form again.');
+    }
+    unset($post[$CSRF_FIELD]);
+
+    $func = '';
+    if ( ! empty($params) ) {
+        if ( is_array($params) ) {
+            $func = value($params);
+            unset($params[ key($params) ]);
+            $params = array_values($params);
+        } else {
+            $func = $params;
+            $params = '';
+        }
+    }
+
+    $script_path = Template::get_actions_path();
+    $include_path = Template::get_actions_includes_path();
+    $script_response = NULL;
+
+    if ( Template::is_action_script($module_name, $func) ) {
+        $config = Template::get_var();
+        $anon = function () use (
+            $App,
+            $Module,
+            $config,
+            $script_path,
+            $include_path,
+            $module_name,
+            $func,
+            $params,
+            &$post,
+            &$script_response
+        ) {
+            include( Template::get_actions_script_file_path($module_name, $func) );
+        };
+        $anon();
+    } else {
+        $script = $module_name.(empty($func) ? '.phtml' : '/'.$func.'.phtml');
+        throw new \Exception('Form handler '.$script.' not found.');
+    }
+
+    if ( empty($script_response) ) {
+        $script_response = array();
+    }
+
+    if ( isset($script_response['errors']) ) {
+        $errors = is_array($script_response['errors']) ?
+                  implode($ERROR_DELIMETER, $script_response['errors']) :
+                  $script_response['errors'];
+        throw new \Exception($errors);
+    } else if ( isset($script_response['message']) ) {
+        $message = is_array($script_response['message']) ? $script_response['message'] : array($script_response['message']);
+        $json = array('message' => $message);
+    }
+
+    if ( isset($script_response['redirect']) ) {
+        $json['redirect'] = $script_response['redirect'];
+    }  else if ( isset($script_response['fragment']) ) {
+        $json['fragment'] = $script_response['fragment'];
+    }
+
+    $csrf_token = $Csrf->get_token();
+    $model = $Module->get_default_field_values($params);
+    $model[$CSRF_FIELD] = $csrf_token;
+    unset($model['reserved_fields']);
+    $json['model'] = $model;
+    $json['clear_form'] = ! isset($script_response['clear_form']) || ! empty($script_response['clear_form']);
+
+    $response = set_headers($response);
+    return $response->withJson($json);
+};
+
+/**
  * $route_page_module
  *
  * Handles a GET request to retrieve page data and template along with any module data associated
@@ -358,7 +453,7 @@ function app_404() {
  * @throws \Exception if an error occurs in the application processing
  */
 function app_custom_func($module_name, $fn, $params=array(), $args=array(), $data_only=true) {
-    global $App;
+    global $App, $ERROR_DELIMETER;
 
     // verify module exists, return if not
     if ( check_for_module($module_name) === false ) {
@@ -397,7 +492,7 @@ function app_custom_func($module_name, $fn, $params=array(), $args=array(), $dat
     }
 
     if ( ! empty($errors) ) {
-        throw new \Exception( implode("<br/>\n", $errors) );
+        throw new \Exception( implode($ERROR_DELIMETER, $errors) );
     }
 
     return $json;
@@ -542,110 +637,6 @@ function app_data_pages($uri, $params=array(), $data_only=true) {
 
     return $json;
 }
-
-/**
- * app_form_handler
- *
- * Handles a PUT or POST request to process a form submit.
- *
- * @param string $module_name The module name (slug)
- * @param array $params Numerical array of additional parameters to pass into function call
- * @return void
- */
-function app_form_handler($module_name, $params=array()) {
-    global $Slim, $App, $CSRF_FIELD;
-
-    // verify module exists, exit if not
-    check_for_module($module_name);
-
-    $Module = Module::load($module_name);
-    $Csrf = $App->get_csrf();
-    $request = $Slim->request;
-    $json = $request->getBody();
-    $post = json_decode($json, true);
-    $json = array();
-    set_headers();
-    if ( empty($post[$CSRF_FIELD]) || $Csrf->is_valid($post[$CSRF_FIELD]) === false ) {
-    //CSRF token invalid, cannot continue
-        $errors = array('Please refresh this page and fill out the form again.');
-        $json = array('errors' => $errors);
-        $Slim->halt(500, json_encode($json) );
-        exit;
-    }
-    unset($post[$CSRF_FIELD]);
-
-    $func = '';
-    if ( ! empty($params) ) {
-        if ( is_array($params) ) {
-            $func = value($params);
-            unset($params[ key($params) ]);
-            $params = array_values($params);
-        } else {
-            $func = $params;
-            $params = '';
-        }
-    }
-
-    $script_path = Template::get_actions_path();
-    $include_path = Template::get_actions_includes_path();
-    $response = NULL;
-
-    if ( Template::is_action_script($module_name, $func) ) {
-        $config = Template::get_var();
-        $anon = function () use (
-            $App,
-            $Module,
-            $config,
-            $script_path,
-            $include_path,
-            $module_name,
-            $func,
-            $params,
-            &$post,
-            &$response
-        ) {
-            include( Template::get_actions_script_file_path($module_name, $func) );
-        };
-        $anon();
-    } else {
-        $script = $module_name.(empty($func) ? '.phtml' : '/'.$func.'.phtml');
-        $json = array('errors' => array('Form handler '.$script.' not found.') );
-        $Slim->halt(500, json_encode($json) );
-        exit;
-    }
-
-    if ( empty($response) ) {
-        $response = array();
-    }
-
-    if ( isset($response['errors']) ) {
-        $errors = is_array($response['errors']) ? $response['errors'] : array($response['errors']);
-        $json = array('errors' => $errors);
-        $Slim->halt(500, json_encode($json) );
-        exit;
-    } else if ( isset($response['message']) ) {
-        $message = is_array($response['message']) ? $response['message'] : array($response['message']);
-        $json = array('message' => $message);
-    }
-
-    if ( isset($response['redirect']) ) {
-        $json['redirect'] = $response['redirect'];
-    }  else if ( isset($response['fragment']) ) {
-        $json['fragment'] = $response['fragment'];
-    }
-
-    $csrf_token = $Csrf->get_token();
-    $model = $Module->get_default_field_values($params);
-    $model[$CSRF_FIELD] = $csrf_token;
-    unset($model['reserved_fields']);
-    $json['model'] = $model;
-    $json['clear_form'] = ! isset($response['clear_form']) || ! empty($response['clear_form']);
-    echo json_encode($json);
-}
-
-
-
-
 
 /**
  * app_template
@@ -995,8 +986,11 @@ $Container = new \Slim\Container($slim_config);
 // Default error handler
 $Container['errorHandler'] = function ($Container) {
     return function ($request, $response, $exception) use ($Container) {
+        global $ERROR_DELIMETER;
+        $message = $exception->getMessage();
+        $message = str_replace($ERROR_DELIMETER, ", ", $message);
         $errors = array(
-            'errors' => array('['.$exception->getCode().'] '.$exception->getMessage()." in ".$exception->getFile() )
+            'errors' => array('['.$exception->getCode().'] '.$message." in ".$exception->getFile() )
         );
         return $Container['response']->withStatus(500)->withJson($errors);
     };
@@ -1005,10 +999,12 @@ $Container['errorHandler'] = function ($Container) {
 // PHP runtime error handler
 $Container['phpErrorHandler'] = function ($Container) {
     return function ($request, $response, $error) use ($Container) {
-        $errors = array(
-            'errors' => array($error)
+        global $ERROR_DELIMETER;
+        $errors = explode($ERROR_DELIMETER, $error);
+        $data = array(
+            'errors' => $errors
         );
-        return $Container['response']->withStatus(500)->withJson($errors);
+        return $Container['response']->withStatus(500)->withJson($data);
     };
 };
 
@@ -1023,28 +1019,26 @@ $Container['notFoundHandler'] = function ($Container) {
 // Initialize Slim
 $Slim = new \Slim\App($Container);
 
-// Slim routes
+// GET routes
 $Slim->get('/front/data/app[/{template}[/{file}]]', $route_template);
 $Slim->get('/front/session/ping', $route_ping);
 $Slim->get('/front/home', $route_home)->add($mw_ping);
 $Slim->get('/front/data/home', $route_home)->add($mw_ping);
 $Slim->get('/front/data/pages/home', $route_home)->add($mw_ping);
 $Slim->get('/front/data/pages[/{uri}[/{params:.*}]]', $route_data_pages)->add($mw_ping);
-
 $Slim->get('/front/data/{module}/get/{id}[/{params:.*}]', $route_data_module)->add($mw_ping);
 $Slim->get('/front/data/{module}/list[/{archive}]', $route_data_list)->add($mw_ping);
 $Slim->get('/front/data/{module}/{fn}[/{params:.*}]', $route_custom_func)->add($mw_ping);
 $Slim->get('/front/{uri}[/{params:.*}]', $route_page_module)->add($mw_ping);
 
+// PUT routes
+$Slim->put('/front/data/{module}/{fn}[/{params:.*}]', $route_form_handler)->add($mw_ping);
+
+// POST routes
+$Slim->post('/front/data/{module}/form[/{params:.*}]', $route_form_handler)->add($mw_ping);
+$Slim->post('/front/data/{module}/{fn}[/{params:.*}]', $route_form_handler)->add($mw_ping);
+
 // fallback route to 404 page
 $Slim->any('/{params:.*}', $route_404)->add($mw_ping);
 
 $Slim->run();
-/*
-$Slim->put('/front/data/:module/:fn(/:params+)', 'session_ping', 'app_form_handler');
-
-$Slim->post('/front/data/:module/form(/:params+)', 'session_ping', 'app_form_handler');
-$Slim->post('/front/data/:module/:fn(/:params+)', 'session_ping', 'app_form_handler');
-
-
-*/
