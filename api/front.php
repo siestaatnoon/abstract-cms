@@ -273,8 +273,9 @@ $route_page_module = function($request, $response, $args) use ($Pages, $GET_ITEM
             $is_list = true;
             break;
         default:
-            app_custom_func($module_name, $task, $params, array(),false);
-            return;
+            $data = app_custom_func($module_name, $task, $params, array(),false);
+            $response = set_headers($response);
+            return $response->withJson($data);
     }
 
     $json = get_template($module_name, $tpl_file, $model, false, true, true);
