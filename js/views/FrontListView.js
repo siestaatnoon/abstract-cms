@@ -82,6 +82,8 @@ define([
                         var errors = response.errors ? response.errors.join("\n") : 'An unknown error has occurred';
                         console.log("FrontListView.render: error(s) have occurred in AJAX call:\n" + errors);
                     }
+                    self.deferred.resolve(response);
+                    self.trigger('view:update:end');
                 }
             });
 
