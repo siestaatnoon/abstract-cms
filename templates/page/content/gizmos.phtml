@@ -20,35 +20,35 @@ $web_root = template_web_root();
 
     <div class="small-12 medium-9 large-9 columns">
 
-<?php echo template_breadcrumbs(); ?>
+<%= breadcrumbs %>
 
         <div id="main-content2">
 
             <h1>Gizmos</h1>
 
-            <% for (var i=0; i < items.length; i++) { var item = items[i]; %>
+<% for (var i=0; i < items.length; i++) { var item = items[i]; %>
 
-            <div class="list-item row">
-                <div class="small-12 medium-2 large-2 columns">
-                    <img src="<?php echo template_img_path('test'); ?><%= item.images.length ? item.images[0] : 'default.jpg' %>" alt="<%- item.title %>" />
-                </div>
-                <div class="small-12 medium-10 large-10 columns">
-                    <p class="title">
-                        <a href="<?php echo $web_root; ?>/gizmos/detail/<%= item.slug %>"><%= item.title %></a>
-                    </p>
-                    <p class="subinfo">
-                        <%= item.post_date %><br/>
-                        <%= item.post_time %>
-                    </p>
-                    <p class="intro">
-                        <%= item.color %> <%= item.day %>
-                    </p>
-                </div>
-            </div>
+<div class="list-item row">
+  <div id="sidebar" class="small-12 medium-2 large-2 columns">
+    <img src="<?php echo template_img_path('test'); ?><%= item.images.length ? item.images[0] : 'default.jpg' %>" alt="<%- item.title %>" />
+  </div>
+  <div id="sidebar" class="small-12 medium-10 large-10 columns">
+    <p class="title">
+      <a href="<?php echo $web_root; ?>/gizmos/detail/<%= item.slug %>"><%= item.title %></a>
+    </p>
+    <p class="subinfo">
+      <%= item.post_date %><br/>
+      <%= item.post_time %>
+    </p>
+    <p class="intro">
+      <%= item.color %> <%= item.day %>
+    </p>
+  </div>
+</div>
 
-            <% } %>
+<% } %>
 
-          <%= pagination %>
+<%= pagination %>
 
         </div>
 
