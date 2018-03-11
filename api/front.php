@@ -36,6 +36,7 @@ $ERROR_DELIMETER = '%|%';
  * Handles a 404 error page.
  *
  * @return array Assoc array of 404 page data
+ * @throws \Exception if an application or runtime error occurs and is handled by the Slim error handler
  */
 function app_404() {
     global $GET_ITEM_TASK, $PAGE_TEMPLATE, $MODULE_PAGES;
