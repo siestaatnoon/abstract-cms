@@ -62,7 +62,7 @@ function app_404() {
  * @param array $args GET or POST values to pass into function
  * @param bool $data_only True if call to method is for data only, not including template
  * @return array The assoc array for custom module data OR null if invalid module
- * @throws \Exception if an error occurs in the function process
+ * @throws \Exception if an application or runtime error occurs and is handled by the Slim error handler
  */
 function app_custom_func($module_name, $fn, $params=array(), $args=array(), $data_only=true) {
     global $App, $ERROR_DELIMETER;
@@ -96,7 +96,7 @@ function app_custom_func($module_name, $fn, $params=array(), $args=array(), $dat
         } catch (Exception $e) {
             $error = 'An error has occurred in '.$module_name.'->'.$function . '()';
             if ($App->config('debug')) {
-                $error .= ":<br/>\n".$e->getMessage();
+                $error .= ": ".$e->getMessage();
             }
             $errors[] = $error;
         }
@@ -120,6 +120,7 @@ function app_custom_func($module_name, $fn, $params=array(), $args=array(), $dat
  * @param string $id_or_slug Row ID or slug to identify item
  * @param array $params Numerical array of additional parameters to pass into function call
  * @return mixed Assoc array for module item data OR null if item not found or module not found or invalid
+ * @throws \Exception if an application or runtime error occurs and is handled by the Slim error handler
  */
 function app_data_module($module_name, $id_or_slug, $params=array()) {
     // verify module exists, return if not
@@ -149,6 +150,7 @@ function app_data_module($module_name, $id_or_slug, $params=array()) {
  * @param bool $data_only True to echo model data only and NOT include template data
  * @return mixed The assoc array of page or page/module data or NULL if page and/or module
  * data not found
+ * @throws \Exception if an application or runtime error occurs and is handled by the Slim error handler
  */
 function app_data_pages($uri, $params=array(), $data_only=true) {
     global $Pages, $MODULE_PAGES, $GET_FORM_TASK, $GET_ITEM_TASK, $GET_LIST_TASK, $PAGE_TEMPLATE;
@@ -265,10 +267,10 @@ function app_data_pages($uri, $params=array(), $data_only=true) {
  * @param string $file The template file name (minus .phtml extension) within the template directory
  * or [$template]/content directory
  * @param bool $reset_current True to update the current template to this template
- * @param bool $return_data True to return the template data as an array, false to echo data
  * @param bool $is_module True if template is for module other than pages module
  * @return The assoc array of page or page/module data or NULL if page and/or module
  * data not found
+ * @throws \Exception if an application or runtime error occurs and is handled by the Slim error handler
  */
 function app_template($template='page', $file='default', $reset_current=true, $is_module=false) {
     global $App, $TPL_COOKIE;
@@ -296,6 +298,7 @@ function app_template($template='page', $file='default', $reset_current=true, $i
  * not a valid module, will exit script and echo the specific error.
  *
  * @param string $module_name The module name (slug)
+ * @param bool $show_404 True to not throw an exception but return false instead
  * @return bool True if valid module found, false if invalid and $show_404 param set to true
  * @throws \Exception if $show_404 false and module does not exist or invalid
  */
@@ -358,6 +361,7 @@ function get_data_api_url($module_name, $func, $params=array()) {
  * @param string $module_name The module name (slug)
  * @param array $params Numerical array of additional parameters for form
  * @return array The form data or NULL if module invalid
+ * @throws \Exception if an application or runtime error occurs and is handled by the Slim error handler
  */
 function get_form_data($module_name, $params=array() ) {
     global $App, $CSRF_FIELD, $GET_FORM_TASK;
@@ -406,7 +410,7 @@ function get_form_data($module_name, $params=array() ) {
  * zero, one or multiple segments, this will return an empty array for zero
  * segments, an array with one element for one segment and so on.
  *
- * @param mixed $mixed A URI segment string for parameters
+ * @param mixed $mixed A URI segment string for parameters or can be array which is returned
  * @return array The parameters as numeric array or an empty array if $mixed is empty
  */
 function get_params_from_uri($mixed) {
@@ -434,6 +438,7 @@ function get_params_from_uri($mixed) {
  * @param bool $is_content True to return template content data instead of full template, note that
  * modules and pages may have a specific template, in which case, the full template will be returned
  * @return array The template data in an assoc array
+ * @throws \Exception if an application or runtime error occurs and is handled by the Slim error handler
  */
 function get_template($tpl, $tpl_file, $model=array(), $data_only=false, $is_module=false, $is_content=false) {
     global $Slim, $PAGE_TEMPLATE;
