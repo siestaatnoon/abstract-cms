@@ -35,7 +35,7 @@ $ERROR_DELIMETER = '%|%';
  *
  * Handles a 404 error page.
  *
- * @return array Assoc array of 404 page
+ * @return array Assoc array of 404 page data
  */
 function app_404() {
     global $GET_ITEM_TASK, $PAGE_TEMPLATE, $MODULE_PAGES;
@@ -995,15 +995,16 @@ $Container = new \Slim\Container($slim_config);
 // Default error handler
 $Container['errorHandler'] = function ($Container) {
     return function ($request, $response, $exception) use ($Container) {
-        global $ERROR_DELIMETER;
+        global $App, $ERROR_DELIMETER;
         $message = $exception->getMessage();
         $message = str_replace($ERROR_DELIMETER, ", ", $message);
         $code = $exception->getCode();
         if ( ! empty($code) ) {
             $code = '['.$code.'] ';
         }
+        $file = $App->config('debug') ? " in ".$exception->getFile() : '';
         $errors = array(
-            'errors' => array($code.$message." in ".$exception->getFile() )
+            'errors' => array($code.$message.$file)
         );
         return $Container['response']->withStatus(500)->withJson($errors);
     };
