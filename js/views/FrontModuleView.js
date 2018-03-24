@@ -158,10 +158,9 @@ define([
                 },
                 error: function (model, response, options) {
                     var json = response.responseJSON;
-                    var errors = json['errors'] || ['An error has occurred while saving form.'];
+                    var errors = _.has(json, 'errors') ? json.errors : ['An error has occurred while saving form.'];
                     if (app.debug) {
-                        var error_msg = typeof errors === 'string' ? errors : errors.join("\n");
-                        console.log(error_msg);
+                        console.log( errors.join("\n") );
                     }
                     self.trigger('form:submit:error', $(formId).get(0), errors);
                 }
@@ -212,8 +211,9 @@ define([
                     self.trigger('view:update:end');
                 },
                 error: function(model, response, options) {
+                    var json = response.responseJSON;
                     if (app.debug) {
-                        var errors = response.errors ? response.errors.join("\n") : 'An unknown error has occurred';
+                        var errors = json.errors ? json.errors.join("\n") : 'An unknown error has occurred';
                         console.log("FrontModuleView.render: error(s) have occurred in AJAX call:\n" + errors);
                     }
                     self.deferred.resolve(response);

@@ -1007,6 +1007,8 @@ $Container['errorHandler'] = function ($Container) {
         $code = $exception->getCode();
         if ( ! empty($code) ) {
             $code = '['.$code.'] ';
+        } else {
+            $code = '';
         }
         $file = $App->config('debug') ? " in ".$exception->getFile() : '';
         $errors = array(
