@@ -64,10 +64,19 @@ define([
 				var template = self.template(model.toJSON());
 				self.setElement( $(template).first() );
 				deferred.resolveWith(self, self.model);
-			}, error: function(jqXHR, status, error) {
-				if (app.debug) {
-					console.log('FormView.render: model could not be initialized [' + status + '] ' + error);
+			}, error: function(model, response, options) {
+                var json = response.responseJSON;
+			    var error_msg = 'Error(s) have ocurred while rendering form view';
+			    var error_modal = error_msg;
+				if ( app.debug && _.has(json, 'errors') ) {
+                    if (json.errors.length) {
+                        error_msg += ":\n" + json.errors.join("\n");
+                        error_modal = json.errors.join('<br/><br/>');
+                    }
+                    console.log(error_msg);
 				}
+                Utils.showModalWarning('Error', error_modal);
+                deferred.resolveWith(self, {});
 			}});
 
 			return deferred.promise();
@@ -147,7 +156,7 @@ define([
 							Utils.showFieldError(selectors[field], errors[field]);
 						}
 
-						$field.on('change', function() {
+						$field.on('change.formview', function() {
 							var obj = {};
 							obj[field] = Utils.getVal($field);
 							var errs = self.model.validate(obj);
@@ -175,7 +184,7 @@ define([
 
 			this.model.save(null, {
 				validate: false,
-	            success: function(model) {
+	            success: function(model, response) {
 	            	self.trigger('view:update:end');
 	            	Utils.showModalDialog('Message', 'The form has saved successfully.', 
 	            		function() {
@@ -188,13 +197,18 @@ define([
 	            },
 	            error: function (model, response) {
 	            	self.trigger('view:update:end');
-	            	var error_msg = 'An error occurred while saving the form.';
-					var json_msg = response.responseJSON;
-	            	if (app.debug && json_msg['errors'] !== undefined) {
-	            		var errors = json_msg['errors'];
-	            		error_msg = typeof errors === 'string' ? errors : json_msg['errors'].join('<br/>');
-	            	}
-	            	Utils.showModalWarning('Error', error_msg);
+	            	var json = response.responseJSON;
+	            	var error_msg = 'Error(s) have occurred while saving the form';
+                    var error_modal = error_msg;
+                    if (app.debug) {
+                        if ( _.has(json, 'errors') && json.errors.length ) {
+                            error_msg += ":\n" + json.errors.join("\n");
+                            error_modal = json.errors.join('<br/><br/>');
+                        }
+                        console.log(error_msg);
+                    }
+                    self.trigger('view:update:end');
+	            	Utils.showModalWarning('Error', error_modal);
 	            }
 	        });
 			
@@ -204,7 +218,7 @@ define([
 		},
 		
 		remove: function() {
-			$('#' + this.form_id).find(':input').off('change');
+			$('#' + this.form_id).find(':input').off('change.formview');
 			Backbone.View.prototype.remove.call(this);
 		},
 		

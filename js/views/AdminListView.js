@@ -220,10 +220,19 @@ define([
                     self.trigger('view:update:end');
                     deferred.resolveWith(self.collection);
                 },
-                error: function(jqXHR, status, error) {
-                    if (app.debug) {
-                        console.log('AdminListView.render: collection could not be initialized [' + status + '] ' + error);
+                error: function(collection, response, options) {
+                    var json = response.responseJSON;
+                    var error_msg = 'Error(s) have ocurred while rendering list view';
+                    var error_modal = error_msg;
+                    if ( app.debug && _.has(json, 'errors') ) {
+                        if (json.errors.length) {
+                            error_msg += ":\n" + json.errors.join("\n");
+                            error_modal = json.errors.join('<br/><br/>');
+                        }
+                        console.log(error_msg);
                     }
+                    Utils.showModalWarning('Error', error_modal);
+                    deferred.resolveWith(self, []);
                 }
             });
 

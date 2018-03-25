@@ -1,78 +1,99 @@
 <?php
 
-$Slim = NULL;
+$ERROR_DELIMETER = '%|%';
 
-function module_form_defaults($module_name, $params=array()) {
-    global $Slim;
-
-    if ( Module::is_module($module_name) === false ) {
-        //module not found
-        $Slim->halt(404);
+/**
+ * get_params_from_uri
+ *
+ * Returns an array of parameters extracted from a URI. Since a URI may have
+ * zero, one or multiple segments, this will return an empty array for zero
+ * segments, an array with one element for one segment and so on.
+ *
+ * @param mixed $mixed A URI segment string for parameters or can be array which is returned
+ * @return array The parameters as numeric array or an empty array if $mixed is empty
+ */
+function get_params_from_uri($mixed) {
+    if ( empty($mixed) ) {
+        return array();
+    } else if ( is_array($mixed) ) {
+        return $mixed;
     }
-
-    $module = Module::load($module_name);
-    $data = $module->get_default_field_values($params);
-
-    set_headers();
-    echo json_encode($data);
+    return explode('/', $mixed);
 }
 
-
-function module_form_save($module_name, $id='', $params=array()) {
-    global $Slim;
-
-    if ( Module::is_module($module_name) === false ) {
-        //module not found
-        $Slim->halt(404);
-    }
-
-    $module = Module::load($module_name);
-    $request = $Slim->request;
-    $json = $request->getBody();
-    $post = json_decode($json, true);
-
-    $module_data = $module->get_module_data();
-    $is_options = $module->is_options();
-    $pk_field = $module_data['pk_field'];
-    if ( ! $is_options && empty($post[$pk_field]) ) {
-        $post[$pk_field] = $id;
-    }
-    $data = Form::form_data_values($module_name, $post);
-
-    $result = NULL;
-    if ($is_options) {
-        $result = $module->update_options($data);
-    } else if ( $module->is_main_module() ) {
-        $result = empty($id) ? $module->create($data) : $module->modify($data);
-    } else {
-        $result = empty($id) ? $module->add($data) : $module->update($data);
-    }
-    $resp = is_array($result) && isset($result['errors']) ? $result : $post;
-
-    if ( isset($resp['errors']) ) {
-        $Slim->halt(500, json_encode($resp) );
-    }
-
-    set_headers();
-    echo json_encode($resp);
-}
-
-
-function module_form_save_put($module_name, $params=array()) {
-    module_form_save($module_name, false, $params);
-}
-
-
-function set_headers($add=array()) {
-    global $Slim;
-    $Slim->response->headers->set('Content-Type', 'application/json');
-    $Slim->response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
-    $Slim->response->headers->set('Pragma', 'no-cache');
-    $Slim->response->headers->set('Expires', '0');
+/**
+ * set_headers
+ *
+ * Sets the response headers.
+ *
+ * @param Psr\Http\Message\ResponseInterface $response The Slim response object
+ * @param array $add Assoc array of header name => header value headers to add
+ * @param array $remove Array of header names to remove
+ * @return Psr\Http\Message\ResponseInterface The Slim response object with updated headers
+ */
+function set_headers($response, $add=array(), $remove=array()) {
+    //$response = $response->withHeader('Content-Type', 'application/json');
+    $response = $response->withHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    $response = $response->withHeader('Pragma', 'no-cache');
+    $response = $response->withHeader('Expires', '0');
 
     if ( ! empty($add) ) {
         foreach ($add as $name => $value) {
-            $Slim->response->headers->set($name, $value);
+            $response = $response->withHeader($name, $value);
         }
     }
+
+    if ( ! empty($remove) ) {
+        foreach ($remove as $name) {
+            $response = $response->withoutHeader($name);
+        }
+    }
+
+    return $response;
 }
+
+$slim_config = [
+    'settings' => [
+        'displayErrorDetails' => $App->config('debug'),
+    ],
+];
+$Container = new \Slim\Container($slim_config);
+
+// Default error handler
+$Container['errorHandler'] = function ($Container) {
+    return function ($request, $response, $exception) use ($Container) {
+        global $App, $ERROR_DELIMETER;
+        $message = $exception->getMessage();
+        $message = str_replace($ERROR_DELIMETER, ", ", $message);
+        $code = $exception->getCode();
+        if ( ! empty($code) ) {
+            $code = '['.$code.'] ';
+        } else {
+            $code = '';
+        }
+        $file = $App->config('debug') ? " in ".$exception->getFile() : '';
+        $errors = array(
+            'errors' => array($code.$message.$file)
+        );
+        return $Container['response']->withStatus(500)->withJson($errors);
+    };
+};
+
+// PHP runtime error handler
+$Container['phpErrorHandler'] = function ($Container) {
+    return function ($request, $response, $error) use ($Container) {
+        global $ERROR_DELIMETER;
+        $errors = explode($ERROR_DELIMETER, $error);
+        $data = array(
+            'errors' => $errors
+        );
+        return $Container['response']->withStatus(500)->withJson($data);
+    };
+};
+
+// 404 error handler
+$Container['notFoundHandler'] = function ($Container) {
+    return function ($request, $response) use ($Container) {
+        return $Container['response']->withStatus(404);
+    };
+};

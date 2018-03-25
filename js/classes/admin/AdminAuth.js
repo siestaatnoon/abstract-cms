@@ -73,7 +73,7 @@ define([
 			var deferred = $.Deferred();
 			var self = this;
 			var error_label = 'Error';
-			var error_msg  = '';
+			var error_msg  = 'Error(s) have occurred during authentication';
 			var data = {
 				user: user,
 				pass: pass,
@@ -90,11 +90,14 @@ define([
 					self._session.sessionStart();
 				}
 				deferred.resolve(response);
-			}).fail(function(jqXHR, status, error) {
+			}).fail(function(jqXHR) {
 				if (app.debug) {
-					error_msg = 'Authentication failed: [' + status + '] ' + error + '.';
-					console.log(error_msg);
+                    var response = Utils.parseJqXHR(jqXHR);
+                    if (response.errors.length) {
+                        error_msg += ":\n" + response.errors.join("\n");
+                    }
 				}
+                console.log(error_msg);
 			});
 			
 			return deferred.promise();
@@ -109,28 +112,31 @@ define([
 			var deferred = $.Deferred();
 			var self = this;
 			var error_label = 'Error';
-			var error_msg  = '';
+			var error_msg  = 'Error(s) have occurred while ending session';
 			
 			$.ajax({
 				url:		this._urlRoot + '/logout',
 				type: 		'GET',
 				dataType: 	'json'
-			}).done(function(json) {
-				if (json.logged_out) {
+			}).done(function(response) {
+				if (response.logged_out) {
 					self._session.sessionDestroy();
-					deferred.resolve(json.logged_out);
-				} else if (json.errors) {
+					deferred.resolve(response.logged_out);
+				} else if (response.errors) {
 					if (app.debug) {
-						error_msg = json.errors.join('<br/><br/>');
-						console.log( json.errors.join("\n") );
+						console.log( error_msg + ":\n" + response.errors.join("\n") );
+                        error_msg = response.errors.join('<br/><br/>');
 					}
 					Utils.showModalWarning(error_label, error_msg);
 				}
-			}).fail(function(jqXHR, status, error) {
+			}).fail(function(jqXHR) {
 				if (app.debug) {
-					error_msg = 'Logout failed: [' + status + '] ' + error + '.';
-					console.log(error_msg);
+                    var response = Utils.parseJqXHR(jqXHR);
+                    if (response.errors.length) {
+                        error_msg += ":\n" + response.errors.join("\n");
+                    }
 				}
+                console.log(error_msg);
 			});
 			
 			return deferred.promise();
@@ -156,32 +162,34 @@ define([
 			var apiUrl = this._dataRoot + '/' + route;
 			var self = this;
 			var error_label = 'Error';
-			var error_msg  = '';
+			var error_msg  = 'Error(s) have occurred while loading page';
 			
 			$.ajax({
 				url : 		apiUrl,
 				type: 		'GET',
 				dataType: 	'json'
-			}).done(function(json) {
-				if (json.fields && json.template) {
+			}).done(function(response) {
+				if (response.fields && response.template) {
 					if (app.debug) {
 						console.log('AdminAuth.loadAuthPage[' + self._module + '] page data retrieved ' + apiUrl);
 					}
-					deferred.resolve(json);
-				} else if (json.errors) {
+					deferred.resolve(response);
+				} else if (response.errors) {
 					if (app.debug) {
-						error_msg = json.errors.join('<br/><br/>');
-						console.log( json.errors.join("\n") );
+						error_msg = response.errors.join('<br/><br/>');
+						console.log( error_msg + ":\n" + response.errors.join("\n") );
 					}
 					Utils.showModalWarning(error_label, error_msg);
 				}
 				
-			}).fail(function(jqXHR, status, error) {
+			}).fail(function(jqXHR) {
 				if (app.debug) {
-					error_msg = 'AdminAuth.loadAuthPage[' + self._module + '] page data not retrieved [';
-					error_msg += status + '] ' + error + '.';
-					console.log(error_msg);
+                    var response = Utils.parseJqXHR(jqXHR);
+                    if (response.errors.length) {
+                        error_msg += ":\n" + response.errors.join("\n");
+                    }
 				}
+                console.log(error_msg);
 			});
 			
 			return deferred.promise();
