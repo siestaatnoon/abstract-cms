@@ -94,7 +94,7 @@ define([
                         Utils.showModalWarning('Error', error);
                     }
                     $submit.attr('disabled', false);
-                }).fail(function(jqXHR, status, error) {
+                }).fail(function(jqXHR) {
                     var json = JSON.parse(jqXHR.responseText);
                     Utils.showModalWarning('Error', json.errors.join('<br/>') );
                     isValidForm = false;

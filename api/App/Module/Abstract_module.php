@@ -329,10 +329,15 @@ abstract class Abstract_module {
         $rel_config = $this->module['field_data']['relations'];
 		foreach ($relations as $field_name => $rel) {
             $module = empty($rel_config[$field_name]['module']) ? '' : $rel_config[$field_name]['module'];
+            $rel_module = Module::load($module);
 			$relation_type = $rel->get_property('relation_type');
 			$indep_model = $rel->get_property('indep_model');
 			foreach ($ids as $id) {
 				$rel_ids = $rel->get_ids($id, $field_name);
+
+                // delete relational files
+                $rel_module->delete_files($rel_ids);
+
 				if ($relation_type === $rel::RELATION_TYPE_1N) {
 				//delete relation table rows if type 1:n
 					if ( $indep_model->delete($rel_ids) === false ) {
@@ -350,6 +355,9 @@ abstract class Abstract_module {
 				}
 			}
 		}
+
+        // delete associated files
+        $this->delete_files($ids);
 		
 		//delete the module row
 		if ( $this->model->delete($ids) === false ) {
@@ -1230,6 +1238,9 @@ abstract class Abstract_module {
 					//delete relational rows
 					$diff = array_diff($old_indep_ids, $indep_ids);
 					if ( ! empty($diff) ) {
+					    // first delete associated files
+                        $rel_module->delete_files($diff);
+					    // then delete the rows
 						$rel_module->delete($diff);
 					}
 				} else {
@@ -1324,6 +1335,62 @@ abstract class Abstract_module {
 		
 		return empty($errors) ? true : array('errors' => $errors);
 	}
+
+
+    /**
+     * delete_files
+     *
+     * Deletes files and images corresponding to module rows given by the $id parameter. Note that this function
+     * can be safely called if no files exist in module rows or module does not utilize files.
+     *
+     * @access protected
+     * @param mixed $mixed The row id or array of ids to delete corresponding files
+     * @return void
+     */
+    protected function delete_files($mixed) {
+        if ( empty($mixed) || empty($this->module['field_data']['uploads']) ) {
+            return;
+        }
+
+        $uploads = $this->module['field_data']['uploads'];
+        $ids = is_array($mixed) ? $mixed : array($mixed);
+        $query_params = array(
+            'where' => array(
+                'in' => array(
+                    $this->module['pk_field'] => $ids
+                )
+            )
+        );
+        $rows = $this->model->get_rows($query_params);
+
+        foreach ($uploads as $field => $cfg) {
+            $is_image = ! empty($cfg['is_image']);
+            $upload_cfg = $this->App->upload_config($cfg['config_name'], $is_image);
+            if ( ! empty($upload_cfg) ) {
+                $filepath = DOC_ROOT.$upload_cfg['upload_path'].DIRECTORY_SEPARATOR;
+                foreach ($rows as $row) {
+                    if ( ! empty($row[$field]) ) {
+                        $files = is_array($row[$field]) ? $row[$field] : array($row[$field]);
+                        foreach ($files as $file) {
+                            if ( @is_file($filepath.$file) ) {
+                                unlink($filepath.$file);
+                            }
+                            if ($is_image && $upload_cfg['create_thumb']) {
+                                // check and delete corresponding thumb if image
+                                $ext_pos = strrpos($file, '.');
+                                $ext = substr($file, $ext_pos);
+                                $file = substr($file, 0, $ext_pos).$upload_cfg['thumb_ext'].$ext;
+
+                                if ( @is_file($filepath.$file) ) {
+                                    unlink($filepath.$file);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 	
 	
 	/**

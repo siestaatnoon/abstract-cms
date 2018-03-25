@@ -4,637 +4,34 @@ use App\Html\Form\Form;
 use App\Html\Navigation\AdminMenu;
 use App\Module\Module;
 use App\User\Authenticate;
-use Slim\Slim;
 
-require 'Slim/Slim.php';
+// Load Slim Framework
+require '../vendor/autoload.php';
+
+// Abstract initialization
 require 'App/App.php';
-//require 'common.php';
-
 define('ERROR_LOG', '../logs/errors.log');
-Slim::registerAutoloader();
 App::register_autoload();
-$Slim = new Slim();
 $App = App::get_instance();
 $Auth = new Authenticate();
 
-$Slim->get('/admin/page/:slug', 'page_data');
-
-$Slim->get('/admin/authenticate/logout', 'logout');			//
-$Slim->get('/admin/session_poll', 'session_poll');			//Do not need authentication since
-$Slim->get('/admin/session_poll/ping', 'session_ping');		//are global access template, form
-$Slim->get('/admin/data/app', 'template_app');				//
-$Slim->get('/admin/data/authenticate/login', 'login_data');	//
-$Slim->post('/admin/authenticate/login', 'authenticate');	//
-
-$Slim->get('/admin/data/:module/sort(/:field_name)(/:id)', 'authorize', 'form_arrange_data');
-$Slim->get('/admin/data/:module/form(/:id)', 'authorize', 'form_page');
-$Slim->get('/admin/data/:module/list(/:archive)', 'authorize', 'list_data');
-$Slim->get('/admin/form_field_custom/:module(/:params+)', 'authorize', 'form_field_custom');
-$Slim->get('/admin/:module/(add|defaults)(/:params+)', 'form_defaults');
-$Slim->get('/admin/:module/edit/:id(/:params+)', 'authorize', 'form_data');
-$Slim->get('/admin/:module/list(/:archive)', 'authorize', 'list_page');
-$Slim->get('/admin/:module/update', 'authorize', 'form_data');
-$Slim->get('/admin/:module/:fn(/:params+)', 'authorize', 'form_custom_func');
-
-$Slim->put('/admin/bulk_update/:module', 'authorize', 'bulk_update');
-$Slim->put('/admin/:module/sort(/:field_name)(/:id)', 'authorize', 'form_arrange_save');
-$Slim->put('/admin/:module/edit/:id(/:params+)', 'authorize', 'form_save');
-$Slim->put('/admin/:module/update', 'authorize', 'form_save');
-$Slim->put('/admin/:module/:fn(/:params+)', 'authorize', 'form_custom_func');
-
-$Slim->post('/admin/upload_file/:module/:config/:type(/:pk)', 'authorize', 'upload_file');
-$Slim->post('/admin/:module/add(/:params+)', 'authorize', 'form_save_put');
-$Slim->post('/admin/:module/update', 'authorize', 'form_save');
-$Slim->post('/admin/:module/:fn(/:params+)', 'authorize', 'form_custom_func');
-
-$Slim->delete('/admin/delete_file/:module', 'authorize', 'delete_file');
-$Slim->delete('/admin/:module(/delete)/:id', 'authorize', 'delete_item');
-
-$Slim->run();
-
-
-function authenticate() {
-	global $Slim, $Auth;
-	$user = $Slim->request->post('user');
-	$pass = $Slim->request->post('pass');
-	$is_remember = ((int) $Slim->request->post('is_remember')) === 1;
-
-	$auth = $Auth->authenticate($user, $pass, $is_remember);
-	$error_msg = 'Username and/or password invalid';
-	$is_auth = false;
-    $return = array();
-	
-	if ( is_numeric($auth) ) {
-	//auth failed, timeout in seconds returned
-		$timeout = $auth;
-		if ($timeout > 0) {
-		//surpassed allowed login attempts
-			$hrs = floor($timeout / 60 / 60);
-			$min = floor(($timeout - ($hrs * 3600)) / 60);
-			$sec = $timeout % 60;
-			$time_str = ($hrs > 0 ? $hrs.($hrs == 1 ? ' hour ' : ' hours ') : '');
-			$time_str .= ($min > 0 ? $min.($min == 1 ? ' minute ' : ' minutes ') : '');
-			$time_str .= $sec > 0 ? $sec.' seconds' : '';
-			$error_msg = '<div style="text-align:center;">You have reached the maximum<br/>allowed login attempts';
-			$error_msg .= '<br/><br/>You will be able to retry in<br/><strong>'.$time_str.'</strong></div>';	
-		}
-	} else if ( is_bool($auth) && $auth) {
-	// successfully authenticated, generate nav menu, search panel
-        $dialogs = template_dialogs();
-        $navigation = template_navigation();
-        $blocks = array($dialogs, $navigation);
-        $return = array(
-            "session_active" => true,
-            "blocks" => $blocks
-        );
-		$is_auth = true;
-	} else {
-        $is_auth = false;
-    }
-	
-	$data = $is_auth ? $return : array("error" => array("text" => $error_msg) );
-    set_headers();
-	echo json_encode($data);
-}
-
-
-function authorize($route) {
-	global $Slim, $Auth;
-	$module_name = $route->getParam('module');
-	$method = $Slim->request->getMethod();
-
-	if ( $Auth->authorize($module_name, $method) === false ) {
-		$Slim->halt(401);
-	}
-}
-
-
-function bulk_update($module_name) {
-	global $Slim;
-    if ( Module::is_module($module_name) === false ) {
-    //module not found
-        $Slim->halt(404);
-    }
-
-    $module = Module::load($module_name);
-    $request = $Slim->request;
-    $json = $request->getBody();
-    $post = json_decode($json, true);
-    $result = $module->bulk_update($post['task'], $post['ids']);
-    $response = array('success' => false);
-    if ( is_array($result) ) {
-        $Slim->halt(500, json_encode($result) );
-    } else {
-        $response['success'] = $result;
-    }
-
-    set_headers();
-	echo json_encode($response);
-}
-
-
-function delete_file($module_name) {
-	global $Slim, $App;
-	$request = $Slim->request;
-	$body = $request->getBody();
-	$args = explode('&', $body); 
-	$post = array();
-	foreach ($args as $arg) {
-		$pair = explode('=', $arg); 
-		if ( count($pair) === 2 ) {
-			$post[ $pair[0] ] = $pair[1];
-		}
-	}
-
-	if ( ! empty($post['file']) &&  ! empty($post['cfg']) ) {
-		$config_name = $post['cfg'];
-		$is_image = empty($post['img']) ? false : true;
-		$file = $post['file'];
-		$has_deleted = 0;
-		$config = array();
-		$errors = array();
-		$response = array(
-			'OK' => 0
-		);
-		
-		$config = $App->upload_config($config_name, $is_image);
-		if ($config === false) {
-			$errors[] = ($is_image ? 'Image' : 'File').' upload config ['.$config_name.'] not found';
-		}
-		
-		if ( empty($errors) ) {
-			$filepath = $config['upload_path'].DIRECTORY_SEPARATOR.$file;
-			$web_root = $_SERVER['DOCUMENT_ROOT'];
-
-			if ( @is_file($web_root.$filepath) ) {
-				unlink($web_root.$filepath);
-				$has_deleted = 1;
-			}
-			
-			if ( $is_image && $config['create_thumb']) {
-				$ext_pos = strrpos($file, '.');
-				$ext = substr($file, $ext_pos);
-				$file = substr($file, 0, $ext_pos).$config['thumb_ext'].$ext;
-				$filepath = $config['upload_path'].DIRECTORY_SEPARATOR.$file;
-				
-				if ( @is_file($web_root.$filepath) ) {
-					unlink($web_root.$filepath);
-				}
-			}
-			$response['OK'] = $has_deleted;
-		} else {
-			$response['errors'] = $errors;
-		}
-
-        set_headers();
-		echo json_encode($response);
-	}
-}
-
-
-function delete_item($module_name, $id) {
-	global $Slim;
-	$response = NULL;
-	if ( Module::is_module($module_name) ) {
-		$module = Module::load($module_name);
-		$result = $module->delete($id);
-		if ( is_array($result) ) {
-            $Slim->halt(500, json_encode($result) );
-		} else {
-			$response = 1;
-		}
-	} else {
-		$Slim->halt(404);
-	}
-	
-	set_headers();
-	echo $response;
-}
-
-
-function form_arrange_data($module_name, $field_name=false, $id=false) {
-	global $Slim, $Auth;
-
-    if ( Module::is_module($module_name) === false ) {
-    //module not found
-        $Slim->halt(404);
-    }
-
-    $module = Module::load($module_name);
-    $module_data = $module->get_module_data();
-    if ( $module->has_sort() === false ) {
-        //sorting not used in module
-        $Slim->halt(404);
-    }
-
-    $Perm = $Auth->get_permission($module_name);
-    $data = $module->get_cms_sort_form($field_name, $id, $Perm);
-	set_headers();
-	echo json_encode($data);
-}
-
-
-function form_arrange_save($module_name, $field_name='', $relation_id=false) {
-	global $Slim;
-	
-	if ( Module::is_module($module_name) === false ) {
-	//module not found
-		$Slim->halt(404);
-	}
-	
-	$module = Module::load($module_name);
-	$request = $Slim->request;
-	$json = $request->getBody();
-	$post = json_decode($json, true);
-    $ids = json_decode($post['ids'], true);
-
-	$resp = $module->set_sort($ids, $field_name, $relation_id);
-    if ( isset($resp['errors']) ) {
-        $Slim->halt(500, json_encode($resp) );
-    }
-
-	set_headers();
-	echo $resp ? 1 : 0;
-}
-
-
-function form_custom_func($module_name, $fn, $params=array()) {
-	global $Slim, $App;
-
-	if ( Module::is_module($module_name) === false ) {
-	//module not found
-		$Slim->halt(404);
-	}
-	
-	$module = Module::load($module_name);
-	$request = $Slim->request;
-	$method = $request->getMethod();
-	$vars = array();
-	
-	if ( strtoupper($method) === 'GET' ) {
-		$vars = $request->get();
-	} else {
-		$req_body = $request->getBody();
-		$vars = json_decode($req_body, true);
-	}
-
-	$function = 'admin_func_'.$fn;
-	$var = array($module, $function);
-	$response = array();
-			
-	if ( is_callable($var) ) {
-        try {
-            $response = $module->$function($params, $vars);
-        } catch (Exception $e) {
-            $error = 'An error has occurred in '.$module_name.'->'.$function.'()';
-            if ( $App->config('debug') ) {
-                $error .= ":<br/>\n".$e->getMessage();
-            }
-            $response['errors'] = array($error);
-        }
-	} else {
-		$error[] = 'Module_'.$module_name.'->'.$function.'() undefined';
-		$response['errors'] = array($error);
-	}
-
-    set_headers();
-	echo json_encode($response);
-}
-
-
-function form_data($module_name, $id='', $params=array()) {
-	global $Slim;
-	
-	if ( Module::is_module($module_name) === false ) {
-	//module not found
-		$Slim->halt(404);
-	}
-	
-	$module = Module::load($module_name);
-	$data = $module->is_options() ? $module->get_options() : $module->get_field_values($id, $params);
-	
-	set_headers();
-	echo json_encode($data);
-}
-
-
-function form_defaults($module_name, $params=array()) {
-	global $Slim;
-	
-	if ( Module::is_module($module_name) === false ) {
-	//module not found
-		$Slim->halt(404);
-	}
-
-	$module = Module::load($module_name);
-	$data = $module->get_default_field_values($params);
-	
-	set_headers();
-	echo json_encode($data);
-}
-
-
-function form_field_custom($module_name, $params=array()) {
-	global $Slim, $Auth, $App;
-	
-	if ( ! empty($_GET['module']) && ! empty($_GET['field']) ) {
-		if ( Module::is_module($_GET['module']) === false ) {
-		//module not found
-			$Slim->halt(404);
-		}
-		
-		$field_module_name = $_GET['module'];
-		$field = $_GET['field'];
-		$value = $_GET['value'];
-		$id = empty($_GET['id']) ? false : $_GET['id'];
-		$function = 'form_field_'.$field;
-		$module = Module::load($field_module_name);
-		$Perm = $Auth->get_permission($module_name);
-		$var = array($module, $function);
-		$response = array();
-			
-		if ( is_callable($var) ) {
-		    try {
-                $response['html'] = $module->$function($id, $value, $Perm, $params);
-            } catch (Exception $e) {
-                $error = 'Field ['.$field.'] could not load due to error';
-                if ( $App->config('debug') ) {
-                    $error .= ":<br/>\n".$e->getMessage();
-                }
-                $response['errors'] = array($error);
-            }
-		} else {
-			$error = 'Module_'.$field_module_name.'->'.$function.'() undefined for field ['.$field.']';
-			$response['errors'] = array($error);
-		}
-
-        set_headers();
-		echo json_encode($response);
-	}
-}
-
-
-function form_page($module_name, $id=false) {
-	global $Slim, $Auth;
-	$data = false;
-	if ( Module::is_module($module_name) ) {
-		$module = Module::load($module_name);
-		$Perm = $Auth->get_permission($module_name);
-		$data = $module->get_cms_form($id, $Perm);
-	} 
-	
-	if ( empty($module) || ( ! empty($id) && empty($data['model']) ) ) {
-	//module not found or module row with $id does not exist
-		$Slim->halt(404);
-	}
-
-	set_headers();
-	echo json_encode($data);
-}
-
-
-function form_save($module_name, $id='', $params=array()) {
-	global $Slim;
-	
-	if ( Module::is_module($module_name) === false ) {
-	//module not found
-		$Slim->halt(404);
-	}
-	
-	$module = Module::load($module_name);
-	$request = $Slim->request;
-	$json = $request->getBody();
-	$post = json_decode($json, true);
-	
-	$module_data = $module->get_module_data();
-    $is_options = $module->is_options();
-	$pk_field = $module_data['pk_field'];
-	if ( ! $is_options && empty($post[$pk_field]) ) {
-        $post[$pk_field] = $id;
-    }
-	$data = Form::form_data_values($module_name, $post);
-
-    $result = NULL;
-    if ($is_options) {
-        $result = $module->update_options($data);
-    } else if ( $module->is_main_module() ) {
-        $result = empty($id) ? $module->create($data) : $module->modify($data);
-    } else {
-        $result = empty($id) ? $module->add($data) : $module->update($data);
-    }
-	$resp = is_array($result) && isset($result['errors']) ? $result : $post;
-	
-	if ( isset($resp['errors']) ) {
-		$Slim->halt(500, json_encode($resp) );
-	}
-	
-	set_headers();
-	echo json_encode($resp);
-}
-
-
-function form_save_put($module_name, $params=array()) {
-	form_save($module_name, false, $params);
-}
-
-
-function list_data($module_name, $archive='') {
-	global $Slim, $Auth;
-	if ( Module::is_module($module_name) === false ) {
-	//module not found
-		$Slim->halt(404);
-	}
-	
-	$module = Module::load($module_name);
-	$Perm = $Auth->get_permission($module_name);
-    $is_archive = $archive === 'archive';
-	$data = $module->get_list_template($Perm, $is_archive);
-	
-	set_headers();
-	echo json_encode($data);
-}
-
-
-function list_page($module_name, $archive='') {
-	global $Slim, $Auth;
-	
-	if ( Module::is_module($module_name) === false ) {
-	//module not found
-		$Slim->halt(404);
-	}
-
-	$module = Module::load($module_name);
-	$request = $Slim->request;
-	$get = $request->get();
-	$Perm = $Auth->get_permission($module_name);
-    $is_archive = $archive === 'archive';
-	$data = $module->get_cms_list($get, $is_archive, $Perm);
-	
-	//save sort params to session
-	$cookie = $module->get_session_name().'_admin';
-	$session = $Auth->get_session();
-	$params = $session->get_data($cookie);
-	if ( ! empty($params['sort_by']) ) {
-		if ($params['sort_by'] !== $data['state']['sort_by']) {
-		//if sort column changed, set to first page
-			$data['state']['page'] = 1;
-		}
-	} else {
-		$params = array();
-	}
-	$params = $data['state'] + $params;
-	$session->set_data($cookie, $params);
-	
-	$config = $data['state'] + $data['query_params'];
-	$page = $config['page'];
-	$total_pages = $config['total_pages'];
-	$base_url = $request->getRootUri().$request->getResourceUri().'?';
-	$config['page'] = 1;
-	$q = http_build_query($config);
-	$header = '<'.$base_url.$q.'>; rel="first", ';
-	$config['page'] = $total_pages;
-	$q = http_build_query($config);
-	$header .= '<'.$base_url.$q.'>; rel="last"';
-	if ($page > 1) {
-		$config['page'] = $page - 1;
-		$q = http_build_query($config);
-		$header .= ', <'.$base_url.$q.'>; rel="prev"';
-	}
-	if ($page < $total_pages) {
-		$config['page'] = $page + 1;
-		$q = http_build_query($config);
-		$header .= ', <'.$base_url.$q.'>; rel="next"';
-	}
-	
-	set_headers();
-	$Slim->response->headers->set('Link', $header);
-	echo json_encode($data);
-}
-
-
-function login_data() {
-	//error_log('GET /tpl/login'."\n", 3, ERROR_LOG);
-	
-	$fields = array(
-		'user' => array(
-			'type' => 'text',
-			'valid' => array(
-				'required' => true,
-				'email' => true
-			)
-		),
-		'pass' => array(
-			'type' => 'text',
-			'valid' => array(
-				'required' => true
-			)
-		)
-	);
-	
-	$template = <<<HTML
-
-<div id="abstract-content" class="abstract-login">
-  <div class="abstract-login-cnt">
-    <form id="form-signin" role="form">
-      <h2 class="form-signin-heading">Please Sign In</h2>
-      <div class="login-error"></div>
-      <div>
-        <input name="user" type="email" class="form-control" placeholder="Email address" required autofocus />
-      </div>
-      <div>
-        <input name="pass" type="password" class="form-control" placeholder="Password" required />
-      </div>
-      <label class="checkbox">
-        <input name="is_remember" type="checkbox" value="1" /> Remember me
-      </label>
-      <button id="submit-login" class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
-    </form><!--close #form-signin-->
-  </div>
-</div><!--close #abstract-login-->
-
-HTML;
-	$json_data = array();
-	$json_data['fields'] = $fields;
-	$json_data['template'] = $template;
-	set_headers();
-	echo json_encode($json_data);
-}
-
-
-function logout() {
-	global $Auth;
-	$Auth->invalidate();
-	$data = array("logged_out" => true);
-	echo json_encode($data);
-}
-
-
-function module_form_defaults($module_name, $params=array()) {
-    global $Slim;
-
-    if ( Module::is_module($module_name) === false ) {
-        //module not found
-        $Slim->halt(404);
-    }
-
-    $module = Module::load($module_name);
-    $data = $module->get_default_field_values($params);
-
-    set_headers();
-    echo json_encode($data);
-}
-
-
-function module_form_save($module_name, $id='', $params=array()) {
-    global $Slim;
-
-    if ( Module::is_module($module_name) === false ) {
-        //module not found
-        $Slim->halt(404);
-    }
-
-    $module = Module::load($module_name);
-    $request = $Slim->request;
-    $json = $request->getBody();
-    $post = json_decode($json, true);
-
-    $module_data = $module->get_module_data();
-    $is_options = $module->is_options();
-    $pk_field = $module_data['pk_field'];
-    if ( ! $is_options && empty($post[$pk_field]) ) {
-        $post[$pk_field] = $id;
-    }
-    $data = Form::form_data_values($module_name, $post);
-
-    $result = NULL;
-    if ($is_options) {
-        $result = $module->update_options($data);
-    } else if ( $module->is_main_module() ) {
-        $result = empty($id) ? $module->create($data) : $module->modify($data);
-    } else {
-        $result = empty($id) ? $module->add($data) : $module->update($data);
-    }
-    $resp = is_array($result) && isset($result['errors']) ? $result : $post;
-
-    if ( isset($resp['errors']) ) {
-        $Slim->halt(500, json_encode($resp) );
-    }
-
-    set_headers();
-    echo json_encode($resp);
-}
-
-
-function module_form_save_put($module_name, $params=array()) {
-    module_form_save($module_name, false, $params);
-}
-
-
-function page_data($slug) {
+// common vars/functions for admin/front
+require 'common.php';
+
+
+/**
+ * app_data_pages
+ *
+ * Returns sample page data.
+ *
+ * @param string $slug Identifier for sample page
+ * @return array Assoc array of sample page data or NULL if $slug param invalid
+ */
+function app_data_pages($slug) {
 	global $Slim;
 	$pages = array('home', 'sample');
 	if ( ! in_array($slug, $pages) ) {
-		$Slim->halt(404);
+		return NULL;
 	}
 
 	$content = '';
@@ -679,75 +76,43 @@ HTML;
 			break;
 	}
 
-	$data = array(
+	return array(
 	    'data' => array(),
         'blocks' => array(),
         'scripts' => array(),
         'template' => $content
     );
-    echo json_encode($data);
 }
 
-
-function session_ping() {
-	global $Auth;
-	$session_active = $Auth->get_session()->touch();
-	$data = array("session_active" => $session_active);
-	set_headers();
-	echo json_encode($data);
-}
-
-
-function session_poll() {
-	global $App, $Auth;
-	$session = $Auth->get_session();
-	$time_left = $session->session_poll();
-	
-	if ($time_left <= 0) {
-		$App->get_csrf()->invalidate();
-	}
-	$data = array();
-	$data['session_active'] = $time_left > 0;
-	$data['time_left'] = $time_left;
-	
-	set_headers();
-	echo json_encode($data);
-}
-
-
-function set_headers($add=array()) {
-    global $Slim;
-    $Slim->response->headers->set('Content-Type', 'application/json');
-    $Slim->response->headers->set('Cache-Control', 'no-cache, no-store, must-revalidate');
-    $Slim->response->headers->set('Pragma', 'no-cache');
-    $Slim->response->headers->set('Expires', '0');
-
-    if ( ! empty($add) ) {
-        foreach ($add as $name => $value) {
-            $Slim->response->headers->set($name, $value);
-        }
-    }
-}
-
-
-function template_app() {
-    global $App;
+/**
+ * app_template
+ *
+ * Returns the admin page template data.
+ *
+ * @return array Assoc array of template data
+ */
+function app_template() {
 	$template = <<<HTML
 
 
 
 HTML;
 
-    $navigation = template_navigation();
-    $dialogs = template_dialogs();
+    $navigation = app_template_navigation();
+    $dialogs = app_template_dialogs();
 	$data['blocks'] = empty($navigation) ? array($dialogs) : array($dialogs, $navigation);
 	$data['template'] = $template;
-	
-	set_headers();
-	echo json_encode($data);
+	return $data;
 }
 
-function template_dialogs() {
+/**
+ * app_template_dialogs
+ *
+ * Returns the custom dialog box HTML used in admin pages.
+ *
+ * @return array Assoc array of data for dialog boxes
+ */
+function app_template_dialogs() {
     global $App;
     $dialog_html = <<<HTML
 
@@ -791,8 +156,14 @@ HTML;
     );
 }
 
-
-function template_navigation() {
+/**
+ * app_template_navigation
+ *
+ * Returns the navigation menu HTML based on user permissions.
+ *
+ * @return array Assoc array of data for navigation menu
+ */
+function app_template_navigation() {
     global $Auth, $App;
     $user = $Auth->get_user_data();
     $navigation = NULL;
@@ -810,63 +181,779 @@ function template_navigation() {
     return $navigation;
 }
 
+/**
+ * $mw_authorize
+ *
+ * Slim Middleware that checks if a user is authorized for the request.
+ *
+ */
+$mw_authorize = function($request, $response, $next) use ($Auth) {
+    $route = $request->getAttribute('route');
+    $module_name = $route->getArgument('module');
+    $method = $request->getMethod();
 
-function upload_file($module_name, $config, $type, $pk=false) {
-    global $App, $Auth, $Slim;
+    if ( $Auth->authorize($module_name, $method) === false ) {
+        $status_code = $Auth->is_logged_in() ? 403 : 401;
+        return $response->withStatus($status_code);
+    }
+
+    return $next($request, $response);
+};
+
+/**
+ * $route_authenticate
+ *
+ * Handles a GET request to authenticate user upon login.
+ *
+ */
+$route_authenticate = function($request, $response, $args) use ($Auth)  {
+    $post = $request->getParsedBody();
+    $user = $post['user'];
+    $pass = $post['pass'];
+    $is_remember = ! empty($post['is_remember']);
+
+    $auth = $Auth->authenticate($user, $pass, $is_remember);
+    $error_msg = 'Username and/or password invalid';
+    $is_auth = false;
+    $return = array();
+
+    if ( is_numeric($auth) ) {
+        //auth failed, timeout in seconds returned
+        $timeout = $auth;
+        if ($timeout > 0) {
+            //surpassed allowed login attempts
+            $hrs = floor($timeout / 60 / 60);
+            $min = floor(($timeout - ($hrs * 3600)) / 60);
+            $sec = $timeout % 60;
+            $time_str = ($hrs > 0 ? $hrs.($hrs == 1 ? ' hour ' : ' hours ') : '');
+            $time_str .= ($min > 0 ? $min.($min == 1 ? ' minute ' : ' minutes ') : '');
+            $time_str .= $sec > 0 ? $sec.' seconds' : '';
+            $error_msg = '<div style="text-align:center;">You have reached the maximum<br/>allowed login attempts';
+            $error_msg .= '<br/><br/>You will be able to retry in<br/><strong>'.$time_str.'</strong></div>';
+        }
+    } else if ( is_bool($auth) && $auth) {
+        // successfully authenticated, generate nav menu, search panel
+        $dialogs = app_template_dialogs();
+        $navigation = app_template_navigation();
+        $blocks = array($dialogs, $navigation);
+        $return = array(
+            "session_active" => true,
+            "blocks" => $blocks
+        );
+        $is_auth = true;
+    } else {
+        $is_auth = false;
+    }
+
+    $data = $is_auth ? $return : array("error" => array("text" => $error_msg) );
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_bulk_update
+ *
+ * Handles a PUT request to do a bulk update for module items.
+ *
+ */
+$route_bulk_update = function($request, $response, $args) use ($ERROR_DELIMETER) {
+    $module_name = empty($args['module']) ? '' : $args['module'];
+    if ( Module::is_module($module_name) === false ) {
+        // module not found, 404 error
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $module = Module::load($module_name);
+    $post = $request->getParsedBody();
+    $result = $module->bulk_update($post['task'], $post['ids']);
+    $data = array('success' => false);
+    if ( is_array($result) ) {
+        $errors = $result['errors'];
+        throw new \Exception( implode($ERROR_DELIMETER, $errors) );
+    } else {
+        $data['success'] = $result;
+    }
+
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_data_form
+ *
+ * Handles a GET request to retrieve data or process a custom form.
+ *
+ */
+$route_data_form = function($request, $response, $args) use ($App) {
+    $module_name = empty($args['module']) ? '' : $args['module'];
+    $id = empty($args['id']) ? false : $args['id'];
+    $params = empty($args['params']) ? array() : get_params_from_uri($args['params']);
 
     if ( Module::is_module($module_name) === false ) {
-        //module not found
-        $Slim->halt(404);
+        // module not found, 404 error
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $module = Module::load($module_name);
+    $data = $module->is_options() ? $module->get_options() : $module->get_field_values($id, $params);
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_data_form_arrange
+ *
+ * Handles a GET request to retrieve data for an arrange form.
+ *
+ */
+$route_data_form_arrange = function($request, $response, $args) use ($Auth) {
+    $module_name = empty($args['module']) ? '' : $args['module'];
+    $field_name = empty($args['field_name']) ? '' : $args['field_name'];
+    $id = empty($args['id']) ? false : $args['id'];
+
+    if ( Module::is_module($module_name) === false ) {
+        // module not found, 404 error
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $module = Module::load($module_name);
+    if ( $module->has_sort() === false ) {
+        //sorting not used in module
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $Perm = $Auth->get_permission($module_name);
+    $data = $module->get_cms_sort_form($field_name, $id, $Perm);
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_data_list
+ *
+ * Handles a GET request to return module list page data.
+ *
+ */
+$route_data_list = function($request, $response, $args) use ($App, $Auth) {
+    $module_name = empty($args['module']) ? '' : $args['module'];
+    $archive = empty($args['archive']) ? '' : $args['archive'];
+
+    if ( Module::is_module($module_name) === false ) {
+        // module not found, 404 page
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $module = Module::load($module_name);
+    $get = $request->getQueryParams();
+    $Perm = $Auth->get_permission($module_name);
+    $is_archive = $archive === 'archive';
+    $data = $module->get_cms_list($get, $is_archive, $Perm);
+    $uri = $request->getUri();
+
+    //save sort params to session
+    $cookie = $module->get_session_name().'_admin';
+    $session = $Auth->get_session();
+    $params = $session->get_data($cookie);
+    if ( ! empty($params['sort_by']) ) {
+        if ($params['sort_by'] !== $data['state']['sort_by']) {
+            //if sort column changed, set to first page
+            $data['state']['page'] = 1;
+        }
+    } else {
+        $params = array();
+    }
+    $params = $data['state'] + $params;
+    $session->set_data($cookie, $params);
+
+    $config = $data['state'] + $data['query_params'];
+    $page = $config['page'];
+    $total_pages = $config['total_pages'];
+    $base_url = $uri->getBasePath().$uri->getPath().'?';
+    $config['page'] = 1;
+    $q = http_build_query($config);
+    $header = '<'.$base_url.$q.'>; rel="first", ';
+    $config['page'] = $total_pages;
+    $q = http_build_query($config);
+    $header .= '<'.$base_url.$q.'>; rel="last"';
+    if ($page > 1) {
+        $config['page'] = $page - 1;
+        $q = http_build_query($config);
+        $header .= ', <'.$base_url.$q.'>; rel="prev"';
+    }
+    if ($page < $total_pages) {
+        $config['page'] = $page + 1;
+        $q = http_build_query($config);
+        $header .= ', <'.$base_url.$q.'>; rel="next"';
+    }
+
+    $response = set_headers($response, array('Link' => $header));
+    return $response->withJson($data);
+};
+
+/**
+ * $route_data_login
+ *
+ * Handles a GET request to retrieve the login page data.
+ *
+ */
+$route_data_login = function($request, $response, $args)  {
+    //error_log('GET /tpl/login'."\n", 3, ERROR_LOG);
+
+    $fields = array(
+        'user' => array(
+            'type' => 'text',
+            'valid' => array(
+                'required' => true,
+                'email' => true
+            )
+        ),
+        'pass' => array(
+            'type' => 'text',
+            'valid' => array(
+                'required' => true
+            )
+        )
+    );
+
+    $template = <<<HTML
+
+<div id="abstract-content" class="abstract-login">
+  <div class="abstract-login-cnt">
+    <form id="form-signin" role="form">
+      <h2 class="form-signin-heading">Please Sign In</h2>
+      <div class="login-error"></div>
+      <div>
+        <input name="user" type="email" class="form-control" placeholder="Email address" required autofocus />
+      </div>
+      <div>
+        <input name="pass" type="password" class="form-control" placeholder="Password" required />
+      </div>
+      <label class="checkbox">
+        <input name="is_remember" type="checkbox" value="1" /> Remember me
+      </label>
+      <button id="submit-login" class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+    </form><!--close #form-signin-->
+  </div>
+</div><!--close #abstract-login-->
+
+HTML;
+
+    $data = array();
+    $data['fields'] = $fields;
+    $data['template'] = $template;
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_data_pages
+ *
+ * Handles a GET request to retrieve page data and template along with any module data associated
+ * with the page.
+ *
+ */
+$route_data_pages = function($request, $response, $args)  {
+    $slug = empty($args['slug']) ? '' : $args['slug'];
+    $data = app_data_pages($slug);
+    if ($data === NULL) {
+        //page not found, 404 page
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_data_template
+ *
+ * Handles a GET request to retrieve the page template data.
+ *
+ */
+$route_data_template = function($request, $response, $args)  {
+    $data = app_template();
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_delete_file
+ *
+ * Handles a DELETE request to delete a file or image associated with a module item.
+ *
+ */
+$route_delete_file = function($request, $response, $args) use ($App, $ERROR_DELIMETER) {
+    $module_name = empty($args['module']) ? '' : $args['module'];
+
+    if ( Module::is_module($module_name) === false ) {
+        // module not found, 404 page
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $post = $request->getParsedBody();
+    $errors = array();
+    if ( empty($post['file']) ) {
+        $errors[] = 'POST[file] filename parameter undefined or empty';
+    }
+    if ( empty($post['cfg']) ) {
+        $errors[] = 'POST[cfg] file upload config name parameter undefined or empty';
+    }
+    if ( ! empty($errors) ) {
+        throw new \Exception( implode($ERROR_DELIMETER, $errors) );
+    }
+
+    $config_name = $post['cfg'];
+    $file = $post['file'];
+    $is_image = empty($post['img']) ? false : true;
+    $has_deleted = 0;
+    $data = array(
+        'OK' => 0
+    );
+
+    $config = $App->upload_config($config_name, $is_image);
+    if ($config === false) {
+        $errors[] = ($is_image ? 'Image' : 'File').' upload config ['.$config_name.'] not found';
+    }
+
+    if ( empty($errors) ) {
+        $filepath = $config['upload_path'].DIRECTORY_SEPARATOR.$file;
+        $web_root = DOC_ROOT;
+
+        if ( @is_file($web_root.$filepath) ) {
+            unlink($web_root.$filepath);
+            $has_deleted = 1;
+        }
+
+        if ( $is_image && $config['create_thumb']) {
+            $ext_pos = strrpos($file, '.');
+            $ext = substr($file, $ext_pos);
+            $file = substr($file, 0, $ext_pos).$config['thumb_ext'].$ext;
+            $filepath = $config['upload_path'].DIRECTORY_SEPARATOR.$file;
+
+            if ( @is_file($web_root.$filepath) ) {
+                unlink($web_root.$filepath);
+            }
+        }
+        $data['OK'] = $has_deleted;
+    } else {
+        throw new \Exception( implode($ERROR_DELIMETER, $errors) );
+    }
+
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_delete_item
+ *
+ * Handles a DELETE request to delete a module item.
+ *
+ */
+$route_delete_item = function($request, $response, $args) use ($ERROR_DELIMETER) {
+    $module_name = empty($args['module']) ? '' : $args['module'];
+    $id = empty($args['id']) ? false : $args['id'];
+
+    if ( Module::is_module($module_name) === false ) {
+        // module not found, 404 page
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $data = 0;
+    $module = Module::load($module_name);
+    $result = $module->delete($id);
+    if ( is_array($result) ) {
+        throw new \Exception( implode($ERROR_DELIMETER, $result['errors']) );
+    } else {
+        $data = 1;
+    }
+
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_form_arrange_save
+ *
+ * Handles a PUT request to save sorting for module items.
+ *
+ */
+$route_form_arrange_save = function($request, $response, $args) use ($App, $ERROR_DELIMETER) {
+    $module_name = empty($args['module']) ? '' : $args['module'];
+    $field_name = empty($args['field_name']) ? '' : $args['field_name'];
+    $relation_id = empty($args['id']) ? false : $args['id'];
+
+    if ( Module::is_module($module_name) === false ) {
+        // module not found, 404 error
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $module = Module::load($module_name);
+    $post = $request->getParsedBody();
+    $ids = json_decode($post['ids'], true);
+    $data = $module->set_sort($ids, $field_name, $relation_id);
+    if ( isset($data['errors']) ) {
+        throw new \Exception( implode($ERROR_DELIMETER, $data['errors']) );
+    }
+
+    $json = $data ? 1 : 0;
+    $response = set_headers($response);
+    return $response->withJson($json);
+};
+
+/**
+ * $route_form_custom_func
+ *
+ * Handles a GET, PUT or POST request to retrieve data or process a custom form.
+ *
+ */
+$route_form_custom_func = function($request, $response, $args) use ($App, $ERROR_DELIMETER) {
+    $module_name = empty($args['module']) ? '' : $args['module'];
+    $fn = empty($args['fn']) ? '' : $args['fn'];
+    $params = empty($args['params']) ? array() : get_params_from_uri($args['params']);
+
+    if ( Module::is_module($module_name) === false ) {
+        // module not found, 404 error
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $module = Module::load($module_name);
+    $function = 'admin_func_'.$fn;
+    $data = array();
+
+    $method = $request->getMethod();
+    $vars = array();
+    if ($method === 'GET') {
+        $vars = $request->getQueryParams();
+    } else {
+        $vars = $request->getParsedBody();
+    }
+
+    $var = array($module, $function);
+    if ( is_callable($var) ) {
+        $data = $module->$function($params, $vars);
+        if ( ! empty($data['errors']) ) {
+            throw new \Exception( implode($ERROR_DELIMETER, $data['errors']) );
+        }
+    } else {
+        throw new \Exception('Module_'.$module_name.'->'.$function.'() undefined');
+    }
+
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+
+/**
+ * $route_form_defaults
+ *
+ * Handles a GET request to retrieve form field default values.
+ *
+ */
+$route_form_defaults = function($request, $response, $args) {
+    $module_name = empty($args['module']) ? '' : $args['module'];
+    $params = empty($args['params']) ? array() : get_params_from_uri($args['params']);
+
+    if ( Module::is_module($module_name) === false ) {
+        // module not found, 404 error
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $module = Module::load($module_name);
+    $data = $module->get_default_field_values($params);
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_form_field_custom
+ *
+ * Handles a GET request to retrieve a custom form field HTML.
+ *
+ */
+$route_form_field_custom = function($request, $response, $args) use ($Auth, $App) {
+    $module_name = empty($args['module']) ? '' : $args['module'];
+    $params = empty($args['params']) ? array() : get_params_from_uri($args['params']);
+    $get = $request->getQueryParams();
+
+    if ( Module::is_module($module_name) === false || empty($get['module']) || empty($get['field']) ) {
+        // module not found, 404 error
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $field_module_name = $get['module'];
+    $field = $get['field'];
+    $value = $get['value'];
+    $id = empty($get['id']) ? false : $get['id'];
+    $function = 'form_field_'.$field;
+    $module = Module::load($field_module_name);
+    $Perm = $Auth->get_permission($module_name);
+    $data = array();
+
+    $var = array($module, $function);
+    if ( is_callable($var) ) {
+        try {
+            $data['html'] = $module->$function($id, $value, $Perm, $params);
+        } catch (Exception $e) {
+            throw $e;
+        }
+    } else {
+        $error = 'Module_'.$field_module_name.'->'.$function.'() undefined for field ['.$field.']';
+        throw new \Exception($error);
+    }
+
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_form_save
+ *
+ * Handles a POST or PUT request to save module form data.
+ *
+ */
+$route_form_save = function($request, $response, $args) use ($ERROR_DELIMETER) {
+    $module_name = empty($args['module']) ? '' : $args['module'];
+    $id = empty($args['id']) ? false : $args['id'];
+    $params = empty($args['params']) ? array() : get_params_from_uri($args['params']);
+
+    if ( Module::is_module($module_name) === false ) {
+        // module not found, 404 page
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $module = Module::load($module_name);
+    $post = $request->getParsedBody();
+    $module_data = $module->get_module_data();
+    $is_options = $module->is_options();
+    $pk_field = $module_data['pk_field'];
+    if ( ! $is_options && empty($post[$pk_field]) ) {
+        $post[$pk_field] = $id;
+    }
+    $data = Form::form_data_values($module_name, $post);
+
+    $result = NULL;
+    if ($is_options) {
+        $result = $module->update_options($data);
+    } else if ( $module->is_main_module() ) {
+        $result = empty($id) ? $module->create($data) : $module->modify($data);
+    } else {
+        $result = empty($id) ? $module->add($data) : $module->update($data);
+    }
+    $data = is_array($result) && isset($result['errors']) ? $result : $post;
+
+    if ( isset($data['errors']) ) {
+        throw new \Exception( implode($ERROR_DELIMETER, $data['errors']) );
+    }
+
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_logout
+ *
+ * Handles a GET request to logout an admin user.
+ *
+ */
+$route_logout = function($request, $response, $args) use ($Auth) {
+    $Auth->invalidate();
+    $data = array("logged_out" => true);
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_page_form
+ *
+ * Handles a GET request to return module form page data.
+ *
+ */
+$route_page_form = function($request, $response, $args) use ($Auth) {
+    $module_name = empty($args['module']) ? '' : $args['module'];
+    $id = empty($args['id']) ? false : $args['id'];
+
+    if ( Module::is_module($module_name) === false ) {
+        // module not found, 404 page
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $module = Module::load($module_name);
+    $Perm = $Auth->get_permission($module_name);
+    $data = $module->get_cms_form($id, $Perm);
+
+    if ( ! empty($id) && empty($data['model']) ) {
+        //module row with $id does not exist
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_page_list
+ *
+ * Handles a GET request to return module list item (rows) data.
+ *
+ */
+$route_page_list = function($request, $response, $args) use ($Auth) {
+    $module_name = empty($args['module']) ? '' : $args['module'];
+    $archive = empty($args['archive']) ? '' : $args['archive'];
+
+    if ( Module::is_module($module_name) === false ) {
+        // module not found, 404 error
+        throw new \Slim\Exception\NotFoundException($request, $response);
+    }
+
+    $module = Module::load($module_name);
+    $Perm = $Auth->get_permission($module_name);
+    $is_archive = $archive === 'archive';
+    $data = $module->get_list_template($Perm, $is_archive);
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_session_ping
+ *
+ * Handles a GET request to ping and keep a session alive.
+ *
+ */
+$route_session_ping = function($request, $response, $args) use ($Auth) {
+    $session_active = $Auth->get_session()->touch();
+    $data = array("session_active" => $session_active);
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_session_poll
+ *
+ * Handles a GET request to poll a session and return the time left.
+ *
+ */
+$route_session_poll = function($request, $response, $args) use ($App, $Auth) {
+    $session = $Auth->get_session();
+    $time_left = $session->session_poll();
+
+    if ($time_left <= 0) {
+        $App->get_csrf()->invalidate();
+    }
+    $data = array();
+    $data['session_active'] = $time_left > 0;
+    $data['time_left'] = $time_left;
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+/**
+ * $route_upload_file
+ *
+ * Handles a POST request to upload a file or image associated with a module item.
+ *
+ */
+$route_upload_file = function($request, $response, $args) use ($App, $Auth, $ERROR_DELIMETER) {
+    $module_name = empty($args['module']) ? '' : $args['module'];
+    $config = empty($args['config']) ? '' : $args['config'];
+    $type = empty($args['type']) ? '' : $args['type'];
+    $pk = empty($args['pk']) ? false : $args['pk'];
+
+    if ( Module::is_module($module_name) === false ) {
+        // module not found, 404 page
+        throw new \Slim\Exception\NotFoundException($request, $response);
     }
 
     $Perm = $Auth->get_permission($module_name);
     if ( ( empty($pk) && $Perm->has_add() === false) || ( is_numeric($pk) && $Perm->has_update() === false) ) {
         //insufficient permissions
-        $response['errors'] = array('You do not have upload permissions for module ['.$module_name.']');
-        die( json_encode($response) );
+        throw new \Exception('You do not have upload permissions for module ['.$module_name.']');
     }
 
-	$is_image = -1;
-	$errors = array();
-	$response = array(
-		'filename' => '',
-		'filesize' => 0
-	);
-	
-	if ($type === 'i') {
-		$is_image = true;
-	} else if ($type === 'f') {
-		$is_image = false;
-	}
-	if ( empty($config) ) {
-		$errors[] = 'Upload config name must be specified';
-	}
-	if ($is_image === -1) {
-		$errors[] = 'Upload type [file|image] must be specified';
-	}
-	
-	$file_cfg = $App->upload_config($config, $is_image);
-	if ($file_cfg === false) {
-		$errors[] = ($is_image ? 'Image' : 'File').' upload config ['.$config.'] not found';
-	}
-	if ( ! empty($errors) ) {
-		$response['errors'] = $errors;
-		die( json_encode($response) );
-	}
-	
-	//see https://github.com/brandonsavage/Upload
-	
-	/*
-		TODO: 
-		- standardize error messages
-	*/
-	
-	require('Upload/Autoloader.php');
-	\Upload\Autoloader::register();
-	$file_path = $_SERVER['DOCUMENT_ROOT'].$file_cfg['upload_path'];
-	$Upload = new \Upload\FileUpload($file_cfg, $file_path, 'file');
-	$Upload->noCacheHeaders();
-	$Upload->corsHeader();
-	$response = $Upload->upload();
-	echo json_encode($response);
-}
+    $is_image = -1;
+    $errors = array();
+    $data = array(
+        'filename' => '',
+        'filesize' => 0
+    );
+
+    if ($type === 'i') {
+        $is_image = true;
+    } else if ($type === 'f') {
+        $is_image = false;
+    }
+    if ( empty($config) ) {
+        $errors[] = 'Upload config name must be specified';
+    }
+    if ($is_image === -1) {
+        $errors[] = 'Upload type [file|image] must be specified';
+    }
+
+    $file_cfg = $App->upload_config($config, $is_image);
+    if ($file_cfg === false) {
+        $errors[] = ($is_image ? 'Image' : 'File').' upload config ['.$config.'] not found';
+    }
+    if ( ! empty($errors) ) {
+        throw new \Exception( implode($ERROR_DELIMETER, $errors) );
+    }
+
+    //see https://github.com/brandonsavage/Upload
+
+    /*
+        TODO:
+        - standardize error messages
+    */
+
+    require('Upload/Autoloader.php');
+    \Upload\Autoloader::register();
+    $file_path = DOC_ROOT.$file_cfg['upload_path'];
+    $Upload = new \Upload\FileUpload($file_cfg, $file_path, 'file');
+    $Upload->noCacheHeaders();
+    $Upload->corsHeader();
+    $data = $Upload->upload();
+    $response = set_headers($response);
+    return $response->withJson($data);
+};
+
+
+// Initialize Slim
+$Slim = new \Slim\App($Container);
+
+// GET routes
+$Slim->get('/admin/page/{slug}', $route_data_pages);             //
+$Slim->get('/admin/authenticate/logout', $route_logout);			 //
+$Slim->get('/admin/session_poll', $route_session_poll);			 //Do not need authentication since
+$Slim->get('/admin/session_poll/ping', $route_session_ping);		 //are global access template, form
+$Slim->get('/admin/data/app', $route_data_template);				 //
+$Slim->get('/admin/data/authenticate/login', $route_data_login);	 //
+
+$Slim->get('/admin/data/{module}/form[/{id}]', $route_page_form)->add($mw_authorize);
+$Slim->get('/admin/data/{module}/list[/{archive}]', $route_page_list)->add($mw_authorize);
+$Slim->get('/admin/data/{module}/sort[/{field_name}[/{id}]]', $route_data_form_arrange)->add($mw_authorize);
+$Slim->get('/admin/form_field_custom/{module}[/{params:.*}]', $route_form_field_custom)->add($mw_authorize);
+$Slim->get('/admin/{module}/add[/{params:.*}]', $route_form_defaults)->add($mw_authorize);
+$Slim->get('/admin/{module}/defaults[/{params:.*}]', $route_form_defaults)->add($mw_authorize);
+$Slim->get('/admin/{module}/edit/{id}[/{params:.*}]', $route_data_form)->add($mw_authorize);
+$Slim->get('/admin/{module}/list[/{archive}]', $route_data_list)->add($mw_authorize);
+$Slim->get('/admin/{module}/update', $route_data_form)->add($mw_authorize);
+$Slim->get('/admin/{module}/{fn}[/{params:.*}]', $route_form_custom_func)->add($mw_authorize);
+
+// PUT routes
+$Slim->put('/admin/bulk_update/{module}', $route_bulk_update)->add($mw_authorize);
+$Slim->put('/admin/{module}/sort[/{field_name}[/{id}]]', $route_form_arrange_save)->add($mw_authorize);
+$Slim->put('/admin/{module}/edit/{id}[/{params:.*}]', $route_form_save)->add($mw_authorize);
+$Slim->put('/admin/{module}/update', $route_form_save)->add($mw_authorize);
+$Slim->put('/admin/{module}/{fn}[/{params:.*}]', $route_form_custom_func)->add($mw_authorize);
+
+// POST routes
+$Slim->post('/admin/authenticate/login', $route_authenticate);
+$Slim->post('/admin/upload_file/{module}/{config}/{type}[/{pk}]', $route_upload_file)->add($mw_authorize);
+$Slim->post('/admin/{module}/add[/{params:.*}]', $route_form_save)->add($mw_authorize);
+$Slim->post('/admin/{module}/update', $route_form_save)->add($mw_authorize);
+$Slim->post('/admin/{module}/{fn}[/{params:.*}]', 'authorize', $route_form_custom_func)->add($mw_authorize);
+
+// DELETE routes
+$Slim->delete('/admin/delete_file/{module}', $route_delete_file)->add($mw_authorize);
+$Slim->delete('/admin/{module}/delete/{id}', $route_delete_item)->add($mw_authorize);
+$Slim->delete('/admin/{module}/{id}', $route_delete_item)->add($mw_authorize);
+
+$Slim->run();
