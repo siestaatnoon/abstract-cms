@@ -268,8 +268,7 @@ $route_bulk_update = function($request, $response, $args) use ($ERROR_DELIMETER)
     $result = $module->bulk_update($post['task'], $post['ids']);
     $data = array('success' => false);
     if ( is_array($result) ) {
-        $errors = $result['errors'];
-        throw new \Exception( implode($ERROR_DELIMETER, $errors) );
+        throw new \Exception( implode($ERROR_DELIMETER, $result['errors']) );
     } else {
         $data['success'] = $result;
     }
@@ -281,7 +280,7 @@ $route_bulk_update = function($request, $response, $args) use ($ERROR_DELIMETER)
 /**
  * $route_data_form
  *
- * Handles a GET request to retrieve data or process a custom form.
+ * Handles a GET request to retrieve field values for a form.
  *
  */
 $route_data_form = function($request, $response, $args) use ($App) {
@@ -303,7 +302,7 @@ $route_data_form = function($request, $response, $args) use ($App) {
 /**
  * $route_data_form_arrange
  *
- * Handles a GET request to retrieve data for an arrange form.
+ * Handles a GET request to retrieve page data for an arrange form.
  *
  */
 $route_data_form_arrange = function($request, $response, $args) use ($Auth) {
@@ -708,7 +707,7 @@ $route_form_field_custom = function($request, $response, $args) use ($Auth, $App
 /**
  * $route_form_save
  *
- * Handles a POST or PUT request to save module form data.
+ * Handles a POST or PUT request to save module item form data.
  *
  */
 $route_form_save = function($request, $response, $args) use ($ERROR_DELIMETER) {
@@ -871,10 +870,6 @@ $route_upload_file = function($request, $response, $args) use ($App, $Auth, $ERR
 
     $is_image = -1;
     $errors = array();
-    $data = array(
-        'filename' => '',
-        'filesize' => 0
-    );
 
     if ($type === 'i') {
         $is_image = true;
