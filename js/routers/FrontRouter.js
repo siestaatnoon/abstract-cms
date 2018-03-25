@@ -161,7 +161,10 @@ define([
 
             if ( this.uriMap.hasOwnProperty(uri) ) {
                 var module = Object.keys(this.uriMap[uri])[0];
-                var _task = task || 'get';
+
+                // TODO: probably not the best way to get the default task, should be setting
+                var _task = task || (module === 'pages' ? 'get' : 'list');
+
                 if ( this.uriMap[uri][module].hasOwnProperty(_task) && app.appCache[module] && app.appCache[module][_task] ) {
                     var view = app.appCache[module][_task]['view'];
                     app.AppView.render();

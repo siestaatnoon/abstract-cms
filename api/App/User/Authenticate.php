@@ -270,6 +270,21 @@ class Authenticate {
 
 
     /**
+     * is_logged_in
+     *
+     * Checks if a user is currently logged in.
+     *
+     * @access public
+     * @return bool True if user curently logged in
+     */
+    public function is_logged_in() {
+        $this->session = $this->get_session();
+        $user = $this->session->get_data(self::$SESSION_KEY);
+        return ! empty($user);
+    }
+
+
+    /**
      * clear_attempt
      *
      * Clears a user's login attempt.

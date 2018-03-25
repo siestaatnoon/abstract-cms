@@ -20,31 +20,32 @@ $web_root = template_web_root();
 
     <div class="small-12 medium-9 large-9 columns">
 
-<?php echo template_breadcrumbs(); ?>
+<!-- NOTE: can echo template_breadcrumbs($add_before_page, $replace) for custom breadcrumbs -->
+<%= page.breadcrumbs %>
 
-        <div id="main-content2">
+    <div id="main-content2">
 
-            <h1><%= page.short_title %></h1>
+<h1><%= page.short_title %></h1>
 
-            <h2><%- title %></h2>
+<h2><%- title %></h2>
 
-            <img src="<?php echo template_img_path('test'); ?><%= images.length ? images[0] : 'default.jpg' %>" alt="<%- title %>" />
+<img src="<?php echo template_img_path('test'); ?><%= images.length ? images[0] : 'default.jpg' %>" alt="<%- title %>" />
 
-            <p class="subinfo">
-                <%= post_date %><br/>
-                <%= post_time %>
-            </p>
-            <p class="intro">
-                <%= color %> <%= day %>
-            </p>
+<p class="subinfo">
+  <%= post_date %><br/>
+  <%= post_time %>
+</p>
+<p class="intro">
+  <%= color %> <%= day %>
+</p>
 
-            <%= content %>
-
-        </div>
+<%= content %>
 
     </div>
 
-    </div><!--end .row-->
+  </div>
+
+</div><!--end .row-->
 
 <?php
 

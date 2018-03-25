@@ -6,6 +6,37 @@ define([
 	
 	var Utils = {
 
+        /**
+         * Returns a formatted object from a jqXHR object returned from an AJAX call with
+         * the following properties:<br/><br/>
+         * statusCode: HTTP status code in response<br/>
+         * data: The response data and, if JSON, the parsed object from the JSON<br/>
+         * errors: The array of errors, if any<br/>
+         * response: The raw response string
+         *
+         * @param {jqXHR} jqXHR - The jQuery XHR object
+         * @return {Object/null} The formatted object or null if jqXHR parameter invalid
+         */
+	    parseJqXHR: function(jqXHR) {
+	        if ( _.isObject(jqXHR) === false || _.has(jqXHR, 'responseText') === false || _.has(jqXHR, 'status') === false ) {
+                return null;
+            }
+
+            var response = jqXHR.responseText;
+	        var isJson = this.isJson(response);
+	        var data = isJson ? JSON.parse(response) : response;
+	        var errors = [];
+	        if ( isJson && _.has(data, 'errors') ) {
+                errors = _.isArray(data.errors) ? data.errors : [data.errors];
+            }
+            return {
+	            statusCode: jqXHR.status,
+                data: data,
+                errors: errors,
+                response: response
+            };
+        },
+
         escapeSingleQuotes: function(mixed) {
             var type = typeof mixed;
             if ( $.isArray(type) ) {
@@ -97,12 +128,13 @@ define([
 		
 		isJson: function(str) {
 			var is_json = true;
+			var obj = false;
 			try {
-				JSON.parse(str);
+                obj = JSON.parse(str);
 			} catch (e) {
 				is_json = false;
 			}
-			return is_json;
+			return is_json && _.isObject(obj);
 		},
 		
 		refreshJqmField: function(selector) {

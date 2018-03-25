@@ -163,7 +163,6 @@ define([
 					this._apiRoot += '/' + this._id;
 				}
 			}
-			
 			this._deferredData['collection_url'] = this._getCollectionURL();
 			this._deferredData['model_url'] = this._getModelURL();
 		},

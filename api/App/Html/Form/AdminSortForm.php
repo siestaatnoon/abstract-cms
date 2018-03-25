@@ -205,9 +205,10 @@ class AdminSortForm {
         $subheading = $is_all_records ? $sort_all_records : '';
         $sort_uri = $this->module_name.'/'.self::SORT_URI_SEGMENT;
         $admin_fragment = $admin_uri_segment.'/'.$sort_uri;
+        $form_base_url = WEB_BASE.'/'.API_DIR.'/'.$admin_fragment;
         $param_list = array(self::ALL_SEGMENT);
 
-        $action = ' action="'.WEB_BASE.'/'.API_DIR.'/'.$sort_uri.(empty($this->field_name) ? '' : '/'.$this->field_name);
+        $action = ' action="'.$form_base_url.(empty($this->field_name) ? '' : '/'.$this->field_name);
         $action .= (empty($this->relation_id) ? '' : '/'.$this->relation_id).'"';
         $is_all = ' data-is-all="'.($is_all_records ? 1 : 0).'"';
         $readonly = ' data-readonly="'.($this->is_readonly ? 1 : 0).'"';

@@ -139,10 +139,11 @@ class App {
 		$api_dir = $count > 0 ? $parts[$count-1] : '';
 		
 		//set webroot and path to App
-		define('API_DIR', $api_dir);
-		define('APP_PATH', $app_path);
-		define('WEB_ROOT', $web_root);
-		define('WEB_BASE', $web_base);
+        define('DOC_ROOT', $doc_root);  // /full/path/to/docroot
+		define('API_DIR', $api_dir);    // [/baseurl]/api
+		define('APP_PATH', $app_path);  // [/baseurl]/api/App
+		define('WEB_ROOT', $web_root);  // /full/path/to/docroot[/baseurl]
+		define('WEB_BASE', $web_base);  // [/baseurl]
 		
 		//set all PHP errors and exceptions to behandled by this class
 		set_error_handler( array($this, 'error_handler') );
