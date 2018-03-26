@@ -140,7 +140,7 @@ class App {
 		
 		//set webroot and path to App
         define('DOC_ROOT', $doc_root);  // /full/path/to/docroot
-		define('API_DIR', $api_dir);    // [/baseurl]/api
+		define('API_DIR', $api_dir);    // api
 		define('APP_PATH', $app_path);  // [/baseurl]/api/App
 		define('WEB_ROOT', $web_root);  // /full/path/to/docroot[/baseurl]
 		define('WEB_BASE', $web_base);  // [/baseurl]
