@@ -1,5 +1,9 @@
 <?php
 
+// Common terms
+$lang['module']     = 'module';
+$lang['relation']   = 'relation';
+
 // Buttons
 $lang['add']    = 'Add';
 $lang['cancel'] = 'Cancel';
@@ -181,19 +185,33 @@ $lang['validate.custom'] 			= 'Custom validation';
 
 // Errors
 $lang['error.for.field.type'] 		= 'for field type %s';
+$lang['error.general.multi']        = 'Errors have occurred%s';
+$lang['error.general.single']       = 'An error has occurred%s';
 $lang['error.param.general']        = '%s must be %s';
 $lang['error.param.array']          = '%s must be array of %s';
 $lang['error.param.config']         = '%s must be name of config file %s';
 $lang['error.param.directory']      = '%s must be the directory path %s';
-$lang['error.param.missing']        = '%s missing parameter [%s]';
-$lang['error.param.module']         = '%s must be module slug';
 $lang['error.param.field.attr']     = '%s must be field name attribute';
 $lang['error.param.field.label']    = '%s must be label tag text for field';
 $lang['error.param.field.type']     = '%s missing one of the following';
 $lang['error.param.fields']         = '%s contains invalid field parameters';
+$lang['error.param.invalid']        = '%s is empty or contains missing or invalid data';
 $lang['error.param.lang']           = '%s must be name of locale lang file %s';
+$lang['error.param.missing']        = '%s missing parameter [%s]';
+$lang['error.param.module']         = '%s must be module slug';
+$lang['error.param.module.missing'] = 'module [%s] not found';
+$lang['error.param.module_fields']  = '%s must be array of module fields';
+$lang['error.param.module_pk']      = '%s must be primary key of module';
+$lang['error.param.module_title']   = '%s must be title field of module';
 $lang['error.param.relation']       = '%s relation module name not defined';
+$lang['error.param.type']           = '%s must be of type %s';
 $lang['error.param.undefined']      = '[%s] parameter must be defined [%s]';
+$lang['error.param.value']          = '%s must be of value %s';
+$lang['error.sort.activate']        = 'Module [%s] must have sorting activated to use this form';
+$lang['error.sort.save']            = 'Sorting failed for %s';
+$lang['error.sql.delete']           = 'DELETE failed for %s';
+$lang['error.sql.insert']           = 'INSERT failed for %s';
+$lang['error.sql.update']           = 'UPDATE failed for %s';
 $lang['error.type.directory']       = 'Parameter %s directory not found [%s], must be web root relative path %s';
 $lang['error.type.param.empty']     = 'Empty parameter %s';
 $lang['error.type.param.invalid'] 	= 'Invalid parameter %s';
@@ -201,6 +219,14 @@ $lang['error.type.param.missing']   = 'Missing parameter %s';
 $lang['error.type.relation']        = 'Invalid relation [%s] in module [%s]';
 $lang['error.type.type']            = 'Parameter %s must be of type %s';
 $lang['error.type.upload.config']   = 'Invalid upload configuration %s';
+$lang['error.while.active']         = 'while setting items active';
+$lang['error.while.archive']        = 'while archiving items';
+$lang['error.while.delete']         = 'while deleting items';
+$lang['error.while.inactive']       = 'while setting items inactive';
+$lang['error.while.load.model']     = 'while loading module model';
+$lang['error.while.load.options']   = 'while loading module options';
+$lang['error.while.load.relation']  = 'while loading module relations';
+$lang['error.while.unarchive']      = 'while unarchiving items';
 
 /* End of file en_US.php */
 /* Location: ./App/Lang/en/US/en_US.php */

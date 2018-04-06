@@ -1,5 +1,9 @@
 <?php
 
+// Términos comunes
+$lang['module']     = 'modulo';
+$lang['relation']   = 'relación';
+
 // Botones
 $lang['add']    = 'Añadir';
 $lang['cancel'] = 'Cancelar';
@@ -181,19 +185,33 @@ $lang['validate.custom'] 			= 'Validación customizado';
 
 // Errors
 $lang['error.for.field.type'] 		= 'para tipo del campo %s';
+$lang['error.general.multi']        = 'Han ocurrido errores%s';
+$lang['error.general.single']       = 'Ha ocurrido un error%s';
 $lang['error.param.general']        = '%s debe ser %s';
 $lang['error.param.array']          = '%s debe ser array de %s';
 $lang['error.param.config']         = '%s debe ser el nombre del fichero de config %s';
 $lang['error.param.directory']      = '%s debe ser la ruta del directorio %s';
-$lang['error.param.missing']        = '%s falta parametro [%s]';
-$lang['error.param.module']         = '%s debe ser identificador de modulo';
 $lang['error.param.field.attr']     = '%s debe ser nombre del atributo del campo';
 $lang['error.param.field.label']    = '%s debe ser texto de la etiqueta <label>';
 $lang['error.param.field.type']     = '%s falta uno de los siguientes';
 $lang['error.param.fields']         = '%s contains parametros de campo inválidos';
+$lang['error.param.invalid']        = '%s no existe o tiene datos incompletos o inválidos';
 $lang['error.param.lang']           = '%s debe ser nombre del fichero del locale "lang" %s';
+$lang['error.param.missing']        = '%s falta parametro [%s]';
+$lang['error.param.module']         = '%s debe ser identificador (slug) del modulo';
+$lang['error.param.module.missing'] = 'no se encuentra el modulo [%s]';
+$lang['error.param.module_fields']  = '%s debe ser array de los campos del modulo';
+$lang['error.param.module_pk']      = '%s debe ser primary key del modulo';
+$lang['error.param.module_title']   = '%s debe ser campo del título del modulo';
 $lang['error.param.relation']       = '%s no definido el nombre del relación del modulo';
+$lang['error.param.type']           = '%s debe ser del tipo %s';
 $lang['error.param.undefined']      = '[%s] parametro no definido [%s]';
+$lang['error.param.value']          = '%s debe ser del valor %s';
+$lang['error.sort.activate']        = 'Modulo [%s] debe haber activado ordenar para utilizar este formulario';
+$lang['error.sort.save']            = 'Ordenar ha fallado para %s';
+$lang['error.sql.delete']           = 'DELETE ha fallado para %s';
+$lang['error.sql.insert']           = 'INSERT ha fallado para %s';
+$lang['error.sql.update']           = 'UPDATE ha fallado para %s';
 $lang['error.type.directory']       = 'Parametro %s no se encuentra diretorio [%s], debe ser la ruta relativa a la raíz %s';
 $lang['error.type.param.empty']     = 'Parametro vacío %s';
 $lang['error.type.param.invalid'] 	= 'Parametro inválido %s';
@@ -201,6 +219,14 @@ $lang['error.type.param.missing']   = 'Falta parametro %s';
 $lang['error.type.relation']        = 'Relación inválido [%s] en modulo [%s]';
 $lang['error.type.type']            = 'Parametro %s debe ser del tipo %s';
 $lang['error.type.upload.config']   = 'Configuración de la carga del ficheros inválido %s';
+$lang['error.while.active']         = 'mientras cambiar activo los selecciónados';
+$lang['error.while.archive']        = 'mientras archivar los selecciónados';
+$lang['error.while.delete']         = 'mientras suprimir los selecciónados';
+$lang['error.while.inactive']       = 'mientras cambiar desactivo los selecciónados';
+$lang['error.while.load.model']     = 'mientras cargar el modelo del modulo';
+$lang['error.while.load.options']   = 'mientras cargar los opciónes del modulo';
+$lang['error.while.load.relation']  = 'mientras cargar los relaciónes del modulo';
+$lang['error.while.unarchive']      = 'mientras desarchivar los selecciónados';
 
 /* Fin del fichero es_ES.php */
 /* Ubicación: ./App/Lang/es/ES/es_ES.php */

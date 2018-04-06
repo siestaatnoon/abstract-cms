@@ -27,7 +27,8 @@ class AdminListPage extends \App\Html\ListPage\ListPage {
 	
 	public function __construct($mixed, $is_archive, $permission) {
 		if ($permission instanceof \App\User\Permission === false ) {
-			$message = 'Invalid param $permission: must be instance of \\App\\User\\Permission';
+            $msg_part = error_str('error.param.type', array('$permission', '\\App\\User\\Permission') );
+            $message = error_str('error.type.param.invalid', array($msg_part) );
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 
