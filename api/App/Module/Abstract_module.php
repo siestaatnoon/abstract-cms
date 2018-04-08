@@ -1454,19 +1454,19 @@ abstract class Abstract_module {
 		
 		if ( is_string($mixed) === false ) {
 			if ( empty($mixed['module']) ) {
-                $msg_part = error_str('error.param.module', array('$mixed[module]'));
+                $msg_part = error_str('error.module.slug', array('$mixed[module]'));
 				$errors[] = error_str('error.type.param.invalid', array($msg_part));
 			}
 			if ( empty($mixed['fields']) ) {
-                $msg_part = error_str('error.param.module_fields', array('$mixed[fields]'));
+                $msg_part = error_str('error.module.form_fields', array('$mixed[fields]'));
                 $errors[] = error_str('error.type.param.invalid', array($msg_part));
 			}
 			if ( empty($mixed['pk_field']) ) {
-                $msg_part = error_str('error.param.module_pk', array('$mixed[pk_field]'));
+                $msg_part = error_str('error.module.pk_field', array('$mixed[pk_field]'));
                 $errors[] = error_str('error.type.param.invalid', array($msg_part));
 			}
 			if ( empty($mixed['title_field']) ) {
-                $msg_part = error_str('error.param.module_title', array('$mixed[title_field]'));
+                $msg_part = error_str('error.module.title_field', array('$mixed[title_field]'));
                 $errors[] = error_str('error.type.param.invalid', array($msg_part));
 			}
 		} else if ( ! isset(self::$MODULES[$mixed]) ) {
@@ -1531,11 +1531,11 @@ abstract class Abstract_module {
 		
 		if ( is_string($mixed) === false ) {
 			if ( empty($mixed['module']) ) {
-                $msg_part = error_str('error.param.module', array('$mixed[module]'));
+                $msg_part = error_str('error.module.slug', array('$mixed[module]'));
                 $errors[] = error_str('error.type.param.invalid', array($msg_part));
 			}
 			if ( empty($mixed['fields']) ) {
-                $msg_part = error_str('error.param.module_fields', array('$mixed[fields]'));
+                $msg_part = error_str('error.module.form_fields', array('$mixed[fields]'));
                 $errors[] = error_str('error.type.param.invalid', array($msg_part));
 			}
 		} else if ( ! isset(self::$MODULES[$mixed]) ) {

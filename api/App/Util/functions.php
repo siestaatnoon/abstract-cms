@@ -52,7 +52,7 @@ if ( ! function_exists('__'))
  * corresponding values used with the PHP vsprintf() function.
  *
  * @param string $str The lang error key
- * @param array $args The string parameters to add to error string
+ * @param mixed $args The string parameter or array of strings to add to error string
  * @return string The I18n error string in the current lang locale or empty
  * string if key not found or invalid
  */
@@ -61,6 +61,8 @@ if ( ! function_exists('error_str'))
     function error_str($key, $args=array()) {
         if ( empty($key) || substr($key, 0, 6) !== 'error.' ) {
             return '';
+        } else if ( is_array($args) === false ) {
+            $args = array($args);
         }
 
         $App = App::get_instance();
