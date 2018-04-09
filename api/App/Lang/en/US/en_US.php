@@ -185,7 +185,16 @@ $lang['validate.custom'] 			= 'Custom validation';
 
 // Errors
 $lang['error.for.field.type'] 		= 'for field type %s';
+$lang['error.form_field.id']        = '%s must be form field ID';
+$lang['error.form_field.label']     = '%s or %s must be set and not empty';
+$lang['error.form_field.name']      = '%s must be form field identifying name';
+$lang['error.form_field.pk_dupe']   = '%s cannot be the same identifying name as module primary key';
+$lang['error.form_field.reserved']  = '%s is a reserved field name';
+$lang['error.form_field.slug']      = '%s must be form field module slug name';
+$lang['error.form_field.type']      = '%s invalid, must be one of the following: %s';
+$lang['error.general.missing']      = '%s item does not exist and cannot be updated';
 $lang['error.general.multi']        = 'Errors have occurred%s';
+$lang['error.general.set']          = '%s must be set and not empty';
 $lang['error.general.single']       = 'An error has occurred%s';
 $lang['error.module.delete']        = 'Module [%s] cannot be deleted directly since it is a relation for module(s) [%s]';
 $lang['error.module.dupe']          = '%s already in use, must be unique module slug name';

@@ -2,6 +2,7 @@
 
 namespace App\Module;
 
+use App\Exception\AppException;
 use
 App\Model\Relation;
 
@@ -117,10 +118,16 @@ class Module_form_fields extends \App\Module\Abstract_module {
 	 * Initializes the Module.
 	 * 
 	 * @access public
+     * @throws \App\Exception\AppException if an error occurs while loading module, rethrown and
+     * handled by \App\App class
 	 */
 	public function __construct() {
-		parent::__construct('form_fields');
-        $this->App->load_util('form_fields');
+	    try {
+            parent::__construct('form_fields');
+            $this->App->load_util('form_fields');
+        } catch (AppException $e) {
+	        throw $e;
+        }
 	}
 	
 	
@@ -134,10 +141,12 @@ class Module_form_fields extends \App\Module\Abstract_module {
 	 * @param mixed $value The value of the field
 	 * @param \App\User\Permission $permission The current CMS user Permission object
 	 * @return string The module permissions form fields HTML
+     * @throws \App\Exception\AppException if $permission parameter invalid
 	 */
 	public function form_field_field_type_module($ff_id, $value, $permission, $params=array()) {
 		if ($permission instanceof \App\User\Permission === false ) {
-			$message = 'Invalid param $permission: must be instance of \\App\\User\\Permission';
+            $msg_part = error_str('error.param.type', array('$permission', '\\App\\User\\Permission'));
+            $message = error_str('error.type.param.invalid', $msg_part);
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 
@@ -165,14 +174,16 @@ class Module_form_fields extends \App\Module\Abstract_module {
      * Creates the custom form select field HTML for a module list dropdown to select a relation module.
      *
      * @access public
-     * @param mixed $user_id The user ID (int) or empty if not used
+     * @param mixed $ff_id The form field ID (int) or empty if not used
      * @param mixed $value The value of the field
      * @param \App\User\Permission $permission The current CMS user Permission object
      * @return string The module permissions form fields HTML
+     * @throws \App\Exception\AppException if $permission parameter invalid
      */
     public function form_field_field_type_relation_name($ff_id, $value, $permission, $params=array()) {
         if ($permission instanceof \App\User\Permission === false ) {
-            $message = 'Invalid param $permission: must be instance of \\App\\User\\Permission';
+            $msg_part = error_str('error.param.type', array('$permission', '\\App\\User\\Permission'));
+            $message = error_str('error.type.param.invalid', $msg_part);
             throw new AppException($message, AppException::ERROR_FATAL);
         }
 
@@ -483,6 +494,7 @@ class Module_form_fields extends \App\Module\Abstract_module {
 	 * @param array $data The form field form data as an assoc array
 	 * @param boolean $has_id True if $data param contains a non-empty id for the form field row
 	 * @return mixed True if row data validated or an array of validation errors
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 */
 	protected function validate($data, $has_id=false) {
 		$field_types = $this->App->load_config('field_types');
@@ -490,33 +502,41 @@ class Module_form_fields extends \App\Module\Abstract_module {
         $reserved_names = $this->model->get_reserved_fields();
         $errors = array();
 
+        $field_name = empty($data['name']) ? '' : $data['name'];
+        if ( empty($data['name']) ) {
+            $errors[] = error_str('error.form_field.name', '$data[name]');
+        } else if ( in_array($field_name, $reserved_names) ) {
+            $errors[] = error_str('error.form_field.reserved', '$data[name]');
+        } else if ($field_name === $data['module_pk']) {
+            $errors[] = error_str('error.form_field.pk_dupe', '$data[name]');
+        }
+
 		if ($has_id) {
 			if ( empty($data['field_id']) ) {
-				$errors[] = 'Form field ['.$data['name'].'] param [field_id] empty, must be field ID';
+                $errors[] = error_str('error.form_field.id', '$data[field_id]');
 			} else {
 				$old_field = parent::get_data($data['field_id'], false, true);
 				if ( empty($old_field) ) {
-					$errors[] = 'Form field "'.$data['name'].'" does not exist and cannot be updated';
+                    $errors[] = error_str('error.general.missing', 'ID: '.$data['field_id']);
 				} 
 			}
 		}
-		if ( empty($data['label']) && empty($data['lang']) && ! in_array($data['field_type_type'], array('hidden', 'info', 'object') ) ) {
-			$errors[] = 'Form field ['.$data['name'].'] param [label] and [lang] empty, must be field label [label] or lang var [lang]';
+		if ( empty($data['label']) && empty($data['lang']) &&
+            ! in_array($data['field_type_type'], array('hidden', 'info', 'object') ) ) {
+            $errors[] = error_str('error.form_field.label', array('$data[label]', '$data[lang]'));
 		}
-		if ( empty($data['name']) ) {
-			$errors[] = 'Form field param [name] empty, must be form input name of field';
-		} else if ( in_array($data['name'], $reserved_names) ) {
-            $errors[] = 'Form field param [name] "'.$data['name'].'" is a reserved field name';
-        } else if ($data['name'] === $data['module_pk']) {
-            $errors[] = 'Form field param [name] "'.$data['name'].'" cannot be name of module primary key';
-        }
+
 		if ( empty($data['field_type_type']) ) {
-			$errors[] = 'Form field ['.$data['name'].'] param [field_type_type] empty, must be form input type';
+            $errors[] = error_str('error.general.set', '$data[field_type_type]');
 		} else if ( ! isset($field_types[ $data['field_type_type'] ]) ) {
-            $errors[] = 'Form field ['.$data['name'].'] [field_type_type] value "'.$data['field_type_type'].'" invalid';
+            $args = array(
+                '$data[field_type_type] "'.$data['field_type_type'].'"',
+                implode(', ', $field_types)
+            );
+            $errors[] = error_str('error.form_field.type', $args);
         }
 		if ( empty($data['module']) ) {
-			$errors[] = 'Form field ['.$data['name'].'] param [module] empty, must be name (slug) of module for field';
+            $errors[] = error_str('error.form_field.slug', '$data[module]');
 		}
 		/*
         if ( empty($data['module_pk']) ) {
@@ -526,8 +546,7 @@ class Module_form_fields extends \App\Module\Abstract_module {
 			$errors[] = 'Form field ['.$data['name'].'] param [data_type_type] empty, must be MySQL data type';
 		}
 		*/
-
-
+		
 		return empty($errors) ? true : $errors;
 	}
 

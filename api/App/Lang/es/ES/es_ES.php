@@ -185,7 +185,16 @@ $lang['validate.custom'] 			= 'Validación customizado';
 
 // Errors
 $lang['error.for.field.type'] 		= 'para tipo del campo %s';
+$lang['error.form_field.id']        = '%s debe ser ID del campo del formulario';
+$lang['error.form_field.label']     = '%s o %s debe haber un valor no vacío';
+$lang['error.form_field.name']      = '%s debe ser el nombre identificador del campo del formulario';
+$lang['error.form_field.pk_dupe']   = '%s no puede ser ser el mismo nombre identificador que el primary key';
+$lang['error.form_field.reserved']  = '%s es un nombre reservado del campo';
+$lang['error.form_field.slug']      = '%s debe ser identificador (slug) del modulo del campo del formulario';
+$lang['error.form_field.type']      = '%s inválido, debe ser uno de los siguientes: %s';
+$lang['error.general.missing']      = '%s no existe y no puede ser actualizado';
 $lang['error.general.multi']        = 'Han ocurrido errores%s';
+$lang['error.general.set']          = '%s debe haber un valor no vacío';
 $lang['error.general.single']       = 'Ha ocurrido un error%s';
 $lang['error.module.delete']        = 'Modulo [%s] no puede ser borrado directamente, es un relación de modulo(s) [%s]';
 $lang['error.module.dupe']          = '%s ya se utiliza por otro modulo, debe ser identificador único';

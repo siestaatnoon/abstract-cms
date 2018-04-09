@@ -1170,7 +1170,7 @@ class Module extends \App\Module\Abstract_module {
                 } else {
                     $old_module = parent::get_data($data['id'], false, true);
                     if (empty($old_module)) {
-                        $errors[] = ucfirst(error_str('error.param.module.missing', $module_name));
+                        $errors[] = ucfirst(error_str('error.general.missing', 'ID: '.$data['id']));
                     } else if ($module_name !== $old_module['name'] && array_key_exists($module_name, parent::$MODULES)) {
                         $errors[] = error_str('error.module.dupe', '$data[name] "'.$module_name.'"');
                     }
