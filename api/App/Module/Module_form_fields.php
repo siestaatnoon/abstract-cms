@@ -507,7 +507,7 @@ class Module_form_fields extends \App\Module\Abstract_module {
             $errors[] = error_str('error.form_field.name', '$data[name]');
         } else if ( in_array($field_name, $reserved_names) ) {
             $errors[] = error_str('error.form_field.reserved', '$data[name]');
-        } else if ($field_name === $data['module_pk']) {
+        } else if ( ! empty($data['module_pk']) && $field_name === $data['module_pk']) {
             $errors[] = error_str('error.form_field.pk_dupe', '$data[name]');
         }
 
@@ -521,17 +521,19 @@ class Module_form_fields extends \App\Module\Abstract_module {
 				} 
 			}
 		}
+
+        $field_type_type = empty($data['field_type_type']) ? '' : $data['field_type_type'];
 		if ( empty($data['label']) && empty($data['lang']) &&
-            ! in_array($data['field_type_type'], array('hidden', 'info', 'object') ) ) {
+            ! in_array($field_type_type, array('hidden', 'info', 'object') ) ) {
             $errors[] = error_str('error.form_field.label', array('$data[label]', '$data[lang]'));
 		}
 
-		if ( empty($data['field_type_type']) ) {
+		if ( empty($field_type_type) ) {
             $errors[] = error_str('error.general.set', '$data[field_type_type]');
-		} else if ( ! isset($field_types[ $data['field_type_type'] ]) ) {
+		} else if ( ! isset($field_types[$field_type_type]) ) {
             $args = array(
-                '$data[field_type_type] "'.$data['field_type_type'].'"',
-                implode(', ', $field_types)
+                '$data[field_type_type] "'.$field_type_type.'"',
+                implode(', ', array_keys($field_types) )
             );
             $errors[] = error_str('error.form_field.type', $args);
         }
@@ -542,7 +544,7 @@ class Module_form_fields extends \App\Module\Abstract_module {
         if ( empty($data['module_pk']) ) {
             $errors[] = 'Form field ['.$data['name'].'] param [module_pk] empty, must be name of primary key field of module for field';
         }
-		if ( ! empty($data['is_model']) && empty($data['data_type_type']) && $data['field_type_type'] !== 'relation' ) {
+		if ( ! empty($data['is_model']) && empty($data['data_type_type']) && $field_type_type !== 'relation' ) {
 			$errors[] = 'Form field ['.$data['name'].'] param [data_type_type] empty, must be MySQL data type';
 		}
 		*/

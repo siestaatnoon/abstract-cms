@@ -1,6 +1,8 @@
 <?php
 
-use App\App;
+use
+App\App,
+App\Exception\AppException;
 
 /**
  * __
@@ -26,15 +28,20 @@ if ( ! function_exists('__'))
         // first check main lang file
         $i18n = $App->lang($str);
 
-        // next check for text translation
-        if ( empty($i18n) ) {
+        if ($str === $i18n) {
+            // translation not found, next check for text translation
             $i18n = $App->lang_text($str);
         }
 
         // search main EN translation file for $str and
         // use corresponding key for translation
         if ( empty($i18n) ) {
-            $lang = $App->load_lang('en_US');
+            $lang = array();
+            try {
+                $lang = $App->load_lang('en_US');
+            } catch (AppException $e) {
+                return $str;
+            }
             $key = array_search($str, $lang);
             $i18n = empty($key) ? $str : $App->lang($key);
         }

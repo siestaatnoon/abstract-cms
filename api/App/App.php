@@ -391,7 +391,7 @@ class App {
 	* 
 	* @access public
 	* @param string $name The lang parameter name
-	* @return mixed The text translation value from the given parameter or false if undefined
+	* @return mixed The text translation value from the given parameter or the string parameter if undefined
 	*/
 	public function lang($name) {
 		if ( empty($name) ) {

@@ -71,9 +71,15 @@ class Module extends \App\Module\Abstract_module {
 	 * Initializes the Module.
 	 * 
 	 * @access public
+     * @throws \App\Exception\AppException if an error occurs while loading module, rethrown and
+     * handled by \App\App class
 	 */
 	public function __construct($module_name='modules') {
-		parent::__construct($module_name);
+        try {
+            parent::__construct($module_name);
+        } catch (AppException $e) {
+            throw $e;
+        }
 	}
 	
 

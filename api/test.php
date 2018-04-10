@@ -5,15 +5,20 @@ use App\Html\Template\Template;
 use App\Module\Module;
 use App\Model\Relation;
 use App\User\Permission;
-use Slim\Slim;
 
-require 'Slim/Slim.php';
 require 'App/App.php';
-
-Slim::registerAutoloader();
-$Slim = new Slim();
 \App\App::register_autoload();
 $app = \App\App::get_instance();
+
+// Load Slim Framework
+require '../vendor/autoload.php';
+$slim_config = [
+    'settings' => [
+        'displayErrorDetails' => $app->config('debug'),
+    ],
+];
+$Container = new \Slim\Container($slim_config);
+$Slim = new \Slim\App($Container);
 
 $gizmos_fields = array(
 	array(
@@ -764,6 +769,7 @@ $testo_data = array(
     'is_active' 	=> 1
 );
 
+/*
 use App\Html\Form\Field\Form_field;
 $config = array(
     'name' => 'gizmos',
@@ -778,6 +784,20 @@ $config = array(
 );
 $FF = new Form_field($config);
 $FF->html();
+*/
+class Module_test extends App\Module\Module_form_fields {
+    public function __construct() {
+        parent::__construct();
+    }
+    public function validate($data, $has_id=false) {
+        return parent::validate($data, $has_id);
+    }
+}
+$M = new Module_test();
+unset($gizmos_data['name']);
+$gizmos_data = array('name' => 'field_id', 'field_type_type' => 'booger');
+$response = $M->validate($gizmos_data);
+print_r($response);
 
 /*
 

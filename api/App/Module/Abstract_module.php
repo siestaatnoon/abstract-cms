@@ -986,7 +986,7 @@ abstract class Abstract_module {
 		if ( empty($errors) ) {
             self::$INSTANCES['relations'][$module_name] = $relations;
         } else {
-			$msg_part = error_str('error.while.load.relation').' ('.__('module').' ['.$module_name.']): ';
+			$msg_part = error_str('error.while.load.relation').' '.__('module').' ['.$module_name.']): ';
             $msg_part .= implode("\n", $errors);
             $message = error_str('error.general.multi', array($msg_part));
 			throw new AppException($message, AppException::ERROR_FATAL);
