@@ -19,6 +19,10 @@ App\Exception\AppException;
  */
 class Module_users extends \App\Module\Abstract_module {
 
+    /**
+     * @var array Permission values used in admin form
+     *
+     */
     protected static $FIELD_OPTIONS = array(
         'r' => 'Read',
         'u' => 'Update',
@@ -33,9 +37,15 @@ class Module_users extends \App\Module\Abstract_module {
 	 * Initializes the Users module.
 	 * 
 	 * @access public
+     * @throws \App\Exception\AppException if an error occurs while loading module, rethrown and
+     * handled by \App\App class
 	 */
 	public function __construct() {
-		parent::__construct('users');
+        try {
+            parent::__construct('users');
+        } catch (AppException $e) {
+            throw $e;
+        }
 	}
 
 
@@ -81,10 +91,12 @@ class Module_users extends \App\Module\Abstract_module {
 	 * @param mixed $value The value of the field
 	 * @param \App\User\Permission $permission The current CMS user Permission object
 	 * @return string The global permissions form field HTML
+     * @throws \App\Exception\AppException if $permission parameter invalid, handled by \App\App class
 	 */
 	public function form_field_global_perm($user_id, $value, $permission, $params=array()) {
 		if ($permission instanceof \App\User\Permission === false ) {
-			$message = 'Invalid param $permission: must be instance of \\App\\User\\Permission';
+            $msg_part = error_str('error.param.type', array('$permission', '\\App\\User\\Permission'));
+            $message = error_str('error.type.param.invalid', $msg_part);
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 		
@@ -116,10 +128,12 @@ class Module_users extends \App\Module\Abstract_module {
 	 * @param mixed $value The value of the field
 	 * @param \App\User\Permission $permission The current CMS user Permission object
 	 * @return string The module permissions form fields HTML
+     * @throws \App\Exception\AppException if $permission parameter invalid, handled by \App\App class
 	 */
 	public function form_field_modules($user_id, $value, $permission, $params=array()) {
 		if ($permission instanceof \App\User\Permission === false ) {
-			$message = 'Invalid param $permission: must be instance of \\App\\User\\Permission';
+            $msg_part = error_str('error.param.type', array('$permission', '\\App\\User\\Permission'));
+            $message = error_str('error.type.param.invalid', $msg_part);
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 		

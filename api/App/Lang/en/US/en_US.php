@@ -242,6 +242,7 @@ $lang['error.type.param.missing']   = 'Missing parameter %s';
 $lang['error.type.relation']        = 'Invalid relation [%s] in module [%s]';
 $lang['error.type.type']            = 'Parameter %s must be of type %s';
 $lang['error.type.upload.config']   = 'Invalid upload configuration %s';
+$lang['error.var.empty']            = '%s missing or empty value';
 $lang['error.while.active']         = 'while setting items active';
 $lang['error.while.archive']        = 'while archiving items';
 $lang['error.while.delete']         = 'while deleting items';

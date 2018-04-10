@@ -242,6 +242,7 @@ $lang['error.type.param.missing']   = 'Falta parametro %s';
 $lang['error.type.relation']        = 'Relación inválido [%s] en modulo [%s]';
 $lang['error.type.type']            = 'Parametro %s debe ser del tipo %s';
 $lang['error.type.upload.config']   = 'Configuración de la carga del ficheros inválido %s';
+$lang['error.var.empty']            = '%s le falta o tiene valor vacío';
 $lang['error.while.active']         = 'mientras cambiar activo los selecciónados';
 $lang['error.while.archive']        = 'mientras archivar los selecciónados';
 $lang['error.while.delete']         = 'mientras suprimir los selecciónados';

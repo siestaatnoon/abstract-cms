@@ -1183,13 +1183,13 @@ abstract class Abstract_module {
         if ( ! $has_saved) {
             $msg_part = '';
             if ( ! empty($field_name) ) {
-                $msg_part = __('relation').' ['.$field_name.'] ';
+                $msg_part .= __('relation').'['.$field_name.']';
             }
             if ( ! empty($relation_id) ) {
-                $msg_part = __('relation').' ID ['.$relation_id.'] ';
+                $msg_part .= '[ID: '.$relation_id.']';
             }
 
-            $msg_part .= 'ID: '.(is_array($ids) ? implode(', ', $ids) : $ids);
+            $msg_part .= ' ID: '.(is_array($ids) ? implode(', ', $ids) : $ids);
             $errors[] = error_str('error.sort.save', array($msg_part) );
         }
 
