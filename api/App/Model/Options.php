@@ -65,13 +65,14 @@ class Options {
 		$errors = array();
 		
 		if ( empty($config['module']) ) {
-			$errors[] = '$config[module] empty, must be name of module utilizing this model';
+            $errors[] = error_str('error.param.module', array('$config[module]'));
 		}
 		if ( empty($config['fields']) || ! is_array($config['fields']) ) {
-			$errors[] = '$config[fields] empty or not array, must be assoc array of model field names and default values';
+            $errors[] = error_str('error.param.fields.array', array('$config[fields]'));
 		}
 		if ( ! empty($errors) ) {
-			$message = 'Invalid param (array) $config: '.implode("\n", $errors);
+            $message = error_str('error.type.param.invalid', array('(array) $config: '));
+            $message .= implode(",\n", $errors);
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 		
@@ -112,8 +113,8 @@ class Options {
 	 * @access public
 	 * @param array $config The options configuration assoc array, similar to constructor
 	 * @param array $data The fields and corresponding values to insert
-	 * @return boolean True if operation successful or an App\Exception\SQLException is passed 
-	 * and to be handled by \App\App class if an SQL error occurred
+	 * @return bool True if operation successful
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 * @see __construct() for model configuration parameters
 	 */
 	public static function create($config, $data=array()) {
@@ -162,8 +163,8 @@ class Options {
 	 *
 	 * @access public
 	 * @param array $config The options configuration assoc array, similar to constructor
-	 * @return boolean True if operation successful or an App\Exception\SQLException is passed 
-	 * and to be handled by \App\App class if an SQL error occurred
+	 * @return bool True if operation successful
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 * @see __construct() for model configuration parameters
 	 */
 	public static function destroy($config) {
@@ -192,9 +193,7 @@ class Options {
 	 * retrieval.
 	 *
 	 * @access public
-	 * @return mixed The assoc array of options OR false if operation unsuccessful OR
-	 * an App\Exception\SQLException is passed and to be handled by \App\App class if an 
-	 * SQL error occurred
+	 * @return mixed The assoc array of options OR false if operation unsuccessful
 	 */
 	public function get() {
 		$query = "SELECT var, value FROM ".$this->db->escape_identifier(self::$OPTIONS_TABLE)." ";
@@ -242,8 +241,7 @@ class Options {
 	 *
 	 * @access public
 	 * @param array $data The fields and corresponding values to insert
-	 * @return boolean True if operation successful or an App\Exception\SQLException 
-	 * is passed and to be handled by \App\App class if an SQL error occurred
+	 * @return bool True if operation successful
 	 */
 	public function update($data) {
 		if ( empty($data) ) {
@@ -276,8 +274,7 @@ class Options {
 	 * @access public
 	 * @param array $data The new fields and corresponding values to insert/delete
 	 * @return mixed \App\Model\Option An updated instance of this class if operation successful OR 
-	 * false if empty $data param OR an App\Exception\SQLException is passed and to be handled by 
-	 * \App\App class if an SQL error occurred
+	 * false if empty $data param
 	 */
 	public function update_fields($data) {
 		if ( empty($data) ) {

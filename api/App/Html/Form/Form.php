@@ -170,7 +170,7 @@ class Form {
 		$errors = array();
 		
 		if ( empty($config['module_name']) ) {
-			$errors[] = error_str('error.param.module', array('$config[module_name]'));
+			$errors[] = error_str('error.module.slug', array('$config[module_name]'));
 		}
 		if ( empty($config['fields']) || ! is_array($config['fields']) ) {
 			$errors[] = error_str('error.param.array', array('$config[fields]', '\\App\\Form\\Field\\Form_field'));

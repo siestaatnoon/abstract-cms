@@ -9,7 +9,8 @@ App\Exception\AppException;
 /**
  * Model_pages class
  * 
- * 
+ * Provides the database functions for a App\Module\Module object. Subclass of App\Model\Model,
+ * provides functions for retrieving pages in their hierarchical order.
  * 
  * @author      Johnny Spence <info@projectabstractcms.com>
  * @copyright   2014 Johnny Spence
@@ -28,17 +29,22 @@ class Model_pages extends \App\Model\Model {
 	const INDEX_BY_SLUG = 103;
 	
 	/**
-	 * Array of pages retrieved in the database and used create sorted lists of page -> subpages.
+	 * @var array Array of pages retrieved in the database and used create sorted lists of page -> subpages.
 	 *
 	 */
 	private static $pages = NULL;
-	
 
-	/**
-	 * Constructor
-	 *
-	 * Calls the Model constructor.
-	 */
+
+    /**
+     * Constructor
+     *
+     * Initializes the Model_pages model.
+     *
+     * @access public
+     * @param array $config The model configuration array
+     * @throws \App\Exception\AppException if $config assoc array missing required parameters
+     * @see Model::__construct() for model configuration parameters
+     */
     public function __construct($config) {
         parent::__construct($config);
 		self::$pages = $this->query_pages();
@@ -46,14 +52,14 @@ class Model_pages extends \App\Model\Model {
 	
 	
 	/**
-	 * Can Delete
+	 * can_delete
 	 *
 	 * Checks if a row to be deleted has (sub)pages linked to it.
 	 *
 	 * @access public
-	 * @see Admin_controller::delete calls this function to verify row can be deleted
-	 * @param int The page id to check if is deleteable (has no subpages).
-	 * @return boolean True if row can be deleted.
+	 * @param int $page_id The page id to check if is deleteable (has no subpages)
+	 * @return bool True if row can be deleted
+     * @see Admin_controller::delete calls this function to verify row can be deleted
 	 */
 	public function can_delete($page_id) {
 		if (empty($page_id)) {
@@ -66,14 +72,15 @@ class Model_pages extends \App\Model\Model {
 	
 
 	/**
-	 * Get by ID
+	 * get
 	 *
-	 * Returns a section object from the given row ID.
+	 * Overwrites parent method, returns a section object from the given row ID.
 	 *
 	 * @access public
-	 * @param int The row ID.
-	 * @param boolean True to include subpages of the page.
-	 * @return array The section object or false if row not found.
+	 * @param int $id The row ID.
+	 * @param bool $is_slug True if $id parameter is slug
+     * @param bool $include_subpages True to include subpages of the page
+	 * @return mixed The page object or false if row not found
 	 */
 	public function get($id, $is_slug=false, $include_subpages=true) {
 	    if ( ! $is_slug) {
@@ -98,12 +105,12 @@ class Model_pages extends \App\Model\Model {
 	
 	
 	/**
-	 * Get All
+	 * get_all
 	 *
-	 * Returns all rows or all active rows as section objects.
+	 * Returns all page rows indexed by page ID or in sorted order.
 	 *
 	 * @access public
-	 * @return array The section objects.
+	 * @return array The page rows
 	 */
 	public function get_all($id_indexed=false) {
 		$index = $id_indexed ? self::INDEX_BY_ID : self::INDEX_BY_ORDER;
@@ -112,14 +119,14 @@ class Model_pages extends \App\Model\Model {
 
 
     /**
-     * Get by ID
+     * get_branch
      *
-     * Returns a section object from the given row ID.
+     * Returns a page with it's child pages given the page ID.
      *
      * @access public
-     * @param int The row ID.
-     * @param boolean True to include subpages of the page.
-     * @return array The section object or false if row not found.
+     * @param int $id The page ID.
+     * @param bool $include_subpages True to include subpages of the page.
+     * @return array The page object
      */
     public function get_branch($id, $include_subpages=false) {
         $id = (int) $id;
@@ -139,14 +146,14 @@ class Model_pages extends \App\Model\Model {
 	
 	
 	/**
-	 * Get Depth
+	 * get_depth
 	 *
 	 * Returns the depth of a page or levels of a page's subpages + 1.
 	 *
 	 * @access public
-	 * @param int The page ID
-	 * @param object The page object used in recursion
-	 * @return int The depth
+	 * @param int $page_id The page ID
+	 * @param object $page The page object used in recursion
+	 * @return int The page depth
 	 */
 	public function get_depth($page_id, $page=NULL) {
 		if ($page === NULL) {
@@ -168,8 +175,17 @@ class Model_pages extends \App\Model\Model {
 		
 		return $max_depth + 1;
 	}
-	
-	
+
+
+    /**
+     * get_default_id
+     *
+     * Returns the default page ID. This page is used as a marker for the top
+     * of the page hierarchy and not for page data.
+     *
+     * @access public
+     * @return int The default page ID
+     */
 	public static function get_default_id() {
 		return self::DEFAULT_ID;
 	}
@@ -181,7 +197,7 @@ class Model_pages extends \App\Model\Model {
 	 * Returns the parent id of all top-level pages.
 	 *
 	 * @access public
-	 * @return int The ID.
+	 * @return int The top level parent ID
 	 */
 	public static function get_top_level_id() {
 		return self::TOP_LEVEL_PARENT_ID;
@@ -194,7 +210,7 @@ class Model_pages extends \App\Model\Model {
 	 * Returns the parent id of all pages not within the normal tree structure.
 	 *
 	 * @access public
-	 * @return int The ID.
+	 * @return int The uncategorized ID
 	 */
 	public static function get_uncategorized_id() {
 		return self::UNCATEGORIZED_ID;
@@ -202,14 +218,15 @@ class Model_pages extends \App\Model\Model {
 	
 	
 	/**
-	 * Get For Breadcrumbs
+	 * get_for_breadcrumbs
 	 *
 	 * Returns an array of pages within the hierarchy of a given page ID 
 	 * indexed by slug => title. Used for generating breadcrumbs.
 	 *
 	 * @access public
-	 * @param int The page ID of current page
-	 * @return array The array of pages
+	 * @param int $page_id The page ID of current page
+     * @param object $page The page object used in recursion
+	 * @return array The array of page rows
 	 */
 	public function get_for_breadcrumbs($page_id, $pages=NULL) {
 		if (empty($page_id)) {
@@ -242,14 +259,13 @@ class Model_pages extends \App\Model\Model {
 	
 	
 	/**
-	 * Get Level
+	 * get_page_depth
 	 *
 	 * Returns the level of a page or position from the top hierarchy (1 is top).
 	 *
 	 * @access public
-	 * @param int The page ID
-	 * @param object The page object used in recursion
-	 * @return int The depth or false if page ID invalid
+	 * @param int $page_id The page ID
+	 * @return mixed The depth or false if page ID invalid
 	 */
 	public function get_page_depth($page_id) {
 		$page = $this->get_branch($page_id);
@@ -274,16 +290,16 @@ class Model_pages extends \App\Model\Model {
 	
 	
 	/**
-	 * Get Linked Rows
+	 * get_linked_rows
 	 *
 	 * Retrieves a list of subpages (and corresponding admin view links) linked to a page ID.
 	 *
 	 * @access public
-	 * @see Admin_controller::delete calls this function to list pages to delete in order to delete row
-	 * @param int The page id.
-	 * @param int The current page level (used in recursion).
-	 * @param boolean Flag to use on first iteration of recursion.
-	 * @return array List of pages to delete.
+	 * @param int $page_id The page id
+	 * @param int $level The current page level (used in recursion)
+	 * @param bool $is_first_level Flag to use on first iteration of recursion
+	 * @return array List of pages to delete
+     * @see Admin_controller::delete calls this function to list pages to delete in order to delete row
 	 */
 	public function get_linked_rows($page_id, $level=0, $is_first_level=true) {
 		$links = array();
@@ -319,14 +335,13 @@ class Model_pages extends \App\Model\Model {
 	
 	
 	/**
-	 * Get Page ID by Slug
+	 * get_page_id_by_slug
 	 *
 	 * Returns the page ID from a given slug or false if slug to a non existant page.
 	 *
 	 * @access public
-	 * @see M_Slugs for more about row slugs
-	 * @param string The row slug.
-	 * @return mixed The page ID or false if no page associated
+	 * @param string The page slug
+	 * @return mixed The page ID or false if no page associated with slug
 	 */
 	public function get_page_id_by_slug($slug) {
 		if (empty($slug)) {
@@ -346,13 +361,13 @@ class Model_pages extends \App\Model\Model {
 	
 
 	/**
-	 * Get Parent Pages
+	 * get_parent_pages
 	 *
 	 * Returns the top-level pages and subpages to a given depth.
 	 *
 	 * @access public
-	 * @param int The depth (level - 1) of the subpages to be returned.
-	 * @return array The array of top level pages.
+	 * @param int The $depth depth (level - 1) of the subpages to be returned
+	 * @return array The array of top level pages
 	 */
 	public function get_parent_pages($depth=self::MAX_DEPTH) {
 		return $this->page_tree(self::INDEX_BY_ORDER, $depth);
@@ -372,9 +387,7 @@ class Model_pages extends \App\Model\Model {
 	 *
 	 * @access public
 	 * @param array $params The parameters for the query
-	 * @return mixed The query result in an assoc array or false if query failed an
-	 * App\Exception\SQLException is passed and to be handled by \App\App class if an 
-	 * SQL error occurred
+	 * @return mixed The query result in an assoc array or false if query failed
 	 * @see Model::get_rows for function definition
 	 */
 	public function get_rows($params=array()) {
@@ -399,13 +412,13 @@ class Model_pages extends \App\Model\Model {
 	
 
 	/**
-	 * Get Subpages
+	 * get_subpages
 	 *
 	 * Returns the subpages with a given parent page ID.
 	 *
 	 * @access public
-	 * @param int The parent page ID
-	 * @return array The array of top level pages.
+	 * @param int $parent_id The parent page ID
+	 * @return array The array of top level pages
 	 */
 	public function get_subpages($parent_id) {
 		if (empty($parent_id) || $parent_id <= self::TOP_LEVEL_PARENT_ID) {
@@ -414,8 +427,18 @@ class Model_pages extends \App\Model\Model {
 
 		return $this->page_subpages($parent_id);
 	}
-	
-	
+
+
+    /**
+     * get_top_level_parent_id
+     *
+     * Returns the top-level page ID of a page in the hierarchy.
+     *
+     * @access public
+     * @param int $page_id The page ID of current page
+     * @param array $pages The array of page objects used in recursion
+     * @return int The parent page ID
+     */
 	public function get_top_level_parent_id($page_id, $pages=NULL) {
 		if ( empty($page_id) ) {
 			return false;
@@ -440,12 +463,12 @@ class Model_pages extends \App\Model\Model {
 	
 
 	/**
-	 * Get Tree
+	 * get_tree
 	 *
 	 * Returns all pages within their proper tree structure and indexed by page ID (except subpages).
 	 *
 	 * @access public
-	 * @return array The section objects.
+	 * @return array All pages in their hierarchy
 	 */
 	public function get_tree() {
 		return $this->page_tree(self::INDEX_BY_ID);
@@ -453,13 +476,13 @@ class Model_pages extends \App\Model\Model {
 	
 
 	/**
-	 * Has Inactive Parent
+	 * has_inactive_parent
 	 *
 	 * Checks if a page id has an inactive page within it's parent page hierarchy.
 	 *
 	 * @access public
-	 * @param int The page id.
-	 * @return boolean True if page has inactive parent page.
+	 * @param int $page_id The page id
+	 * @return bool True if page has inactive parent page
 	 */
 	public function has_inactive_parent($page_id) {
 		$page = $this->get_branch($page_id);
@@ -485,14 +508,14 @@ class Model_pages extends \App\Model\Model {
 	
 
 	/**
-	 * In Tree
+	 * in_tree
 	 *
 	 * Checks if a page id is a subpage of a parent page id.
 	 *
 	 * @access public
-	 * @param int The parent id.
-	 * @param int The page id to check if subpage of parent id.
-	 * @return boolean True if page is a subpage of parent page.
+	 * @param int $parent_id The parent page ID
+	 * @param int $id The page id to check if subpage of parent id
+	 * @return bool True if page is a subpage of parent page
 	 */
 	public function in_tree($parent_id, $id) {
 		if ( empty($parent_id) || empty($id) ) {
@@ -527,13 +550,13 @@ class Model_pages extends \App\Model\Model {
  
 
 	/**
-	 * Insert
+	 * insert
 	 *
 	 * Inserts a row with the given array of fields and corresponding values.
 	 *
 	 * @access public
-	 * @param array The array of fields and values.
-	 * @return boolean True if insert was successful, false if not.
+	 * @param array $data The array of fields and corresponding values
+	 * @return bool True if insert was successful, false if not
 	 */
 	public function insert($data) {
 		if ( empty($data) ) {
@@ -561,19 +584,19 @@ class Model_pages extends \App\Model\Model {
 	
 	
 	/**
-	 * Pages Select Array
+	 * pages_select_array
 	 *
-	 * Returns an array of pages (not in hierarchy) used for dropdown/jump menus or other select.
+	 * Returns an array of pages (not in hierarchy) used for dropdown/jump menus.
 	 * Dashes or other dividers from param are used to designate levels of pages.
 	 *
 	 * @access public
-	 * @param int/array The page ID to omit.
-	 * @param int Max 
-	 * @param string Prefix added before ID index in return array.
-	 * @param int Current depth of pages (used in recursion).
-	 * @param string Dashes used to prefix/indent subpages (used in recursion).
-	 * @param array Array of pages/subpages (used in recursion).
-	 * @return array The array of pages for select menus.
+	 * @param mixed $omit_id The page ID or array of IDs to omit
+	 * @param int $max_levels Max levels of pages to retrieve
+	 * @param string $value_pref Prefix added before ID index in return array
+	 * @param int $depth Current depth of pages (used in recursion)
+	 * @param string $dashes Dashes used to prefix/indent subpages (used in recursion)
+	 * @param array $pages Array of pages/subpages (used in recursion)
+	 * @return array The array of pages indexed by ID => page title
 	 */
 	public function pages_select_array($omit_id=array(), $max_levels=self::MAX_DEPTH, $value_pref='', $depth=1, $dashes='', $pages=array()) {
 		if (count($pages) == 0) {
@@ -622,12 +645,12 @@ class Model_pages extends \App\Model\Model {
 	
 	
 	/**
-	 * Pages Sort Alpha
+	 * sort_alpha
 	 *
 	 * Accepts an array of page objects and sorts it by page title (short_title).
 	 * 
 	 * @access public
-	 * @param array The Pages array
+	 * @param array $pages The Pages array
 	 * @return array The sorted pages array, or the array passed in if empty
 	 */
 	public static function sort_alpha($pages) {
@@ -664,18 +687,18 @@ class Model_pages extends \App\Model\Model {
 	
 	
 	/**
-	 * Parent Select Array
+	 * parent_select_list
 	 *
 	 * Returns an array of parent pages with subpages ([prefix +]page ID => page name) used 
 	 * for dropdown/jump menus.Pages names appear with parent pages (e.g. Page1 >> Page2 >> Page3).
 	 *
 	 * @access public
-	 * @param int The page ID to omit.
-	 * @param string Prefix added before ID index in return array.
-	 * @param int Current depth of pages (used in recursion).
-	 * @param string Dashes used to prefix/indent subpages (used in recursion).
-	 * @param array Array of pages/subpages (used in recursion).
-	 * @return array The array of ([prefix +]page ID => page names).
+	 * @param mixed $omit_id The page ID or array of IDs to omit
+	 * @param string $value_pref Prefix added before ID index in return array
+	 * @param int $depth Current depth of pages (used in recursion)
+	 * @param string $dashes Dashes used to prefix/indent subpages (used in recursion)
+	 * @param array $pages Array of pages/subpages (used in recursion)
+	 * @return array The array of ([prefix +]page ID => page names)
 	 */
 	public function parent_select_list($omit_id=array(), $value_pref='', $depth=1, $dashes='', $pages=array()) {
 		if (count($pages) == 0) {
@@ -703,13 +726,13 @@ class Model_pages extends \App\Model\Model {
 	
 	
 	/**
-	 * Update
+	 * update
 	 *
-	 * Updates a row with the given array of fields and corresponding values, including row ID.
+	 * Updates a row with the given array of fields and corresponding values.
 	 *
 	 * @access public
-	 * @param array The array of fields and values.
-	 * @return boolean True if update was successful, false if not.
+	 * @param array $data The array of fields and values
+	 * @return bool True if update was successful, false if not
 	 */
 	public function update($data) {
 		if ( empty($data) ) {
@@ -742,18 +765,17 @@ class Model_pages extends \App\Model\Model {
 	
 	
 	/**
-	 * Get Pages List
+	 * page_list
 	 *
 	 * Returns the subpages from a given parent page ID in a single dimensioned array.
 	 *
 	 * @access private
-	 * @param int The parent page ID to retrieve subpages.
-	 * @param int Index type of return array (numeric, id or slug).
-	 * @param int Top level page ID of subpages tree (used in recursion).
-	 * @return array The array of subpages.
+	 * @param int $parent_id The parent page ID to retrieve subpages
+	 * @param int $index_type Index type of return array (numeric, id or slug)
+	 * @param int $top_level_id Top level page ID of subpages tree (used in recursion)
+	 * @return array The array of subpages
 	 */
-	private function page_list($parent_id, $index_type=self::INDEX_BY_ORDER, 
-	$top_level_id=self::TOP_LEVEL_PARENT_ID) {
+	private function page_list($parent_id, $index_type=self::INDEX_BY_ORDER, $top_level_id=self::TOP_LEVEL_PARENT_ID) {
 		if (count(self::$pages) == 0) {
 			return false;
 		}
@@ -797,9 +819,9 @@ class Model_pages extends \App\Model\Model {
 	 * in addition to it's subpages in the page tree structure.
 	 *
 	 * @access private
-	 * @param int The parent page ID or slug to retrieve subpages.
-	 * @param array The pages to check for the ID or slug match (used in recursion).
-	 * @return array The page with subpages.
+	 * @param int $page_id The parent page ID or slug to retrieve subpages
+	 * @param array $pages The pages to check for the ID or slug match (used in recursion)
+	 * @return array The page with subpages
 	 */
 	private function page_branch($page_id, $pages=NULL) {
 		if (empty($page_id)) {
@@ -834,11 +856,11 @@ class Model_pages extends \App\Model\Model {
 	 * Returns the subpages from a given parent page ID in it's tree structure.
 	 *
 	 * @access private
-	 * @param int The parent page ID to retrieve subpages.
-	 * @param int Number of levels of subpages to retrieve.
-	 * @param int Top level page ID of subpages tree (used in recursion).
-	 * @param int Index type of return array (numeric, id or slug).
-	 * @return array The array of subpages and child pages.
+	 * @param int $parent_id The parent page ID to retrieve subpages
+	 * @param int $depth Number of levels of subpages to retrieve
+	 * @param int $top_level_id Top level page ID of subpages tree (used in recursion)
+	 * @param int $index_type Index type of return array (numeric, id or slug)
+	 * @return array The array of subpages and child pages
 	 */
 	private function page_subpages($parent_id, $depth=-1, $top_level_id=self::TOP_LEVEL_PARENT_ID, $index_type=self::INDEX_BY_ORDER) {
 		if ( empty(self::$pages) ) {
@@ -877,14 +899,14 @@ class Model_pages extends \App\Model\Model {
 	
 
 	/**
-	 * Get Pages Tree
+	 * page_tree
 	 *
 	 * Returns the entire page tree structure to a given depth.
 	 *
 	 * @access private
-	 * @param int Index type of return array (numeric, id or slug).
-	 * @param int Number of levels of subpages to retrieve (depth).
-	 * @return array The page tree structure.
+	 * @param int $index_type Index type of return array (numeric, id or slug)
+	 * @param int $depth Number of levels of subpages to retrieve (depth)
+	 * @return array The page tree structure
 	 */
 	private function page_tree($index_type=self::INDEX_BY_ORDER, $depth=-1) {
 		$pages = array();
@@ -918,12 +940,12 @@ class Model_pages extends \App\Model\Model {
 	
 
 	/**
-	 * Query Pages
+	 * query_pages
 	 *
-	 * Retrieves the db pages for use in all functions of this class.
+	 * Retrieves the db pages for use in methods of this class.
 	 *
 	 * @access private
-	 * @return array The db pages.
+	 * @return array The page rows indexed by page parent IDs
 	 */
 	private function query_pages() {
 		$query = "SELECT ";
@@ -957,5 +979,5 @@ class Model_pages extends \App\Model\Model {
 
 }
 
-/* End of file m_pages.php */
-/* Location: ./application/models/m_pages.php */
+/* End of file Model_pages.php */
+/* Location: ./App/Model/Model_pages.php */

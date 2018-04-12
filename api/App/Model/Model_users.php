@@ -9,7 +9,8 @@ App\Exception\AppException;
 /**
  * Model_user class
  * 
- * 
+ * Provides the database functions for a App\Module\Module object. Subclass of App\Model\Model,
+ * provides additional user authentication functions.
  * 
  * @author      Johnny Spence <info@projectabstractcms.com>
  * @copyright   2014 Johnny Spence
@@ -50,11 +51,16 @@ class Model_users extends \App\Model\Model {
 	protected $table_login_attempts;
 
 
-	/**
-	 * Constructor
-	 *
-	 * Calls the Model parent constructor.
-	 */
+    /**
+     * Constructor
+     *
+     * Initializes the Model_pages model.
+     *
+     * @access public
+     * @param array $config The model configuration array
+     * @throws \App\Exception\AppException if $config assoc array missing required parameters
+     * @see Model::__construct() for model configuration parameters
+     */
     public function __construct($config) {
         parent::__construct($config);
         $this->App = App::get_instance();
@@ -70,9 +76,9 @@ class Model_users extends \App\Model\Model {
 	 * Authenticates a user for the CMS admin from given username and password.
 	 *
 	 * @access public
-	 * @param string The user username or email
-	 * @param string The user password
-	 * @return array The user data as assoc array if authenticated, false if not.
+	 * @param string $username The user username or email
+	 * @param string $userpass The user password
+	 * @return array The user data as assoc array if authenticated, false if not
 	 */
 	public function authenticate($username, $userpass) {
 		if ( empty($username) || empty($userpass) ) {
@@ -125,7 +131,7 @@ class Model_users extends \App\Model\Model {
 	 *
 	 * @access public
 	 * @param string $ip The user IP address
-	 * @return boolean True if successful
+	 * @return bool True if successful
 	 */
 	public function clear_login_attempt($ip) {
 		if ( empty($ip) ) {
@@ -144,11 +150,11 @@ class Model_users extends \App\Model\Model {
 	 *
 	 * Checks if a given email is in use by a user or super user.
 	 *
-	 * @param string The email address
-	 * @param int The user id to skip in search (otherwise will return false positive)
-	 * @return boolean True if email in use, false if not
+	 * @param string $email The email address
+	 * @param int $user_id The user id to skip in search (otherwise will return false positive)
+	 * @return bool True if email in use, false if not
 	 */
-	public function email_exists($email, $user_id=false) {
+	public function email_exists($email, $user_id=0) {
 		if ( empty($email) ) {
 			return false;
 		}
@@ -182,10 +188,8 @@ class Model_users extends \App\Model\Model {
 	 *
 	 * @access public
 	 * @param mixed $id The row id or slug
-	 * @param boolean $is_slug Not passed to overwritten parent method
-	 * @return mixed The associative array for the row or false if row not found or an
-	 * App\Exception\SQLException is passed and to be handled by \App\App class if an 
-	 * SQL error occurred
+	 * @param bool $is_slug Not required and not passed to overwritten parent method
+	 * @return mixed The associative array for the row or false if row not found
 	 */
 	public function get($id, $is_slug=false) {
 		$row = parent::get($id, false);
@@ -235,12 +239,13 @@ class Model_users extends \App\Model\Model {
 	/**
 	 * insert
 	 *
-	 * Inserts a row with the given array of fields and corresponding values.
+	 * Inserts a row with the given array of fields and corresponding values. Overwrites parent
+     * method to hash the password.
 	 *
 	 * @access public
-	 * @param array The array of fields and values.
-	 * @return boolean True if insert was successful, false if insert unsuccessful 
-	 * or if username or email already exists for a user.
+	 * @param array $data The array of fields and corresponding values
+	 * @return bool True if insert was successful, false if insert unsuccessful
+	 * or if username or email already exists for a user
 	 */
 	public function insert($data) {
 		if ( empty($data) || 
@@ -261,8 +266,8 @@ class Model_users extends \App\Model\Model {
 	 *
 	 * Checks if a given username is a super user.
 	 *
-	 * @param string The username
-	 * @return boolean True if admin, false if not
+	 * @param string $username The username
+	 * @return bool True if super user admin, false if not
 	 */
 	public function is_super($username) {
 		if ( empty($username) ) {
@@ -283,11 +288,11 @@ class Model_users extends \App\Model\Model {
 	 *
 	 * Checks if a given username is in use.
 	 *
-	 * @param string The username
-	 * @param int The user id to skip in search (otherwise may return false positive)
-	 * @return boolean True if user exists, false if not
+	 * @param string $username The username
+	 * @param int $user_id The user id to skip in search (otherwise may return false positive)
+	 * @return bool True if user exists, false if not
 	 */
-	public function is_user($username, $user_id=false) {
+	public function is_user($username, $user_id=0) {
 		if ( empty($username) ) {
 			return false;
 		}
@@ -316,8 +321,8 @@ class Model_users extends \App\Model\Model {
 	 * not pertaining to model, from each row.
 	 *
 	 * @access public
-	 * @param \App\Database\Result Driver dependant query result set
-	 * @param boolean $is_single_row True if query returns a single row
+	 * @param \App\Database\Result $result Driver dependant query result set
+	 * @param bool $is_single_row True if query returns a single row
 	 * @return array The row or array of rows, assoc array parsed
 	 */
 	public function parse_result($result, $is_single_row=false) {
@@ -398,14 +403,15 @@ class Model_users extends \App\Model\Model {
 	
 	
 	/**
-	 * Update
+	 * update
 	 *
-	 * Updates a row with the given array of fields and corresponding values, including row ID.
+	 * Updates a row with the given array of fields and corresponding values. Overwrites
+     * parent method to first check for duplicate email and return false if found.
 	 *
 	 * @access public
-	 * @param array The assoc array of user fields and values.
-	 * @return boolean True if update was successful, false if update unsuccessful 
-	 * or if username or email already exists for a user.
+	 * @param array $data The assoc array of user fields and values
+	 * @return bool True if update was successful, false if update unsuccessful
+	 * or if username or email already exists for a user
 	 */
 	public function update($data) {
 		$user_id = empty($data['user_id']) ? 0 : $data['user_id'];

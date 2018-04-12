@@ -137,19 +137,21 @@ class Relation {
 		$errors = array();
 		
 		if ( empty($config['module']) ) {
-			$errors[] = '$config[module] invalid, must be module data of relation';
+            $errors[] = error_str('error.relation.module', '$config[module]');
 		}
 		if ( empty($config['dep_model']) || ! $config['dep_model'] instanceof \App\Model\Model) {
-			$errors[] = '$config[dep_model] invalid, dependant model must be of type \\App\\Model\\Model';
+            $errors[] = error_str('error.relation.dep_model', array('$config[dep_model]', '\\App\\Model\\Model'));
 		}
 		if ( empty($config['indep_model']) || ! $config['indep_model'] instanceof \App\Model\Model) {
-			$errors[] = '$config[indep_model] invalid, independant model must be of type \\App\\Model\\Model';
+            $errors[] = error_str('error.relation.indep_model', array('$config[indep_model]', '\\App\\Model\\Model'));
 		}
 		if ( empty($config['relation_type']) || ! in_array($config['relation_type'], self::$RELATION_TYPES) ) {
-			$errors[] = '$config[relation_type] invalid, must be one of ['.implode('|', self::$RELATION_TYPES).']';
+            $msg_part = implode(', ', self::$RELATION_TYPES);
+            $errors[] = error_str('error.param.value', array('$config[relation_type]', $msg_part));
 		}
 		if ( ! empty($errors) ) {
-			$message = 'Invalid param (array) $config: '.implode("\n", $errors);
+            $message = error_str('error.type.param.invalid', array('(array) $config: '));
+            $message .= implode(",\n", $errors);
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 
@@ -206,8 +208,7 @@ class Relation {
      * @param string $field_name The name of the form field utilizing relation
 	 * @param mixed $args Arguments passed in to method, primarily used by subclasses to add
 	 * additional data to relational table
-	 * @return boolean True if operation successful or an App\Exception\SQLException is passed 
-	 * and to be handled by \App\App class if an SQL error occurred
+	 * @return bool True if operation successful
 	 */
 	public function add($dep_id, $indep_id, $field_name, $args=false) {
 		if ( empty($dep_id) || empty($indep_id) ) {
@@ -254,8 +255,8 @@ class Relation {
      *
      * @access public
      * @param array $config The relation configuration assoc array, similar to constructor
-     * @return bool True if operation successful or an App\Exception\SQLException
-     * is passed and to be handled by \App\App class if an SQL error occurred
+     * @return bool True if operation successful
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
      * @see __construct() for relation configuration parameters
      */
     public static function clear_table($config) {
@@ -276,10 +277,9 @@ class Relation {
 	 *
 	 * @access public
 	 * @param array $config The relation configuration assoc array, similar to constructor
-	 * @param boolean $drop_if_exists True to first drop table if exists before creating
-	 * @return \App\model\Relation The Relation object if operation successful or an 
-	 * App\Exception\SQLException is passed and to be handled by \App\App class if an SQL 
-	 * error occurred
+	 * @param bool $drop_if_exists True to first drop table if exists before creating
+	 * @return \App\model\Relation The Relation object if operation successful
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 * @see __construct() for relation configuration parameters
 	 */
 	public static function create_table($config, $drop_if_exists=false) {
@@ -326,8 +326,7 @@ class Relation {
 	 * @param array $dep_id The dependant model row ID
 	 * @param array $indep_id The independant model row ID or array of IDs
      * @param string $field_name The name of the form field utilizing relation
-	 * @return boolean True if operation successful or an App\Exception\SQLException is passed 
-	 * and to be handled by \App\App class if an SQL error occurred
+	 * @return bool True if operation successful
 	 */
 	public function delete($dep_id='', $indep_id=array(), $field_name='') {
 		if ( empty($dep_id) && empty($indep_id) && empty($field_name) ) {
@@ -374,8 +373,8 @@ class Relation {
 	 *
 	 * @access public
 	 * @param array $config The relation configuration assoc array, similar to constructor
-	 * @return boolean True if operation successful or an App\Exception\SQLException is passed 
-	 * and to be handled by \App\App class if an SQL error occurred
+	 * @return bool True if operation successful
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 * @see __construct() for relation configuration parameters
 	 */
 	public static function drop_table($config) {
@@ -395,11 +394,9 @@ class Relation {
 	 * and returns the IDs of dependant model rows that match.
 	 *
 	 * @access public
-	 * @param array $indep_ids The independant row ID or array of IDs
+	 * @param mixed $indep_id The independant row ID or array of IDs
      * @param string $field_name The name of the form field utilizing relation
-	 * @return mixed An array of dependant model IDs OR empty array if no matches found OR
-	 * false if invalid parameters OR an App\Exception\SQLException is passed 
-	 * and to be handled by \App\App class if an SQL error occurred
+	 * @return mixed An array of dependant model IDs OR empty array if no matches found
 	 */
 	public function filter($indep_id, $field_name='') {
 		if ( empty($indep_id) ) {
@@ -447,8 +444,7 @@ class Relation {
 	 * @param int $indep_id The independant row ID to retrieve a single row (optional)
      * @param string $field_name The name of the form field utilizing relation
 	 * @return mixed An array of dependant model rows OR single row OR false if no 
-	 * matches found for a single row or if invalid parameter OR an App\Exception\SQLException 
-	 * is passed and to be handled by \App\App class if an SQL error occurred
+	 * matches found for a single row or if invalid parameter
 	 */
 	public function get($dep_id, $indep_id=false, $field_name='') {
 		if ( empty($dep_id) && empty($indep_id) ) {
@@ -495,8 +491,7 @@ class Relation {
      * @param int $indep_id The independant row ID to retrieve a single row (optional)
      * @param string $field_name The name of the form field utilizing relation
      * @return mixed An array of dependant model rows OR single row OR false if no
-     * matches found for a single row or if invalid parameter OR an App\Exception\SQLException
-     * is passed and to be handled by \App\App class if an SQL error occurred
+     * matches found for a single row or if invalid parameter
      */
     public function get_dep($indep_id, $field_name='') {
         if ( empty($indep_id) ) {
@@ -537,8 +532,7 @@ class Relation {
 	 * @param into $dep_id The dependant row ID
      * @param string $field_name The name of the form field utilizing relation
 	 * @return mixed An array of dependant model IDs OR empty array if no matches found OR
-	 * false if invalid parameter OR an App\Exception\SQLException is passed 
-	 * and to be handled by \App\App class if an SQL error occurred
+	 * false if invalid parameter
 	 */
 	public function get_ids($dep_id, $field_name='') {
 		if ( empty($dep_id) ) {
@@ -578,8 +572,7 @@ class Relation {
      * @param int $dep_id The dependant row ID to retrieve a single row (optional)
      * @param string $field_name The name of the form field utilizing relation
      * @return mixed An array of independant model rows OR single row OR false if no
-     * matches found for a single row or if invalid parameter OR an App\Exception\SQLException
-     * is passed and to be handled by \App\App class if an SQL error occurred
+     * matches found for a single row or if invalid parameter
      */
     public function get_indep($dep_id, $field_name='') {
         if ( empty($dep_id) ) {
@@ -641,10 +634,9 @@ class Relation {
 	 * @param int $indep_id The independant row ID to retrieve a single row (optional)
      * @param string $field_name The name of the form field utilizing relation
 	 * @return mixed An array of relational rows OR single row OR false if no 
-	 * matches found for a single row or if invalid parameter OR an App\Exception\SQLException 
-	 * is passed and to be handled by \App\App class if an SQL error occurred
+	 * matches found for a single row or if invalid parameter
 	 */
-	public function get_relations($dep_id, $indep_id=false, $field_name='') {
+	public function get_relations($dep_id, $indep_id=0, $field_name='') {
 		if ( empty($dep_id) ) {
 			return false;
 		}
@@ -695,11 +687,10 @@ class Relation {
      * The order is determined in the order of the IDs in the ID array.
 	 *
 	 * @access public
-	 * @param int $dep_id The ID of the dependant model row OR array of dependant IDs in sorted order
+	 * @param mixed $dep_ids The ID of the dependant model row OR array of dependant IDs in sorted order
 	 * @param array $indep_ids The array of independant row IDs, in sorted order OR ID of independant row ID
      * @param string $field_name The name of the form field utilizing relation
-	 * @return boolean True if operation successful or an App\Exception\SQLException is passed 
-	 * and to be handled by \App\App class if an SQL error occurred
+	 * @return bool True if operation successful
 	 */
 	public function set_sort_order($dep_ids, $indep_ids, $field_name='') {
 		if ( empty($dep_ids) || empty($indep_ids) ||
@@ -747,7 +738,7 @@ class Relation {
      * @param string $field_name The name of the form field utilizing relation
 	 * @param mixed $args Arguments passed in to method, primarily used by subclasses to add
 	 * additional data to relational table
-	 * @return boolean false
+	 * @return bool false
 	 */
 	public function update($dep_id, $indep_id, $field_name='', $args=false) {
 		return false;
@@ -762,8 +753,7 @@ class Relation {
      * @access public
      * @param string $old_name The old field name
      * @param string $new_name The new field name
-     * @return boolean True if operation successful or an App\Exception\SQLException is passed
-     * and to be handled by \App\App class if an SQL error occurred
+     * @return bool True if operation successful
      */
     public function update_field_name($old_name, $new_name) {
         if ( empty($old_name) || empty($new_name) ) {

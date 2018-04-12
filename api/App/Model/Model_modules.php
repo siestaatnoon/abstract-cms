@@ -5,7 +5,8 @@ namespace App\Model;
 /**
  * Model_module class
  * 
- * 
+ * Provides the database functions for a App\Module\Module object. Subclass of App\Model\Model,
+ * adds functions for resetting modules tables and clear user permission modules.
  * 
  * @author      Johnny Spence <info@projectabstractcms.com>
  * @copyright   2014 Johnny Spence
@@ -14,13 +15,31 @@ namespace App\Model;
  * @package		App\Model
  */
 class Model_modules extends \App\Model\Model {
-	
 
+
+    /**
+     * Constructor
+     *
+     * Initializes the Model_modules model.
+     *
+     * @access public
+     * @param array $config The model configuration array
+     * @throws \App\Exception\AppException if $config assoc array missing required parameters
+     * @see Model::__construct() for model configuration parameters
+     */
 	public function __construct($config) {
 		parent::__construct($config);
 	}
-	
-	
+
+
+    /**
+     * clear_modules
+     *
+     * Truncates the core module tables.
+     *
+     * @access public
+     * @return bool True if operation successful
+     */
 	public function clear_modules() {
 		$prefix = $this->table_prefix;
 		$queries = array();
@@ -46,6 +65,15 @@ class Model_modules extends \App\Model\Model {
 	}
 
 
+    /**
+     * delete_user_module_relations
+     *
+     * Deletes an admin user's module relation(s).
+     *
+     * @access public
+     * @param mixed $mixed The module ID or array of module IDs
+     * @return bool True if operation successful
+     */
     public function delete_user_module_relations($mixed) {
         if ( empty($mixed) ) {
             return false;
@@ -58,8 +86,17 @@ class Model_modules extends \App\Model\Model {
         $result = $this->db->query($query);
         return is_numeric($result);
     }
-	
-	
+
+
+    /**
+     * reset_auto_increment
+     *
+     * Resets the AUTO_INCREMENT values for the modules, form_fields and modules2form_fields tables.
+     * Values lower than 1000 are reserved for core modules.
+     *
+     * @access public
+     * @return bool True if operation successful
+     */
 	public function reset_auto_increment() {
 		$prefix = $this->table_prefix;
 		$queries = array();

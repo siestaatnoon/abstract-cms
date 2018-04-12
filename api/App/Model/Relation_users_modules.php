@@ -7,7 +7,8 @@ App\Model\Relation;
 /**
  * Relation_users_modules class
  * 
- * 
+ * Provides the database functions for users to modules module relations. Subclass of App\Model\Relation,
+ * provides additional functions for handling user permission relational data.
  * 
  * @author      Johnny Spence <info@projectabstractcms.com>
  * @copyright   2014 Johnny Spence
@@ -28,11 +29,16 @@ class Relation_users_modules extends \App\Model\Relation {
     const RELATION_FIELD_NAME = 'modules';
 
 
-	/**
-	 * Constructor
-	 *
-	 * Calls the Model parent constructor.
-	 */
+    /**
+     * Constructor
+     *
+     * Initializes the Relation_users_modules relation.
+     *
+     * @access public
+     * @param array $config The relation configuration array
+     * @throws \App\Exception\AppException if $config assoc array missing required parameters
+     * @see Relation::__construct() for model configuration parameters
+     */
     public function __construct($config) {
         parent::__construct($config);
     }
@@ -51,8 +57,7 @@ class Relation_users_modules extends \App\Model\Relation {
 	 * @param mixed $args The permission decimal value or numeric array of permissions indexed
 	 * by corresponding $indep_id param. Note that if array and no corresponding value exists,
 	 * it will be given a value of zero.
-	 * @return boolean True if operation successful or an App\Exception\SQLException is passed 
-	 * and to be handled by \App\App class if an SQL error occurred
+	 * @return bool True if operation successful
 	 */
 	public function add($dep_id, $indep_id, $field_name, $args=false) {
 		if ( empty($dep_id) || empty($indep_id) || empty($args) ) {
@@ -95,10 +100,9 @@ class Relation_users_modules extends \App\Model\Relation {
      * @param int $indep_id The independant row ID to retrieve a single row (optional)
      * @param string $field_name The name of the form field utilizing relation (unused
      * @return mixed An array of dependant model rows OR single row OR false if no
-     * matches found for a single row or if invalid parameter OR an App\Exception\SQLException
-     * is passed and to be handled by \App\App class if an SQL error occurred
+     * matches found for a single row or if invalid parameter
      */
-    public function get($dep_id, $indep_id=false, $field_name='') {
+    public function get($dep_id, $indep_id=0, $field_name='') {
         if ( empty($dep_id) ) {
             return false;
         }
@@ -137,9 +141,7 @@ class Relation_users_modules extends \App\Model\Relation {
 	 * @access public
 	 * @param int $user_id The user (dependant) ID
 	 * @param int $module_id The module (independant) ID
-	 * @return mixed The permission value OR false if does not exist OR an 
-	 * App\Exception\SQLException is passed and to be handled by \App\App class 
-	 * if an SQL error occurred
+	 * @return mixed The permission value OR false if does not exist
 	 */
 	public function get_user_perm($user_id, $module_id) {
 		if ( empty($user_id) || empty($module_id) ) {
@@ -165,7 +167,7 @@ class Relation_users_modules extends \App\Model\Relation {
 	 * @param int $dep_id The ID of the dependant model row
 	 * @param array $indep_ids The array of independant row IDs, in sorted order
      * @param string $field_name The name of the form field utilizing relation
-	 * @return boolean True
+	 * @return bool True
 	 */
 	public function set_sort_order($dep_id, $indep_ids, $field_name='') {
 		return true;
@@ -183,8 +185,7 @@ class Relation_users_modules extends \App\Model\Relation {
      * @param string $field_name The name of the form field utilizing relation
 	 * @param mixed $args Arguments passed in to method, primarily used by subclasses to add
 	 * additional data to relational table
-	 * @return boolean True if operation successful or an App\Exception\SQLException is passed 
-	 * and to be handled by \App\App class if an SQL error occurred
+	 * @return bool True if operation successful
 	 */
 	public function update($dep_id, $indep_id, $field_name='', $args=false) {
 		if ( empty($dep_id) || empty($indep_id) || empty($args)  ) {

@@ -226,7 +226,7 @@ class Form_field {
 
 		}
 		if ( empty($config['module']) ) {
-            $errors[] = error_str('error.param.module', array('$config[module]'));
+            $errors[] = error_str('error.module.slug', array('$config[module]'));
 		}
 
         if ( ! empty($errors) ) {
