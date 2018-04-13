@@ -196,7 +196,7 @@ class Permission {
 	 * must be a string in order to be considered binary.
 	 * 
 	 * @access public
-	 * @param string The string to check
+	 * @param string $num The string to check
 	 * @return bool True if given param is binary string
 	 */
 	public function is_binary($num) {
