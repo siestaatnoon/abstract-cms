@@ -11,7 +11,7 @@ App\Module\Module;
 /**
  * ListPage class
  *
- *
+ * Generates the page template and module list data for module list pages.
  *
  * @author      Johnny Spence <info@projectabstractcms.org>
  * @copyright   2014 Johnny Spence
@@ -61,7 +61,16 @@ class ListPage {
     protected $pagination;
 
 
-
+    /**
+     * __construct
+     *
+     * Initializes the ListPage.
+     *
+     * @access public
+     * @param mixed $mixed The \App\Module\Module object or module name to load module
+     * @param bool $is_archive True if list page for items marked as archived
+     * @throws \App\Exception\AppException if an error occurs while loading module, handled by \App\App class
+     */
     public function __construct($mixed, $is_archive=false) {
         $this->App = App::get_instance();
         $this->module = $mixed instanceof \App\Module\Module ? $mixed : Module::load($mixed);
@@ -80,6 +89,15 @@ class ListPage {
     }
 
 
+    /**
+     * columns
+     *
+     * Returns the column data for the fields that show in a list page table layout. For use with
+     * Backgrid. Data includes label, field name and toggle sorting for the column.
+     *
+     * @access public
+     * @return array Array of column data
+     */
     public function columns() {
         $data = $this->module->get_module_data();
         $columns = array();
@@ -164,6 +182,17 @@ class ListPage {
     }
 
 
+    /**
+     * db_query_params
+     *
+     * Accepts GET variables for query parameters for the module list page and converts it into
+     * parameters used in the database query from the App\Database\Database class.
+     *
+     * @access public
+     * @param array $get Assoc array of query parameters
+     * @return array Assoc array of parameters for database query
+     * @see \App\Database\Database::get() for more on database query parameters
+     */
     public function db_query_params($get) {
         $data = $this->module->get_module_data();
         $like = array();
@@ -229,6 +258,17 @@ class ListPage {
     }
 
 
+    /**
+     * filter_query_params
+     *
+     * Accepts GET variables for query parameters for the module list page and converts it into
+     * parameters used for a search filter(s) query from the App\Database\Database class.
+     *
+     * @access public
+     * @param array $get Assoc array of search query parameters
+     * @return array Assoc array of parameters for database query
+     * @see \App\Database\Database::get() for more on database query parameters
+     */
     public function filter_query_params($get) {
         $data = $this->module->get_module_data();
         $params = array();
@@ -251,11 +291,29 @@ class ListPage {
     }
 
 
+    /**
+     * pagination_params
+     *
+     * Returns the pagination parameters for the module. Parameters include page number,
+     * items per page, field to sort, asc/desc order, total pages and total items
+     *
+     * @access public
+     * @return array Assoc array of pagination parameters
+     */
     public function pagination_params() {
         return $this->pagination;
     }
 
 
+    /**
+     * row_boolean_vals
+     *
+     * Converts boolean 0/1 values to Yes/No for module row items.
+     *
+     * @access public
+     * @param array $rows A single module row or array of module rows
+     * @return array The row or rows with boolean values updated to Yes/No
+     */
     public function row_boolean_vals($rows) {
         if ( empty($rows) || ! is_array($rows) ) {
             return $rows;
@@ -284,3 +342,6 @@ class ListPage {
         return $is_single ? $rows[0] : $rows;
     }
 }
+
+/* End of file ListPage.php */
+/* Location: ./App/Html/ListPage/ListPage.php */

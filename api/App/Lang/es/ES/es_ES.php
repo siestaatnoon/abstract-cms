@@ -210,6 +210,7 @@ $lang['error.module.pk_field']      = '%s debe ser campo del primary key del mod
 $lang['error.module.rename']        = 'Modulo [%s] no puede ser renombrado a [%s]';
 $lang['error.module.slug']          = '%s debe ser identificador (slug) del modulo';
 $lang['error.module.slug_field']    = '%s debe ser nombre del campo para el identificador (slug) del modulo';
+$lang['error.module.sorting']       = '%s no está configurado para ordenar';
 $lang['error.module.static']        = 'No se puede ejecutar %s para modulo [%s], utilize el estático %s en su lugar';
 $lang['error.module.title_field']   = '%s debe ser campo del título del modulo';
 $lang['error.param.general']        = '%s debe ser %s';

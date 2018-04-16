@@ -568,7 +568,6 @@ class Template {
      * from ./App/config/uploads.php. Note that the path returned has a slash at the end.
      *
      * @access public
-     * @param string $cfg_name The executable javascript
      * @param string $cfg_name Path to file within application directory
      * @return string The full root-relative image path
      */

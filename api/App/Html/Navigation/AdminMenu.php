@@ -120,6 +120,7 @@ class AdminMenu {
      * <li>navigation => The navigation menu HTML</li>
      * <li>search => The search panel HTML</li>
      * <ul>
+     * @throws \App\Exception\AppException if $config assoc array missing required parameters
      */
     public function generate() {
         if ( empty($this->user) ) {

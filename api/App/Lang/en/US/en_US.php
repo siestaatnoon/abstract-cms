@@ -210,6 +210,7 @@ $lang['error.module.pk_field']      = '%s must be primary key field of module';
 $lang['error.module.rename']        = 'Module [%s] cannnot be renamed to [%s]';
 $lang['error.module.slug']          = '%s must be module slug name';
 $lang['error.module.slug_field']    = '%s must be slug field for module';
+$lang['error.module.sorting']       = '%s not configured to use sorting';
 $lang['error.module.static']        = '%s cannot be called for module [%s], use static %s instead';
 $lang['error.module.title_field']   = '%s must be title field of module';
 $lang['error.param.general']        = '%s must be %s';
