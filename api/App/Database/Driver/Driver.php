@@ -141,10 +141,7 @@ abstract class Driver {
 	 * @see \App\Database\Driver\Result The result set abstract class definition
 	 */
 	abstract public function query($query);
-	
-	
 
-	
 
 	/**
 	 * sql_error_handler
@@ -166,7 +163,7 @@ abstract class Driver {
 			if ($this->is_debug && ! empty($query) ) {
 				$message .= "[".$query."]\n";
 			}
-			$message .= "SQL error ".$error_code.": ".$error_info;
+			$message .= "SQL ".__('error')." [".$error_code."]: ".$error_info;
 
 			throw new SQLException($message, AppException::ERROR_RUNTIME);
 		}

@@ -1,6 +1,7 @@
 <?php
 
 // Términos comunes
+$lang['error']      = 'error';
 $lang['module']     = 'modulo';
 $lang['relation']   = 'relación';
 
@@ -184,6 +185,7 @@ $lang['validate.strong_password'] 	= 'Contraseña fuerte';
 $lang['validate.custom'] 			= 'Validación customizado';
 
 // Errors
+$lang['error.database.config'] 		= '%s parametros de la base de datos no definidos en configuración principal %s';
 $lang['error.for.field.type'] 		= 'para tipo del campo %s';
 $lang['error.form_field.id']        = '%s debe ser ID del campo del formulario';
 $lang['error.form_field.label']     = '%s o %s debe haber un valor no vacío';
@@ -230,6 +232,7 @@ $lang['error.param.module.missing'] = 'no se encuentra el modulo [%s]';
 $lang['error.param.relation']       = '%s no definido el nombre del relación del modulo';
 $lang['error.param.type']           = '%s debe ser del tipo %s';
 $lang['error.param.undefined']      = '[%s] parametro no definido [%s]';
+$lang['error.param.undefined.multi']= '%s parametr(os) debe(n) ser definidos%s';
 $lang['error.param.value']          = '%s debe ser del valor %s';
 $lang['error.relation.module']      = '%s debe ser datos del modulo del relación';
 $lang['error.relation.dep_model']   = '%s modelo dependiente debe ser de tipo %s';

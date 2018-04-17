@@ -56,7 +56,9 @@ class DriverMysqli extends \App\Database\Driver\Driver {
 			$errors[] = '[db_name]';
 		}
 		if ( ! empty($errors) ) {
-			$message = 'Invalid param (array) $config '.implode(', ', $errors).' parameter not defined';
+            $args = array('(array) $config '.implode(', ', $errors), '');
+            $msg_part = error_str('error.param.undefined.multi', $args);
+            $message = error_str('error.type.param.invalid', $msg_part);
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 		
@@ -228,8 +230,9 @@ class DriverMysqli extends \App\Database\Driver\Driver {
 	 * @access public
 	 * @param string $query The query to perform
 	 * @return mixed The rows affected (int) or (Result) object or false if query failed
-	 * @see \App\Model\Database\Driver\Result The result set abstract class definition
-	 * @see \App\Model\Database\Driver\Mysqli\ResultMysqli The mysqli result set
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
+	 * @see \App\Database\Driver\Result The result set abstract class definition
+	 * @see \App\Database\Driver\Mysqli\ResultMysqli The mysqli result set
 	 */
 	public function query($query) {
 		$query = trim($query);

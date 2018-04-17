@@ -1,6 +1,7 @@
 <?php
 
 // Common terms
+$lang['error']      = 'error';
 $lang['module']     = 'module';
 $lang['relation']   = 'relation';
 
@@ -184,6 +185,7 @@ $lang['validate.strong_password'] 	= 'Strong password';
 $lang['validate.custom'] 			= 'Custom validation';
 
 // Errors
+$lang['error.database.config'] 		= '%s database parameters not defined in main config file %s';
 $lang['error.for.field.type'] 		= 'for field type %s';
 $lang['error.form_field.id']        = '%s must be form field ID';
 $lang['error.form_field.label']     = '%s or %s must be set and not empty';
@@ -230,6 +232,7 @@ $lang['error.param.module.missing'] = 'module [%s] not found';
 $lang['error.param.relation']       = '%s relation module name not defined';
 $lang['error.param.type']           = '%s must be of type %s';
 $lang['error.param.undefined']      = '[%s] parameter must be defined [%s]';
+$lang['error.param.undefined.multi']= '%s parameter(s) must be defined%s';
 $lang['error.param.value']          = '%s must be of value %s';
 $lang['error.relation.module']      = '%s must be module data of relation';
 $lang['error.relation.dep_model']   = '%s dependant model must be of type %s';

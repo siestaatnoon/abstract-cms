@@ -59,7 +59,8 @@ class ResultPdoMysql extends \App\Database\Driver\Result {
 	 */
 	public function __construct($statement) {
 		if ( empty($statement) || ! $statement instanceof PDOStatement) {
-			$message = 'Invalid param (PDOStatement) $statement must be of type PDOStatement';
+            $msg_part = error_str('error.param.type', array('$statement', 'PDOStatement'));
+            $message = error_str('error.type.param.invalid', array($msg_part));
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 
