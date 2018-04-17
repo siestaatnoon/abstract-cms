@@ -186,6 +186,7 @@ $lang['validate.custom'] 			= 'Validación customizado';
 
 // Errors
 $lang['error.database.config'] 		= '%s parametros de la base de datos no definidos en configuración principal %s';
+$lang['error.exception.unknown'] 	= 'Ha occurido un %s desconocido';
 $lang['error.for.field.type'] 		= 'para tipo del campo %s';
 $lang['error.form_field.id']        = '%s debe ser ID del campo del formulario';
 $lang['error.form_field.label']     = '%s o %s debe haber un valor no vacío';

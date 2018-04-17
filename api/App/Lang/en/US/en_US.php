@@ -186,6 +186,7 @@ $lang['validate.custom'] 			= 'Custom validation';
 
 // Errors
 $lang['error.database.config'] 		= '%s database parameters not defined in main config file %s';
+$lang['error.exception.unknown'] 	= 'An unknown %s has occurred';
 $lang['error.for.field.type'] 		= 'for field type %s';
 $lang['error.form_field.id']        = '%s must be form field ID';
 $lang['error.form_field.label']     = '%s or %s must be set and not empty';

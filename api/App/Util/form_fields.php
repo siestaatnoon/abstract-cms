@@ -8,6 +8,7 @@ use App\App;
  * Returns the select option values as HTML for validation types in the Modules CMS form.
  *
  * @return string The validation type select options HTML
+ * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
  */
 if ( ! function_exists('form_fields_valid_options_html'))
 {

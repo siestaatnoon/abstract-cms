@@ -84,6 +84,7 @@ if ( ! function_exists('template_app_url'))
  * @param array $replace Array of url => title crumbs to replace between Home page
  * crumb and current page crumb
  * @return string The breadcrumbs HTML
+ * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
  */
 if ( ! function_exists('template_breadcrumbs'))
 {
@@ -170,6 +171,7 @@ if ( ! function_exists('template_breadcrumbs'))
  *
  * @param int $total_pages Total pages of pagination links
  * @param int $page_num The current page number
+ * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
  */
 if ( ! function_exists('template_pagination'))
 {
@@ -497,6 +499,7 @@ if ( ! function_exists('template_js'))
  * Generates the navigation bar HTML.
  *
  * @return string The navbar HTML
+ * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
  */
 if ( ! function_exists('template_navigation'))
 {

@@ -11,6 +11,7 @@ App\Module\Module;
  * 
  * @param int The page id to show it's parent pages and subpages
  * @return string The menu HTML
+ * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
  */
 if ( ! function_exists('pages_tree_menu'))
 {
@@ -52,6 +53,7 @@ if ( ! function_exists('pages_tree_menu'))
  * @return array Associative array:
  *            page_count => The number of pages contained in the pagination
  *            html       => The tree menu HTML from search query
+ * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
  */
 if ( ! function_exists('pages_tree_menu_search_html'))
 {
