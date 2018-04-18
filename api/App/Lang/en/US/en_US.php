@@ -9,6 +9,7 @@ $lang['image']      = 'image';
 $lang['minute']     = 'minute';
 $lang['minutes']    = 'minutes';
 $lang['module']     = 'module';
+$lang['navigation'] = 'navigation';
 $lang['relation']   = 'relation';
 $lang['second']     = 'second';
 $lang['seconds']    = 'seconds';
@@ -18,9 +19,17 @@ $lang['add']        = 'Add';
 $lang['cancel']     = 'Cancel';
 $lang['continue']   = 'Continue';
 $lang['delete']     = 'Delete';
+$lang['edit']       = 'Edit';
+$lang['go']         = 'Go';
+$lang['first']      = 'First';
+$lang['last']       = 'Last';
 $lang['login']      = 'Login';
+$lang['next']       = 'Next';
 $lang['ok']         = 'OK';
+$lang['previous']   = 'Previous';
+$lang['search']     = 'Search';
 $lang['update']     = 'Update';
+$lang['view']       = 'View';
 
 // Form field types
 $lang['field.boolean'] 		        = 'True/False (checkbox)';
@@ -122,16 +131,18 @@ $lang['form.login.password'] 			= 'Password';
 $lang['form.login.remember'] 			= 'Remember me';
 
 // Pages
-$lang['form.pages.parent_id'] 			= 'Parent Page';
-$lang['form.pages.short_title'] 		= 'Page Title';
-$lang['form.pages.url'] 				= 'URL';
 $lang['form.pages.content'] 			= 'Content';
+$lang['form.pages.is_permanent'] 	    = 'Is permanent?';
 $lang['form.pages.long_title'] 			= 'Title Tag';
 $lang['form.pages.meta_keywords'] 		= 'Meta Keywords';
 $lang['form.pages.meta_description'] 	= 'Meta Description';
 $lang['form.pages.module_id_list'] 	    = 'Add module list';
 $lang['form.pages.module_id_form'] 	    = 'Add module form';
-$lang['form.pages.is_permanent'] 	    = 'Is permanent?';
+$lang['form.pages.parent_id'] 			= 'Parent Page';
+$lang['form.pages.short_title'] 		= 'Page Title';
+$lang['form.pages.subpage.add'] 	    = 'Add Subpage';
+$lang['form.pages.subpage.arrange'] 	= 'Arrange Subpages';
+$lang['form.pages.url'] 				= 'URL';
 
 // Users
 $lang['form.users.last_name'] 		= 'Last Name';

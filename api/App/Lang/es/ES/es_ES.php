@@ -9,6 +9,7 @@ $lang['image']      = 'imágen';
 $lang['minute']     = 'minuto';
 $lang['minutes']    = 'minutos';
 $lang['module']     = 'modulo';
+$lang['navigation'] = 'navigación';
 $lang['relation']   = 'relación';
 $lang['second']     = 'segundo';
 $lang['seconds']    = 'segundos';
@@ -18,9 +19,17 @@ $lang['add']        = 'Añadir';
 $lang['cancel']     = 'Cancelar';
 $lang['continue']   = 'Continuar';
 $lang['delete']     = 'Borrar';
+$lang['edit']       = 'Editar';
+$lang['go']         = 'Ir';
+$lang['first']      = 'Inicio';
+$lang['last']       = 'Fin';
 $lang['login']      = 'Iniciar';
+$lang['next']       = 'Siguiente';
 $lang['ok']         = 'OK';
+$lang['previous']   = 'Anterior';
+$lang['search']     = 'Buscar';
 $lang['update']     = 'Actualizar';
+$lang['view']       = 'Ver';
 
 // Tipos de campos del formulario
 $lang['field.boolean'] 		        = 'True/False (checkbox)';
@@ -122,16 +131,18 @@ $lang['form.login.password'] 			= 'Contraseña';
 $lang['form.login.remember'] 			= 'Recordarme';
 
 // Páginas
-$lang['form.pages.parent_id'] 			= 'Página primaria';
-$lang['form.pages.short_title'] 		= 'Título de página';
-$lang['form.pages.url'] 				= 'URL';
 $lang['form.pages.content'] 			= 'Contenido';
+$lang['form.pages.is_permanent'] 	    = 'Permanente?';
 $lang['form.pages.long_title'] 			= 'Título de etiqueta <title>';
 $lang['form.pages.meta_keywords'] 		= 'Palabras claves de meta';
 $lang['form.pages.meta_description'] 	= 'Descripción de meta';
 $lang['form.pages.module_id_list'] 	    = 'Poner listado del modulo';
 $lang['form.pages.module_id_form'] 	    = 'Poner formulario de modulo';
-$lang['form.pages.is_permanent'] 	    = 'Permanente?';
+$lang['form.pages.parent_id'] 			= 'Página primaria';
+$lang['form.pages.short_title'] 		= 'Título de página';
+$lang['form.pages.subpage.add'] 	    = 'Añadir subpágina';
+$lang['form.pages.subpage.arrange'] 	= 'Ordenar subpáginas';
+$lang['form.pages.url'] 				= 'URL';
 
 // Usuarios
 $lang['form.users.last_name'] 		= 'Apellidos';

@@ -39,7 +39,7 @@ if ( ! function_exists('nav_cms_menu'))
         $search = '<div data-role="panel" class="jqm-search-panel" data-position="right" data-display="overlay">'."\n";
         $search .= '  <div class="jqm-search">'."\n";
         $search .= '    <form class="ui-filterable">'."\n";
-        $search .= '      <input id="abstract-search" data-type="search" placeholder="Search...">'."\n";
+        $search .= '      <input id="abstract-search" data-type="search" placeholder="'.__('search').'...">'."\n";
         $search .= '    </form>'."\n";
         $search .= '    <ul class="jqm-list ui-listview ui-alt-icon ui-nodisc-icon" data-filter-reveal="true" data-input="#abstract-search">'."\n";'';
 

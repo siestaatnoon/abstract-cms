@@ -85,10 +85,10 @@ if ( ! function_exists('fw_navbar')) {
             $html .= '    <li class="search has-form">'."\n";
             $html .= '      <div class="row collapse">'."\n";
             $html .= '        <div class="large-9 small-9 columns">'."\n";
-            $html .= '          <input type="text" placeholder="Search..." />'."\n";
+            $html .= '          <input type="text" placeholder="'.__('search').'..." />'."\n";
             $html .= '        </div>'."\n";
             $html .= '        <div class="large-3 small-3 columns">'."\n";
-            $html .= '          <a href="#" class="button expand">Go</a>'."\n";
+            $html .= '          <a href="#" class="button expand">'.__('go').'</a>'."\n";
             $html .= '        </div>'."\n";
             $html .= '      </div>'."\n";
             $html .= '    </li>'."\n";

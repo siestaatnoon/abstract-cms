@@ -83,7 +83,7 @@ if ( ! function_exists('template_app_url'))
  * crumb and current page crumb
  * @param array $replace Array of url => title crumbs to replace between Home page
  * crumb and current page crumb
- * @return string The breadcrumbs HTML
+ * @return string The template breadcrumbs HTML
  * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
  */
 if ( ! function_exists('template_breadcrumbs'))
@@ -171,6 +171,7 @@ if ( ! function_exists('template_breadcrumbs'))
  *
  * @param int $total_pages Total pages of pagination links
  * @param int $page_num The current page number
+ * @return string The template pagination HTML
  * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
  */
 if ( ! function_exists('template_pagination'))
@@ -190,14 +191,14 @@ if ( ! function_exists('template_pagination'))
                     'label' => '&laquo;',
                     'li_class' => 'arrow',
                     'class' => 'pager-control page-first',
-                    'title' => 'First'
+                    'title' => __('first')
                 );
             }
             $pagination[] = array(
                 'label' => '&lt;',
                 'li_class' => 'arrow',
                 'class' => 'pager-control page-prev',
-                'title' => 'Previous'
+                'title' => __('previous')
             );
         }
 
@@ -259,14 +260,14 @@ if ( ! function_exists('template_pagination'))
                 'label' => '&gt;',
                 'li_class' => 'arrow',
                 'class' => 'pager-control page-next',
-                'title' => 'Next'
+                'title' => __('next')
             );
             if ($total_pages > 2) {
                 $pagination[] = array(
                     'label' => '&raquo;',
                     'li_class' => 'arrow',
                     'class' => 'pager-control page-last',
-                    'title' => 'Last'
+                    'title' => __('last')
                 );
             }
         }

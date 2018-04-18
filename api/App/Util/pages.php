@@ -208,23 +208,23 @@ if ( ! function_exists('_pages_tree_item_html'))
 			$html .= '    <div class="toggle-links '.($is_visible ? 'toggle-links-show' : 'toggle-links-hide').'">'."\n";
 			
 			if ( ! $is_uc_page) {
-				$html .= '      <div><a href="/'.$page['slug'].'" target="_blank">View</a></div>'."\n";
+				$html .= '      <div><a href="/'.$page['slug'].'" target="_blank">'.__('view').'</a></div>'."\n";
 			}
 			
 			if ( ! $is_permanent && $is_node) {
-				$html .= '      <div><a class="toggle-delete" rel="'.$page_id.'" title="'.$title.'">Delete</a></div>'."\n";
+				$html .= '      <div><a class="toggle-delete" rel="'.$page_id.'" title="'.$title.'">'.__('delete').'</a></div>'."\n";
 			}
 			
 			if ( ! $is_node) {
-				$html .= '      <div><a href="'.$arrange_base_url.$page_id.'">Arrange Subpages</a></div>'."\n";
+				$html .= '      <div><a href="'.$arrange_base_url.$page_id.'">'.__('form.pages.subpage.arrange').'</a></div>'."\n";
 			}
 			
 			if ($parent_id != $uncategorized_id && $is_subpage_level ) {
-				$html .= '      <div><a href="'.$add_base_url.$page_id.'">Add Subpage</a></div>'."\n";
+				$html .= '      <div><a href="'.$add_base_url.$page_id.'">'.__('form.pages.subpage.add').'</a></div>'."\n";
 			}
 			
 			if ( ! $is_uc_page) {
-				$html .= '      <div><a href="'.$edit_base_url.$page_id.'">Edit</a></div>'."\n";
+				$html .= '      <div><a href="'.$edit_base_url.$page_id.'">'.__('edit').'</a></div>'."\n";
 				$html .= '    </div>'."\n";
 			} else {
 				$html .= '    </div>'."\n";
