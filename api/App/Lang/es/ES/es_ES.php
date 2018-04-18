@@ -213,6 +213,7 @@ $lang['validate.strong_password'] 	= 'Contraseña fuerte';
 $lang['validate.custom'] 			= 'Validación customizado';
 
 // Errors
+$lang['error.config.missing']       = 'Fichero de configuración no encontrado: %s';
 $lang['error.database.config'] 		= '%s parametros de la base de datos no definidos en configuración principal %s';
 $lang['error.exception.unknown'] 	= 'Ha occurido un %s desconocido';
 $lang['error.for.field.type'] 		= 'para tipo del campo %s';
@@ -231,6 +232,8 @@ $lang['error.general.multi']        = 'Han ocurrido errores%s';
 $lang['error.general.set']          = '%s debe haber un valor no vacío';
 $lang['error.general.single']       = 'Ha ocurrido un error%s';
 $lang['error.general.undefined']    = '%s no está definido';
+$lang['error.general.undefined.in'] = '%s no está definido en %s';
+$lang['error.lang.missing']         = 'Fichero de idioma no encontrado: %s';
 $lang['error.login.invalid']        = 'Usuario y/o contraseña inválido';
 $lang['error.login.max']            = 'Has llegado al máximo<br/>numero de intentos';
 $lang['error.login.retry']          = 'Puedes volver a intentar en %s';
@@ -298,7 +301,9 @@ $lang['error.upload.param.file']    = '%s parametro nombre del fichero no está 
 $lang['error.upload.param.config']  = '%s parametro nombre del configuración no está definido o vacío';
 $lang['error.upload.param.type']    = '%s tipo de carga [file|image] debe ser especificado';
 $lang['error.upload.permission']    = 'No tienes permisos de carga de ficheros para el modulo [%s]';
+$lang['error.util.missing']         = 'Fichero de funciónes no encontrado: %s';
 $lang['error.var.empty']            = '%s le falta o tiene valor vacío';
+$lang['error.view.missing']         = 'Fichero de view no encontrado: %s';
 $lang['error.while.active']         = 'mientras cambiar activo los selecciónados';
 $lang['error.while.archive']        = 'mientras archivar los selecciónados';
 $lang['error.while.delete']         = 'mientras suprimir los selecciónados';

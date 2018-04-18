@@ -213,6 +213,7 @@ $lang['validate.strong_password'] 	= 'Strong password';
 $lang['validate.custom'] 			= 'Custom validation';
 
 // Errors
+$lang['error.config.missing']       = 'Configuration file not found: %s';
 $lang['error.database.config'] 		= '%s database parameters not defined in main config file %s';
 $lang['error.exception.unknown'] 	= 'An unknown %s has occurred';
 $lang['error.for.field.type'] 		= 'for field type %s';
@@ -231,6 +232,8 @@ $lang['error.general.multi']        = 'Errors have occurred%s';
 $lang['error.general.set']          = '%s must be set and not empty';
 $lang['error.general.single']       = 'An error has occurred%s';
 $lang['error.general.undefined']    = '%s undefined';
+$lang['error.general.undefined.in'] = '%s undefined in %s';
+$lang['error.lang.missing']         = 'Language file not found: %s';
 $lang['error.login.invalid']        = 'Username and/or password invalid';
 $lang['error.login.max']            = 'You have reached the maximum<br/>allowed login attempts';
 $lang['error.login.retry']          = 'You will be able to retry in %s';
@@ -267,7 +270,7 @@ $lang['error.param.fields.array']   = '%s must be an array of field name => defa
 $lang['error.param.invalid']        = '%s is empty or contains missing or invalid data';
 $lang['error.param.lang']           = '%s must be name of locale lang file %s';
 $lang['error.param.missing']        = '%s missing parameter [%s]';
-$lang['error.param.missing.in']      = '%s missing parameter in %s';
+$lang['error.param.missing.in']     = '%s missing parameter in %s';
 $lang['error.param.module.missing'] = 'module [%s] not found';
 $lang['error.param.relation']       = '%s relation module name not defined';
 $lang['error.param.type']           = '%s must be of type %s';
@@ -298,7 +301,9 @@ $lang['error.upload.param.file']    = '%s filename parameter undefined or empty'
 $lang['error.upload.param.config']  = '%s file upload config name parameter undefined or empty';
 $lang['error.upload.param.type']    = '%s upload type [file|image] must be specified';
 $lang['error.upload.permission']    = 'You do not have upload permissions for module [%s]';
+$lang['error.util.missing']         = 'Functions file not found: %s';
 $lang['error.var.empty']            = '%s missing or empty value';
+$lang['error.view.missing']         = 'View file not found: %s';
 $lang['error.while.active']         = 'while setting items active';
 $lang['error.while.archive']        = 'while archiving items';
 $lang['error.while.delete']         = 'while deleting items';

@@ -185,9 +185,11 @@ class App {
 	*/
 	public function __destruct() {
 		if ( ! empty($this->config['debug']) && ! empty(self::$debug_errors) ) {
-			$title = count(self::$debug_errors) === 1 ? 'An Application Error Has' : 'Application Errors Have';
+			$title = count(self::$debug_errors) === 1 ?
+                     error_str('error.general.single', '') :
+                     error_str('error.general.multi', '');
 			$out = '<div style="font-family:Arial;position:absolute;top:0;left:0;margin:15px;">';
-			$out .= '<p><strong>'.$title.' Occurred</strong></p>';
+			$out .= '<p><strong>'.$title.'</strong></p>';
 			
 			foreach (self::$debug_errors as $error) {
 				$out .=  '<p>'.nl2br($error).'</p>';
@@ -315,6 +317,7 @@ class App {
 	* @param mixed $files The filename or array of filenames
 	* @param bool $is_image True if image upload configuration, false for other file types
 	* @return mixed The upload configuration parameters or false if file config not found
+    * @throws \App\Exception\AppException if an application error occurred, handled in this class
 	*/
 	public function fileinfo($config_name, $files, $is_image) {
 		if ( empty($config_name) || empty($files) ) {
@@ -464,7 +467,8 @@ class App {
 	public function load_config($name) {
 		$error = '';
 		if ( empty($name) ) {
-			$error = 'Invalid param (string) $name: must not be empty value';
+            $msg_part = error_str('error.general.set', '(string) $name');
+            $error = error_str('error.type.param.invalid', $msg_part);
 		} else {
 			$dir =  dirname(__FILE__).DIRECTORY_SEPARATOR.'Config'.DIRECTORY_SEPARATOR;
 			$filename = $name.'.php';
@@ -516,7 +520,7 @@ class App {
 
 				return isset($config) ? $config : array();
 			} else {
-				$error = 'Configuration file not found: '.$dir.$filename;
+                $error = error_str('error.config.missing', $dir.$filename);
 			}
 		}
 		
@@ -541,12 +545,13 @@ class App {
 	public function load_lang($name) {
 		$error = '';
 		if ( empty($name) ) {
-			$error = 'Invalid param (string) $name: must not be empty value';
+            $msg_part = error_str('error.general.set', '(string) $name');
+            $error = error_str('error.type.param.invalid', $msg_part);
 		} else {
 			$locale = empty($this->config['locale']) ? '' : $this->config['locale'];
 			$parts = explode('_', $locale);
 			if (count($parts) !== 2) {
-				$error = 'Locale ($config[locale]) not set in ./App/Config/config.php';
+                $error = error_str('error.general.undefined.in', array('$config[locale]', './App/Config/config.php'));
 			} else {
 				$dir =  dirname(__FILE__).DIRECTORY_SEPARATOR.'Lang'.DIRECTORY_SEPARATOR;
 				$dir .= $parts[0].DIRECTORY_SEPARATOR.$parts[1].DIRECTORY_SEPARATOR;
@@ -555,7 +560,7 @@ class App {
 					include($dir.$filename);
 					return isset($lang) ? $lang : array();
 				} else {
-					$error = 'Language file not found: '.$dir.$filename;
+                    $error = error_str('error.lang.missing', $dir.$filename);
 				}
 			}
 		}
@@ -581,14 +586,15 @@ class App {
 	public function load_util($name) {
 		$error = '';
 		if ( empty($name) ) {
-			$error = 'Invalid param (string) $name: must not be empty value';
+            $msg_part = error_str('error.general.set', '(string) $name');
+            $error = error_str('error.type.param.invalid', $msg_part);
 		} else {
 			$dir =  dirname(__FILE__).DIRECTORY_SEPARATOR.'Util'.DIRECTORY_SEPARATOR;
 			$filename = $name.'.php';
 			if ( is_file($dir.$filename) ) {
 				require_once($dir.$filename);
 			} else {
-				$error = 'Utility file not found: '.$dir.$filename;
+                $error = error_str('error.util.missing', $dir.$filename);
 			}
 		}
 		
@@ -615,7 +621,8 @@ class App {
 	public function load_view($name, $data=array()) {
 		$error = '';
 		if ( empty($name) ) {
-			$error = 'Invalid param (string) $name: must not be empty value';
+            $msg_part = error_str('error.general.set', '(string) $name');
+            $error = error_str('error.type.param.invalid', $msg_part);
 		} else {
 			$dir =  dirname(__FILE__).DIRECTORY_SEPARATOR.'View'.DIRECTORY_SEPARATOR;
 			$filename = $name.'.phtml';
@@ -627,7 +634,7 @@ class App {
                 include($dir.$filename);
                 return ob_get_clean();
 			} else {
-				$error = 'View file not found: '.$dir.$filename;
+                $error = error_str('error.view.missing', $dir.$filename);
 			}
 		}
 		
