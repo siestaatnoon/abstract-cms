@@ -127,6 +127,7 @@ class App {
 	* 
 	* @access private
 	* @return void
+    * @throws \App\Exception\AppException if an application error occurred, handled in this class
 	*/
 	private function __construct() {
 		$doc_root = $_SERVER['DOCUMENT_ROOT'];
@@ -375,6 +376,7 @@ class App {
 	*
 	* @access public
 	* @return \App\App The singleton instance
+    * @throws \App\Exception\AppException if an application error occurred, handled in this class
 	*/
 	public static function get_instance() {
 		if ( is_null(self::$instance) ) {
@@ -644,6 +646,7 @@ class App {
 	* @param string $sess_cookie Optional name of the cookie holding the session ID
 	* @param int $sess_timeout Session lifetime in seconds, zero or false for default
 	* @return \App\User\Session The session singleton instance
+    * @throws \App\Exception\AppException if an application error occurred, handled in this class
 	*/
 	public static function session($sess_cookie='', $sess_timeout=0) {
 		return \App\User\Session::get_instance($sess_cookie, $sess_timeout);
@@ -660,6 +663,7 @@ class App {
 	* @param string $name The config key_name (minus "_image" or "_file" extension)
 	* @param bool $is_image True if image upload configuration, false for other file types
 	* @return mixed The upload configuration parameters or false if param $name not a key
+    * @throws \App\Exception\AppException if an application error occurred, handled in this class
 	*/
 	public function upload_config($name, $is_image) {
 		if ( empty($name) ) {

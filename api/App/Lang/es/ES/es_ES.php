@@ -2,14 +2,25 @@
 
 // Términos comunes
 $lang['error']      = 'error';
+$lang['file']       = 'fichero';
+$lang['hour']       = 'hora';
+$lang['hours']      = 'horas';
+$lang['image']      = 'imágen';
+$lang['minute']     = 'minuto';
+$lang['minutes']    = 'minutos';
 $lang['module']     = 'modulo';
 $lang['relation']   = 'relación';
+$lang['second']     = 'segundo';
+$lang['seconds']    = 'segundos';
 
 // Botones
-$lang['add']    = 'Añadir';
-$lang['cancel'] = 'Cancelar';
-$lang['delete'] = 'Borrar';
-$lang['update'] = 'Actualizar';
+$lang['add']        = 'Añadir';
+$lang['cancel']     = 'Cancelar';
+$lang['continue']   = 'Continuar';
+$lang['delete']     = 'Borrar';
+$lang['login']      = 'Iniciar';
+$lang['ok']         = 'OK';
+$lang['update']     = 'Actualizar';
 
 // Tipos de campos del formulario
 $lang['field.boolean'] 		        = 'True/False (checkbox)';
@@ -104,6 +115,12 @@ $lang['form.validation.param'] 				= 'Parametros customizados';
 $lang['form.validation.rules'] 				= 'Función de validación Javascript';
 $lang['form.validation.message'] 			= 'Mensaje del error customizado';
 
+// Página login
+$lang['form.login.title'] 			    = 'Iniciar sesión';
+$lang['form.login.email'] 			    = 'Email';
+$lang['form.login.password'] 			= 'Contraseña';
+$lang['form.login.remember'] 			= 'Recordarme';
+
 // Páginas
 $lang['form.pages.parent_id'] 			= 'Página primaria';
 $lang['form.pages.short_title'] 		= 'Título de página';
@@ -188,6 +205,8 @@ $lang['validate.custom'] 			= 'Validación customizado';
 $lang['error.database.config'] 		= '%s parametros de la base de datos no definidos en configuración principal %s';
 $lang['error.exception.unknown'] 	= 'Ha occurido un %s desconocido';
 $lang['error.for.field.type'] 		= 'para tipo del campo %s';
+$lang['error.form.handler'] 		= 'Handler del formulario %s no encontrado';
+$lang['error.form_field.custom']    = '%s no está definido para el campo [%s]';
 $lang['error.form_field.id']        = '%s debe ser ID del campo del formulario';
 $lang['error.form_field.label']     = '%s o %s debe haber un valor no vacío';
 $lang['error.form_field.name']      = '%s debe ser el nombre identificador del campo del formulario';
@@ -195,16 +214,25 @@ $lang['error.form_field.pk_dupe']   = '%s no puede ser ser el mismo nombre ident
 $lang['error.form_field.reserved']  = '%s es un nombre reservado del campo';
 $lang['error.form_field.slug']      = '%s debe ser identificador (slug) del modulo del campo del formulario';
 $lang['error.form_field.type']      = '%s inválido, debe ser uno de los siguientes: %s';
+$lang['error.front.refresh']        = 'Por favor, recargue la página y rellenar el formulario de nuevo';
 $lang['error.general.missing']      = '%s no existe y no puede ser actualizado';
 $lang['error.general.multi']        = 'Han ocurrido errores%s';
 $lang['error.general.set']          = '%s debe haber un valor no vacío';
 $lang['error.general.single']       = 'Ha ocurrido un error%s';
+$lang['error.general.undefined']    = '%s no está definido';
+$lang['error.login.invalid']        = 'Usuario y/o contraseña inválido';
+$lang['error.login.max']            = 'Has llegado al máximo<br/>numero de intentos';
+$lang['error.login.retry']          = 'Puedes volver a intentar en %s';
 $lang['error.module.delete']        = 'Modulo [%s] no puede ser borrado directamente, es un relación de modulo(s) [%s]';
 $lang['error.module.dupe']          = '%s ya se utiliza por otro modulo, debe ser identificador único';
 $lang['error.module.form_fields']   = '%s debe ser array de los campos del modulo';
 $lang['error.module.id']            = '%s debe ser ID del modulo';
+$lang['error.module.inactive']      = 'Modulo [%s] es un modulo inactivo';
+$lang['error.module.invalid']       = 'Modulo [%s] inválido para el uso en una página web';
 $lang['error.module.label']         = '%s debe ser el nombre de vista singular del modulo';
 $lang['error.module.label_plural']  = '%s debe ser el nombre de vista plural del modulo';
+$lang['error.module.missing']       = 'Modulo [%s] no encontrado';
+$lang['error.module.options']       = 'Module [%s] es de tipo opciónes, inválido para el uso en una página web';
 $lang['error.module.options.change']= 'Modulo [%s] no puede cambiar tipo modelo/opciónes';
 $lang['error.module.options.create']= 'Crear opciónes ha fallado para modulo [%s]';
 $lang['error.module.options.delete']= 'Borrar opciónes ha fallado para modulo [%s]';
@@ -246,6 +274,7 @@ $lang['error.sql.drop']             = 'DROP TABLE ha fallado para %s';
 $lang['error.sql.delete']           = 'DELETE ha fallado para %s';
 $lang['error.sql.insert']           = 'INSERT ha fallado para %s';
 $lang['error.sql.update']           = 'UPDATE ha fallado para %s';
+$lang['error.template.missing']     = 'Plantilla "%s" no encontrado en %s';
 $lang['error.type.directory']       = 'Parametro %s no se encuentra diretorio [%s], debe ser la ruta relativa a la raíz %s';
 $lang['error.type.param.empty']     = 'Parametro vacío %s';
 $lang['error.type.param.invalid'] 	= 'Parametro inválido %s';
@@ -253,6 +282,11 @@ $lang['error.type.param.missing']   = 'Falta parametro %s';
 $lang['error.type.relation']        = 'Relación inválido [%s] en modulo [%s]';
 $lang['error.type.type']            = 'Parametro %s debe ser del tipo %s';
 $lang['error.type.upload.config']   = 'Configuración de la carga del ficheros inválido %s';
+$lang['error.upload.config']        = '%s configuración de la carga del fichero [%s] no encontrado';
+$lang['error.upload.param.file']    = '%s parametro nombre del fichero no está definido o vacío';
+$lang['error.upload.param.config']  = '%s parametro nombre del configuración no está definido o vacío';
+$lang['error.upload.param.type']    = '%s tipo de carga [file|image] debe ser especificado';
+$lang['error.upload.permission']    = 'No tienes permisos de carga de ficheros para el modulo [%s]';
 $lang['error.var.empty']            = '%s le falta o tiene valor vacío';
 $lang['error.while.active']         = 'mientras cambiar activo los selecciónados';
 $lang['error.while.archive']        = 'mientras archivar los selecciónados';

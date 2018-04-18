@@ -2,14 +2,25 @@
 
 // Common terms
 $lang['error']      = 'error';
+$lang['file']       = 'file';
+$lang['hour']       = 'hour';
+$lang['hours']      = 'hours';
+$lang['image']      = 'image';
+$lang['minute']     = 'minute';
+$lang['minutes']    = 'minutes';
 $lang['module']     = 'module';
 $lang['relation']   = 'relation';
+$lang['second']     = 'second';
+$lang['seconds']    = 'seconds';
 
 // Buttons
-$lang['add']    = 'Add';
-$lang['cancel'] = 'Cancel';
-$lang['delete'] = 'Delete';
-$lang['update'] = 'Update';
+$lang['add']        = 'Add';
+$lang['cancel']     = 'Cancel';
+$lang['continue']   = 'Continue';
+$lang['delete']     = 'Delete';
+$lang['login']      = 'Login';
+$lang['ok']         = 'OK';
+$lang['update']     = 'Update';
 
 // Form field types
 $lang['field.boolean'] 		        = 'True/False (checkbox)';
@@ -104,6 +115,12 @@ $lang['form.validation.param'] 				= 'Custom params';
 $lang['form.validation.rules'] 				= 'Javascript validation function';
 $lang['form.validation.message'] 			= 'Custom error message';
 
+// Login form
+$lang['form.login.title'] 			    = 'Please Sign In';
+$lang['form.login.email'] 			    = 'Email address';
+$lang['form.login.password'] 			= 'Password';
+$lang['form.login.remember'] 			= 'Remember me';
+
 // Pages
 $lang['form.pages.parent_id'] 			= 'Parent Page';
 $lang['form.pages.short_title'] 		= 'Page Title';
@@ -188,6 +205,8 @@ $lang['validate.custom'] 			= 'Custom validation';
 $lang['error.database.config'] 		= '%s database parameters not defined in main config file %s';
 $lang['error.exception.unknown'] 	= 'An unknown %s has occurred';
 $lang['error.for.field.type'] 		= 'for field type %s';
+$lang['error.form.handler'] 		= 'Form handler %s not found';
+$lang['error.form_field.custom']    = '%s undefined for field [%s]';
 $lang['error.form_field.id']        = '%s must be form field ID';
 $lang['error.form_field.label']     = '%s or %s must be set and not empty';
 $lang['error.form_field.name']      = '%s must be form field identifying name';
@@ -195,16 +214,25 @@ $lang['error.form_field.pk_dupe']   = '%s cannot be the same identifying name as
 $lang['error.form_field.reserved']  = '%s is a reserved field name';
 $lang['error.form_field.slug']      = '%s must be form field module slug name';
 $lang['error.form_field.type']      = '%s invalid, must be one of the following: %s';
+$lang['error.front.refresh']        = 'Please refresh this page and fill out the form again';
 $lang['error.general.missing']      = '%s item does not exist and cannot be updated';
 $lang['error.general.multi']        = 'Errors have occurred%s';
 $lang['error.general.set']          = '%s must be set and not empty';
 $lang['error.general.single']       = 'An error has occurred%s';
+$lang['error.general.undefined']    = '%s undefined';
+$lang['error.login.invalid']        = 'Username and/or password invalid';
+$lang['error.login.max']            = 'You have reached the maximum<br/>allowed login attempts';
+$lang['error.login.retry']          = 'You will be able to retry in %s';
 $lang['error.module.delete']        = 'Module [%s] cannot be deleted directly since it is a relation for module(s) [%s]';
 $lang['error.module.dupe']          = '%s already in use, must be unique module slug name';
 $lang['error.module.form_fields']   = '%s must be array of module fields';
 $lang['error.module.id']            = '%s must be module ID';
+$lang['error.module.inactive']      = 'Module [%s] is an inactive module';
+$lang['error.module.invalid']       = 'Module [%s] invalid for use in web page';
 $lang['error.module.label']         = '%s must be singular display name of module';
 $lang['error.module.label_plural']  = '%s must be plural display name of module';
+$lang['error.module.missing']       = 'Module [%s] not found';
+$lang['error.module.options']       = 'Module [%s] is of options type, not valid for use in web page';
 $lang['error.module.options.change']= 'Module [%s] cannot switch type model/options';
 $lang['error.module.options.create']= 'Options create failed for module [%s]';
 $lang['error.module.options.delete']= 'Options delete failed for module [%s]';
@@ -246,6 +274,7 @@ $lang['error.sql.drop']             = 'DROP TABLE failed for %s';
 $lang['error.sql.delete']           = 'DELETE failed for %s';
 $lang['error.sql.insert']           = 'INSERT failed for %s';
 $lang['error.sql.update']           = 'UPDATE failed for %s';
+$lang['error.template.missing']     = 'Template "%s" not found in %s';
 $lang['error.type.directory']       = 'Parameter %s directory not found [%s], must be web root relative path %s';
 $lang['error.type.param.empty']     = 'Empty parameter %s';
 $lang['error.type.param.invalid'] 	= 'Invalid parameter %s';
@@ -253,6 +282,11 @@ $lang['error.type.param.missing']   = 'Missing parameter %s';
 $lang['error.type.relation']        = 'Invalid relation [%s] in module [%s]';
 $lang['error.type.type']            = 'Parameter %s must be of type %s';
 $lang['error.type.upload.config']   = 'Invalid upload configuration %s';
+$lang['error.upload.config']        = '%s upload config [%s] not found';
+$lang['error.upload.param.file']    = '%s filename parameter undefined or empty';
+$lang['error.upload.param.config']  = '%s file upload config name parameter undefined or empty';
+$lang['error.upload.param.type']    = '%s upload type [file|image] must be specified';
+$lang['error.upload.permission']    = 'You do not have upload permissions for module [%s]';
 $lang['error.var.empty']            = '%s missing or empty value';
 $lang['error.while.active']         = 'while setting items active';
 $lang['error.while.archive']        = 'while archiving items';

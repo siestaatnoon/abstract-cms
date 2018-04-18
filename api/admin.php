@@ -114,6 +114,9 @@ HTML;
  */
 function app_template_dialogs() {
     global $App;
+    $continue = __('continue');
+    $cancel = __('cancel');
+    $ok = __('ok');
     $dialog_html = <<<HTML
 
 <div id="modal-warning" class="abstract-modal-popup" data-overlay-theme="b">
@@ -122,7 +125,7 @@ function app_template_dialogs() {
   </div>
   <div id="modal-warning-body" class="ui-content" data-role="main"></div>
   <div data-role="footer">
-    <a href="#" class="modal-warning-close" data-role="button" data-transition="flow">Continue</a>
+    <a href="#" class="modal-warning-close" data-role="button" data-transition="flow">{$continue}</a>
   </div>
 </div>
   
@@ -132,7 +135,7 @@ function app_template_dialogs() {
   </div>
   <div id="modal-dialog-body" class="ui-content" data-role="main"></div>
   <div data-role="footer">
-    <a href="#" class="modal-dialog-close" data-role="button" data-inline="true" data-transition="flow">Continue</a>
+    <a href="#" class="modal-dialog-close" data-role="button" data-inline="true" data-transition="flow">{$continue}</a>
   </div>
 </div>
   
@@ -142,8 +145,8 @@ function app_template_dialogs() {
   </div>
   <div id="modal-confirm-body" class="ui-content" data-role="main"></div>
   <div data-role="footer">
-    <a href="#" class="modal-confirm-cancel" data-role="button" data-inline="true" data-transition="flow">Cancel</a>
-    <a href="#" class="modal-confirm-ok" data-role="button" data-inline="true" data-transition="flow" data-theme="b">OK</a>
+    <a href="#" class="modal-confirm-cancel" data-role="button" data-inline="true" data-transition="flow">{$cancel}</a>
+    <a href="#" class="modal-confirm-ok" data-role="button" data-inline="true" data-transition="flow" data-theme="b">{$ok}</a>
   </div>
 </div>
 
@@ -162,6 +165,7 @@ HTML;
  * Returns the navigation menu HTML based on user permissions.
  *
  * @return array Assoc array of data for navigation menu
+ * @throws \Exception if an application or runtime error occurs and is handled by the Slim error handler
  */
 function app_template_navigation() {
     global $Auth, $App;
@@ -213,7 +217,7 @@ $route_authenticate = function($request, $response, $args) use ($Auth)  {
     $is_remember = ! empty($post['is_remember']);
 
     $auth = $Auth->authenticate($user, $pass, $is_remember);
-    $error_msg = 'Username and/or password invalid';
+    $error_msg = error_str('error.login.invalid');
     $is_auth = false;
     $return = array();
 
@@ -225,11 +229,12 @@ $route_authenticate = function($request, $response, $args) use ($Auth)  {
             $hrs = floor($timeout / 60 / 60);
             $min = floor(($timeout - ($hrs * 3600)) / 60);
             $sec = $timeout % 60;
-            $time_str = ($hrs > 0 ? $hrs.($hrs == 1 ? ' hour ' : ' hours ') : '');
-            $time_str .= ($min > 0 ? $min.($min == 1 ? ' minute ' : ' minutes ') : '');
-            $time_str .= $sec > 0 ? $sec.' seconds' : '';
-            $error_msg = '<div style="text-align:center;">You have reached the maximum<br/>allowed login attempts';
-            $error_msg .= '<br/><br/>You will be able to retry in<br/><strong>'.$time_str.'</strong></div>';
+            $time_str = ($hrs > 0 ? $hrs.($hrs == 1 ? ' '.__('hour').' ' : ' '.__('hours').' ') : '');
+            $time_str .= ($min > 0 ? $min.($min == 1 ? ' '.__('minute').' ' : ' '.__('minutes').' ') : '');
+            $time_str .= ($sec > 0 ? $sec.($sec == 1 ? ' '.__('second') : ' '.__('seconds')) : '');
+            $time_str = '<br/><strong>'.$time_str.'</strong>';
+            $error_msg = '<div style="text-align:center;">'.error_str('error.login.max');
+            $error_msg .= '<br/><br/>'.error_str('error.login.retry', $time_str).'</div>';
         }
     } else if ( is_bool($auth) && $auth) {
         // successfully authenticated, generate nav menu, search panel
@@ -414,23 +419,28 @@ $route_data_login = function($request, $response, $args)  {
         )
     );
 
+    $title = __('form.login.title');
+    $email = __('form.login.email');
+    $password = __('form.login.password');
+    $remember = __('form.login.remember');
+    $login = __('login');
     $template = <<<HTML
 
 <div id="abstract-content" class="abstract-login">
   <div class="abstract-login-cnt">
     <form id="form-signin" role="form">
-      <h2 class="form-signin-heading">Please Sign In</h2>
+      <h2 class="form-signin-heading">{$title}</h2>
       <div class="login-error"></div>
       <div>
-        <input name="user" type="email" class="form-control" placeholder="Email address" required autofocus />
+        <input name="user" type="email" class="form-control" placeholder="{$email}" required autofocus />
       </div>
       <div>
-        <input name="pass" type="password" class="form-control" placeholder="Password" required />
+        <input name="pass" type="password" class="form-control" placeholder="{$password}" required />
       </div>
       <label class="checkbox">
-        <input name="is_remember" type="checkbox" value="1" /> Remember me
+        <input name="is_remember" type="checkbox" value="1" /> {$remember}
       </label>
-      <button id="submit-login" class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+      <button id="submit-login" class="btn btn-lg btn-primary btn-block" type="submit">{$login}</button>
     </form><!--close #form-signin-->
   </div>
 </div><!--close #abstract-login-->
@@ -492,10 +502,10 @@ $route_delete_file = function($request, $response, $args) use ($App, $ERROR_DELI
     $post = $request->getParsedBody();
     $errors = array();
     if ( empty($post['file']) ) {
-        $errors[] = 'POST[file] filename parameter undefined or empty';
+        $errors[] = error_str('error.upload.param.file', 'POST[file]');
     }
     if ( empty($post['cfg']) ) {
-        $errors[] = 'POST[cfg] file upload config name parameter undefined or empty';
+        $errors[] = error_str('error.upload.param.config', 'POST[cfg]');
     }
     if ( ! empty($errors) ) {
         throw new \Exception( implode($ERROR_DELIMETER, $errors) );
@@ -511,7 +521,8 @@ $route_delete_file = function($request, $response, $args) use ($App, $ERROR_DELI
 
     $config = $App->upload_config($config_name, $is_image);
     if ($config === false) {
-        $errors[] = ($is_image ? 'Image' : 'File').' upload config ['.$config_name.'] not found';
+        $image_or_file = $is_image ? __('image') : __('file');
+        $errors[] = error_str('error.upload.config', array( ucfirst($image_or_file), $config_name));
     }
 
     if ( empty($errors) ) {
@@ -634,7 +645,8 @@ $route_form_custom_func = function($request, $response, $args) use ($App, $ERROR
             throw new \Exception( implode($ERROR_DELIMETER, $data['errors']) );
         }
     } else {
-        throw new \Exception('Module_'.$module_name.'->'.$function.'() undefined');
+        $error = error_str('error.general.undefined', 'Module_'.$module_name.'->'.$function.'()');
+        throw new \Exception($error);
     }
 
     $response = set_headers($response);
@@ -696,7 +708,11 @@ $route_form_field_custom = function($request, $response, $args) use ($Auth, $App
             throw $e;
         }
     } else {
-        $error = 'Module_'.$field_module_name.'->'.$function.'() undefined for field ['.$field.']';
+        $args = array(
+            'Module_'.$field_module_name.'->'.$function.'()',
+            $field
+        );
+        $error = error_str('error.form_field.custom', $args);
         throw new \Exception($error);
     }
 
@@ -865,7 +881,8 @@ $route_upload_file = function($request, $response, $args) use ($App, $Auth, $ERR
     $Perm = $Auth->get_permission($module_name);
     if ( ( empty($pk) && $Perm->has_add() === false) || ( is_numeric($pk) && $Perm->has_update() === false) ) {
         //insufficient permissions
-        throw new \Exception('You do not have upload permissions for module ['.$module_name.']');
+        $error = error_str('error.upload.permission', $module_name);
+        throw new \Exception($error);
     }
 
     $is_image = -1;
@@ -877,15 +894,16 @@ $route_upload_file = function($request, $response, $args) use ($App, $Auth, $ERR
         $is_image = false;
     }
     if ( empty($config) ) {
-        $errors[] = 'Upload config name must be specified';
+        $errors[] = error_str('error.upload.param.config', '[config]');
     }
     if ($is_image === -1) {
-        $errors[] = 'Upload type [file|image] must be specified';
+        $errors[] = error_str('error.upload.param.type', '[type]');
     }
 
     $file_cfg = $App->upload_config($config, $is_image);
     if ($file_cfg === false) {
-        $errors[] = ($is_image ? 'Image' : 'File').' upload config ['.$config.'] not found';
+        $image_or_file = $is_image ? __('image') : __('file');
+        $errors[] = error_str('error.upload.config', array( ucfirst($image_or_file), $config));
     }
     if ( ! empty($errors) ) {
         throw new \Exception( implode($ERROR_DELIMETER, $errors) );
