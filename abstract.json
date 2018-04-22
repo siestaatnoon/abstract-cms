@@ -1,5 +1,6 @@
 {
   "debug":             true,
+  "locale":            "en_US",
   "adminUri":          "admin",
   "adminPagerPerPage": 4,
   "frontPagerPerPage": 2,

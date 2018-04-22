@@ -487,6 +487,9 @@ class App {
                     // false for production environment
                     $config['debug'] = $cfg['debug'];
 
+                    // Locale to use for I18n translations
+                    $config['locale'] = $cfg['locale'];
+
                     // Number of default items to initially show in admin list pages
                     $config['admin_list_per_page'] = $cfg['adminPagerPerPage'];
 
