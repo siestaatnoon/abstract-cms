@@ -221,17 +221,15 @@ define([
                     deferred.resolveWith(self.collection);
                 },
                 error: function(collection, response, options) {
-                    var json = response.responseJSON;
-                    var error_msg = 'Error(s) have ocurred while rendering list view';
-                    var error_modal = error_msg;
-                    if ( app.debug && _.has(json, 'errors') ) {
-                        if (json.errors.length) {
-                            error_msg += ":\n" + json.errors.join("\n");
-                            error_modal = json.errors.join('<br/><br/>');
-                        }
-                        console.log(error_msg);
+                    var resp = Utils.parseJqXHR(response);
+                    var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                    if (error.length === 0) {
+                        error = 'AdminListView.render() an error has occurred';
                     }
-                    Utils.showModalWarning('Error', error_modal);
+                    if (app.debug) {
+                        console.log( error.replace('<br/>', "\n") );
+                    }
+                    Utils.showModalWarning('Error', error);
                     deferred.resolveWith(self, []);
                 }
             });

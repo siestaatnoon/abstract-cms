@@ -65,17 +65,15 @@ define([
 				self.setElement( $(template).first() );
 				deferred.resolveWith(self, self.model);
 			}, error: function(model, response, options) {
-                var json = response.responseJSON;
-			    var error_msg = 'Error(s) have ocurred while rendering form view';
-			    var error_modal = error_msg;
-				if ( app.debug && _.has(json, 'errors') ) {
-                    if (json.errors.length) {
-                        error_msg += ":\n" + json.errors.join("\n");
-                        error_modal = json.errors.join('<br/><br/>');
-                    }
-                    console.log(error_msg);
-				}
-                Utils.showModalWarning('Error', error_modal);
+			    var resp = Utils.parseJqXHR(response);
+			    var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+			    if (error.length === 0) {
+			        error = 'AdminFormView.render() an error has occurred';
+			    }
+                Utils.showModalWarning('Error', error);
+				if (app.debug) {
+				    console.log( error.replace('<br/>', "\n") );
+                }
                 deferred.resolveWith(self, {});
 			}});
 
@@ -109,7 +107,15 @@ define([
 						);
 					}, 
 					error: function(model, response) {
-						Utils.showModalWarning('Error', '"' + title + '" could not be deleted', false);
+                        var resp = Utils.parseJqXHR(response);
+                        var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                        if (error.length === 0) {
+                            error = 'AdminFormView.formDelete() an error has occurred';
+                        }
+                        Utils.showModalWarning('Error', error);
+                        if (app.debug) {
+                            console.log( error.replace('<br/>', "\n") );
+                        }
 					}
 				});
 			}, false);
@@ -197,18 +203,16 @@ define([
 	            },
 	            error: function (model, response) {
 	            	self.trigger('view:update:end');
-	            	var json = response.responseJSON;
-	            	var error_msg = 'Error(s) have occurred while saving the form';
-                    var error_modal = error_msg;
+                    var resp = Utils.parseJqXHR(response);
+                    var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                    if (error.length === 0) {
+                        error = 'AdminFormView.formSubmit() an error has occurred';
+                    }
                     if (app.debug) {
-                        if ( _.has(json, 'errors') && json.errors.length ) {
-                            error_msg += ":\n" + json.errors.join("\n");
-                            error_modal = json.errors.join('<br/><br/>');
-                        }
-                        console.log(error_msg);
+                        console.log( error.replace('<br/>', "\n") );
                     }
                     self.trigger('view:update:end');
-	            	Utils.showModalWarning('Error', error_modal);
+	            	Utils.showModalWarning('Error', error);
 	            }
 	        });
 			

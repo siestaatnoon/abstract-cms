@@ -3,8 +3,9 @@ define([
     'jquery',
     'underscore',
     'backbone',
-    'classes/ScriptLoader'
-], function(app, $, _, Backbone, ScriptLoader) {
+    'classes/ScriptLoader',
+    'classes/Utils'
+], function(app, $, _, Backbone, ScriptLoader, Utils) {
 
     /**
      * Superclass for main template view in CMS and frontent.
@@ -15,6 +16,7 @@ define([
      * @requires Underscore
      * @requires Backbone
      * @requires classes/ScriptLoader
+     * @requires classes/Utils
      * @constructor
      * @augments Backbone.View
      */
@@ -160,21 +162,21 @@ define([
                     type: 		'GET',
                     dataType: 	'json'
                 }).done(function(data) {
-                    if (data.errors) {
-                        if(app.debug) {
-                            var message = "AbstractTplView.initialize: an API error has occurred:\n";
-                            message += data.errors.join("\n");
-                            console.log(message);
-                        }
-                    } else {
-                        self.postInit(data);
-                    }
+                    self.postInit(data);
                     deferred.resolve();
-                }).fail(function(jqXHR, status) {
-                    if (app.debug) {
-                        var msg = 'AbstractTplView.initialize: data retrieve failed: [' + jqXHR.status + "] ";
-                        msg += jqXHR.responseText;
-                        console.log(msg);
+                }).fail(function(jqXHR) {
+                    var resp = Utils.parseJqXHR(jqXHR);
+                    var error = resp.errors.length ? resp.errors.join("\n") : resp.response;
+
+                    // NOTE: show alert() instead of modal error since HTML
+                    // may be contained in this AJAX call and/or modal error
+                    // may not be set up
+                    //
+                    if (error.length) {
+                        alert(error);
+                        if (app.debug) {
+                            console.log(error);
+                        }
                     }
                 });
 

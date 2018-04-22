@@ -413,7 +413,7 @@ abstract class Abstract_module {
      * @throws \App\Exception\AppException if $permission invalid object, handled by \App\App class
 	 */
 	public function get_cms_form($row_id, $permission) {
-		if ($permission instanceof Permission === false ) {
+		if ($permission instanceof \App\User\Permission === false ) {
 			$msg_part = error_str('error.param.type', array('$permission', '\\App\\User\\Permission') );
             $message = error_str('error.type.param.invalid', array($msg_part) );
 			throw new AppException($message, AppException::ERROR_FATAL);

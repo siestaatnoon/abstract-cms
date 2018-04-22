@@ -76,31 +76,30 @@ define([
 		},
 
         /**
-         * Pings the API server, keeping the session active. No data is returned.
+         * Pings the API server, keeping the session active. No data is expected to be returned.
          *
          */
 		keepAlive: function() {
 			var url = app.adminSessPollURL + '/ping';
-            var errorMsg = "SessionPoller.keepAlive: an API error has occurred";
+
 			$.ajax({
 				url:		url,
 				type: 		'GET',
 				dataType: 	'json'
-			}).done(function(data) {
-				if (data.errors) {
-				    if (app.debug) {
-                        errorMsg += ":\n" + data.errors.join("\n");
-                    }
-                    console.log(errorMsg);
-				}
+			}).done(function(response) {
+                if (app.debug) {
+                    console.log(response);
+                }
 			}).fail(function(jqXHR) {
-				if (app.debug) {
-                    var response = Utils.parseJqXHR(jqXHR);
-				    if (response.errors.length) {
-                        errorMsg += ":\n" + response.errors.join("\n");
-                    }
-				}
-                console.log(errorMsg);
+                var resp = Utils.parseJqXHR(jqXHR);
+                var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                if (error.length === 0) {
+                    error = 'SessionPoller.keepAlive() an error has occurred';
+                }
+                Utils.showModalWarning('Error', error);
+                if (app.debug) {
+                    console.log( error.replace('<br/>', "\n") );
+                }
 			});
 		},
 
@@ -132,26 +131,19 @@ define([
 				url:		app.adminSessPollURL + '/ping',
 				type: 		'GET',
 				dataType: 	'json'
-			}).done(function(data) {
-				if (data.session_active) { 
-					isActive = true;
-					self.sessionStart();
-				} else if (data.errors) {
-                    var message = "SessionPoller.sessionPing: an API error has occurred";
-                    if (app.debug) {
-                        message += ":\n" + data.errors.join("\n");
-                    }
-					console.log(message);
-				}
+			}).done(function(response) {
+                isActive = _.has(response, 'session_active') ? response.session_active : false;
+                self.sessionStart();
 			}).fail(function(jqXHR) {
-                var errorMsg = "SessionPoller.sessionPing: an API error has occurred";
-				if (app.debug) {
-                    var response = Utils.parseJqXHR(jqXHR);
-                    if (response.errors.length) {
-                        errorMsg += ":\n" + response.errors.join("\n");
-                    }
-				}
-                console.log(errorMsg);
+                var resp = Utils.parseJqXHR(jqXHR);
+                var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                if (error.length === 0) {
+                    error = 'SessionPoller.sessionPing() an error has occurred';
+                }
+                Utils.showModalWarning('Error', error);
+                if (app.debug) {
+                    console.log( error.replace('<br/>', "\n") );
+                }
 			}).always(function() {
 				if ( _.isFunction(callback)) {
 					callback.call(this, isActive);
@@ -197,15 +189,7 @@ define([
 							}
 
 							Utils.showModalWarning(label, message.replace('%s', time), self.keepAlive, self);
-						} 
-					} else if (data.errors) {
-					//API error in AJAX call
-						var message = "SessionPoller.sessionStart: poll initialize failed";
-						if (app.debug) {
-                            message += ":\n" + data.errors.join("\n");
-                        }
-                        console.log(message);
-						self.sessionDestroy(); //end session
+						}
 					} else {
 					//session ended
 						window.clearInterval(self._poller);
@@ -214,14 +198,15 @@ define([
 						Utils.showModalWarning(label, message, self.sessionDestroy, self);
 					}
 				}).fail(function(jqXHR) {
-                    var errorMsg = "SessionPoller.sessionStart: poll initialize failed";
-					if (app.debug) {
-                        var response = Utils.parseJqXHR(jqXHR);
-                        if (response.errors.length) {
-                            errorMsg += ":\n" + response.errors.join("\n");
-                        }
-					}
-                    console.log(errorMsg);
+                    var resp = Utils.parseJqXHR(jqXHR);
+                    var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                    if (error.length === 0) {
+                        error = 'SessionPoller.sessionStart() an error has occurred';
+                    }
+                    Utils.showModalWarning('Error', error);
+                    if (app.debug) {
+                        console.log( error.replace('<br/>', "\n") );
+                    }
                     self.sessionDestroy(); //end session
 				});
 			};

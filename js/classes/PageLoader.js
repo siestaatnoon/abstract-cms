@@ -46,32 +46,26 @@ define([
          */
 		load: function(slug) {
 			var deferred = $.Deferred();
-			var url = (this.isCms ? app.adminPageRoot : app.frontPageRoot) + '/' + slug
-			var self = this;
+			var url = (this.isCms ? app.adminPageRoot : app.frontPageRoot) + '/' + slug;
 			var error_label = 'Error';
-			var error_msg  = '';
 			
 			$.ajax({
-				url:		url,
-				type: 		'GET'
+				url:    url,
+				type:   'GET'
 			}).done(function(data) {
-				if (data.errors) {
-					if (app.debug) {
-						error_msg = data.errors.join('<br/><br/>');
-						console.log( data.errors.join("\n") );
-					}
-					Utils.showModalWarning(error_label, error_msg);
-				} else {
-					if (app.debug) {
-						console.log('Loaded page [' + slug + '] from URL: ' + url);
-					}
-					deferred.resolve(data);
-				}
-				
-			}).fail(function(jqXHR, status, error) {
+                if (app.debug) {
+                    console.log('Loaded page [' + slug + '] from URL: ' + url);
+                }
+                deferred.resolve(data);
+			}).fail(function(jqXHR) {
+                var resp = Utils.parseJqXHR(jqXHR);
+                var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                if (error.length === 0) {
+                    error = 'AbstractTplView.load() an error has occurred';
+                }
+                Utils.showModalWarning(error_label, error);
 				if (app.debug) {
-					error_msg = 'Page [' + slug + '] not retrieved: [' + status + '] ' + error + '.';
-					console.log(error_msg);
+					console.log( error.replace('<br/>', "\n") );
 				}
 			});
 

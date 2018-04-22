@@ -156,34 +156,34 @@ define([
 			var deferred = $.Deferred();
 			var self = this;
 			var error_label = 'Error';
-			var error_msg  = '';
 
 			$.ajax({
 				url : self._apiRoot,
 				type: 'GET',
 				dataType: 'json'
 			}).done(function(data) {
-				var errors = data.errors || [];
-				if (errors.length === 0) {
-					if (app.debug) {
-						console.log('ModuleLoader: [' + self._module + '] data retrieved ' + self._apiRoot);
-					}
-					self._deferredData = _.extend(self._deferredData, data);
-					var clone = _.clone(self._deferredData);
-					deferred.resolve(clone);
-				} else {
-					if (app.debug) {
-						console.log( errors.join("\n") );
-					}
-                    error_msg = errors.join('<br/><br/>');
-					Utils.showModalWarning(error_label, error_msg);
-				}
+                if (app.debug) {
+                    console.log('ModuleLoader: [' + self._module + '] data retrieved ' + self._apiRoot);
+                }
+                self._deferredData = _.extend(self._deferredData, data);
+                var clone = _.clone(self._deferredData);
+                deferred.resolve(clone);
 			}).fail(function(jqXHR) {
-				if (app.debug) {
-					error_msg = 'ModuleLoader: [' + self._module + '] data not retrieved [' + jqXHR.status;
-					error_msg += '] ' + jqXHR.statusText + '.';
-					console.log(error_msg);
-				}
+                var resp = Utils.parseJqXHR(jqXHR);
+                var error = resp.errors.length ? resp.errors.join("\n") : resp.response;
+
+                // NOTE: show alert() instead of modal error since HTML
+                // may be contained in this AJAX call and/or modal error
+                // may not be set up
+                //
+                //Utils.showModalWarning('Error', error);
+				if (error.length) {
+                    alert(error);
+                    if (app.debug) {
+                        console.log(error);
+                    }
+                }
+
                 self.errorCallback.call(this, jqXHR, deferred);
 			});
 					
