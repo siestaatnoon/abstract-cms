@@ -2,9 +2,10 @@ define([
 	'config',
 	'jquery',
 	'underscore',
-	'classes/Class',
-	'classes/Utils'
-], function(app, $, _, C, Utils) {
+	'classes/Utils',
+    'classes/I18n',
+	'classes/Class'
+], function(app, $, _, Utils, I18n) {
 
     /**
      * Utility class that polls the server at regular intervals to check for an active session,
@@ -14,8 +15,8 @@ define([
      * @requires config
      * @requires jquery
      * @requires Underscore
-     * @requires classes/Class
      * @requires classes/Utils
+     * @requires classes/I18n
      * @constructor
      * @augments classes/Class
      */
@@ -94,9 +95,9 @@ define([
                 var resp = Utils.parseJqXHR(jqXHR);
                 var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
                 if (error.length === 0) {
-                    error = 'SessionPoller.keepAlive() an error has occurred';
+                    error = I18n.t('error.general.unknown', 'SessionPoller.keepAlive()');
                 }
-                Utils.showModalWarning('Error', error);
+                Utils.showModalWarning(I18n.t('error'), error);
                 if (app.debug) {
                     console.log( error.replace('<br/>', "\n") );
                 }
@@ -138,9 +139,9 @@ define([
                 var resp = Utils.parseJqXHR(jqXHR);
                 var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
                 if (error.length === 0) {
-                    error = 'SessionPoller.sessionPing() an error has occurred';
+                    error = I18n.t('error.general.unknown', 'SessionPoller.sessionPing()');
                 }
-                Utils.showModalWarning('Error', error);
+                Utils.showModalWarning(I18n.t('error'), error);
                 if (app.debug) {
                     console.log( error.replace('<br/>', "\n") );
                 }
@@ -180,30 +181,28 @@ define([
 						var minutes = Math.ceil(self._timeLeft / 60);
 
 						if (minutes < 5) {
-							label = 'Your Session is About to Expire';
-							message = 'Your session will end in less than %s. To continue your session, '; 
-							message += 'click the Continue button below.';
+                            label = I18n.t('label.session.expire');
 							var time = minutes + (minutes == 1 ? ' minute' : ' minutes');
 							if (self._timeLeft <= 30) {
 								time = '30 seconds';
 							}
-
-							Utils.showModalWarning(label, message.replace('%s', time), self.keepAlive, self);
+                            message = I18n.t('message.session.expire', time);
+							Utils.showModalWarning(label, message, self.keepAlive, self);
 						}
 					} else {
 					//session ended
 						window.clearInterval(self._poller);
-						label = 'Your Session Has Ended';
-						message = 'Your session has ended. You will now be redirected to the login page.';
+                        label = I18n.t('label.session.ended');
+                        message = I18n.t('message.session.ended');
 						Utils.showModalWarning(label, message, self.sessionDestroy, self);
 					}
 				}).fail(function(jqXHR) {
                     var resp = Utils.parseJqXHR(jqXHR);
                     var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
                     if (error.length === 0) {
-                        error = 'SessionPoller.sessionStart() an error has occurred';
+                        error = I18n.t('error.general.unknown', 'SessionPoller.sessionStart()');
                     }
-                    Utils.showModalWarning('Error', error);
+                    Utils.showModalWarning(I18n.t('error'), error);
                     if (app.debug) {
                         console.log( error.replace('<br/>', "\n") );
                     }

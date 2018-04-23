@@ -4,8 +4,9 @@ define([
 	'underscore',
 	'classes/admin/SessionPoller',
 	'classes/Utils',
+    'classes/I18n',
     'classes/Class'
-], function(app, $, _, SessionPoller, Utils) {
+], function(app, $, _, SessionPoller, Utils, I18n) {
 
 	/**
 	 * Contains the authentication functions for the admin CMS.
@@ -16,6 +17,7 @@ define([
 	 * @requires Underscore
      * @requires classes/SessionPoller
      * @requires classes/Utils
+     * @requires classes/I18n
 	 * @constructor
 	 * @augments Class
 	 */
@@ -74,7 +76,7 @@ define([
 		authenticate: function(user, pass, is_remember) {
 			var deferred = $.Deferred();
 			var self = this;
-			var error_label = 'Error';
+			var error_label = I18n.t('error');
 			var data = {
 				user: user,
 				pass: pass,
@@ -95,7 +97,7 @@ define([
                 var resp = Utils.parseJqXHR(jqXHR);
                 var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
                 if (error.length === 0) {
-                    error = 'AdminAuth.authenticate() an error has occurred';
+                    error = I18n.t('error.general.unknown', 'AdminAuth.authenticate()');
                 }
                 Utils.showModalWarning(error_label, error);
                 if (app.debug) {
@@ -114,7 +116,7 @@ define([
 		invalidate: function() {
 			var deferred = $.Deferred();
 			var self = this;
-			var error_label = 'Error';
+			var error_label = I18n.t('error');
 			
 			$.ajax({
 				url:		this._urlRoot + '/logout',
@@ -128,7 +130,7 @@ define([
                 var resp = Utils.parseJqXHR(jqXHR);
                 var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
                 if (error.length === 0) {
-                    error = 'AdminAuth.invalidate() an error has occurred';
+                    error = I18n.t('error.general.unknown', 'AdminAuth.invalidate()');
                 }
                 Utils.showModalWarning(error_label, error);
                 if (app.debug) {
@@ -158,7 +160,7 @@ define([
 			var deferred = $.Deferred();
 			var apiUrl = this._dataRoot + '/' + route;
 			var self = this;
-			var error_label = 'Error';
+			var error_label = I18n.t('error');
 			
 			$.ajax({
 				url : 		apiUrl,
@@ -166,14 +168,19 @@ define([
 				dataType: 	'json'
 			}).done(function(response) {
                 if (app.debug) {
-                    console.log('AdminAuth.loadPageData[' + self._module + '] page data retrieved ' + apiUrl);
+                    var args = [
+                        'AdminAuth.loadPageData: [' + self._module + ']',
+                        apiUrl
+                    ];
+                    var message = I18n.t('message.data.loaded', args);
+                    console.log(message);
                 }
                 deferred.resolve(response);
 			}).fail(function(jqXHR) {
                 var resp = Utils.parseJqXHR(jqXHR);
                 var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
                 if (error.length === 0) {
-                    error = 'AdminAuth.loadPageData() an error has occurred';
+                    error = I18n.t('error.general.unknown', 'AdminAuth.loadPageData()');
                 }
                 Utils.showModalWarning(error_label, error);
                 if (app.debug) {

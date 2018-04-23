@@ -5,6 +5,7 @@ define([
     var abstractCfg = $.parseJSON(abstractCfgJson);
 	var app = app || {};
 	app.debug 				= abstractCfg.debug;
+    app.locale 				= abstractCfg.locale;
 	app.csrfToken 			= abstractCfg.csrfToken;
     app.docRoot 			= abstractCfg.docRoot + '/';
     app.loadingId 	    	= abstractCfg.loadingId;
@@ -52,34 +53,51 @@ define([
 	app.SessionPoller		= {};
 	app.PageLoader			= {};
 	app.appCache			= {};
+	app.i18n                = {};
 
-	//JQM initialization... note that this comes
-	//before JQM loads page
-	//
-	$(document).bind('mobileinit', function() {
-	    if ($.mobile) {
-            $.mobile.autoInitializePage = false;
-            $.mobile.ajaxEnabled = false;
-            $.mobile.hashListeningEnabled = false;
-            $.mobile.pushStateEnabled = false;
+	// check if we're in admin or frontend
+	var isAdmin = location.pathname.indexOf(app.adminRoot) === 0;
 
-            //commented since this is needed for JQM listbox
-            //to function
-            //$.mobile.linkBindingEnabled = false;
-
-            $.mobile.loader.prototype.options.text = "";
-            $.mobile.loader.prototype.options.textVisible = true;
-            $.mobile.loader.prototype.options.theme = "a";
-            $.mobile.loader.prototype.options.html = '<div class="ui-loader-centered"><span class="ui-icon-loading"></span><h1>loading</h1></div>';
-
-            //add loading splash on page load/reload
-            $('body').pagecontainer({
-                beforeshow: function (e, ui) {
-                    $('html').removeClass('abstract-splash');
-                }
+	// execute following only for admin
+    if (isAdmin) {
+        // Load i18n translations for admin
+        var parts = app.locale.split('_');
+        if (parts.length === 2) {
+            parts = [abstractCfg.localeAppDir].concat(parts);
+            var textModule = 'text!' + parts.join('/') + '/' + app.locale + '.json';
+            require([textModule], function(i18nJson){
+                app.i18n = $.parseJSON(i18nJson);
             });
         }
-	});
+
+        //JQM initialization... note that this comes
+        //before JQM loads page
+        //
+        $(document).bind('mobileinit', function () {
+            if ($.mobile) {
+                $.mobile.autoInitializePage = false;
+                $.mobile.ajaxEnabled = false;
+                $.mobile.hashListeningEnabled = false;
+                $.mobile.pushStateEnabled = false;
+
+                //commented since this is needed for JQM listbox
+                //to function
+                //$.mobile.linkBindingEnabled = false;
+
+                $.mobile.loader.prototype.options.text = "";
+                $.mobile.loader.prototype.options.textVisible = true;
+                $.mobile.loader.prototype.options.theme = "a";
+                $.mobile.loader.prototype.options.html = '<div class="ui-loader-centered"><span class="ui-icon-loading"></span><h1>loading</h1></div>';
+
+                //add loading splash on page load/reload
+                $('body').pagecontainer({
+                    beforeshow: function (e, ui) {
+                        $('html').removeClass('abstract-splash');
+                    }
+                });
+            }
+        });
+    }
 
 	return app;
 });

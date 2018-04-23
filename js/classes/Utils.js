@@ -1,8 +1,9 @@
 define([
 	'config',
 	'jquery',
-	'underscore'
-], function(app, $, _) {
+	'underscore',
+    'classes/I18n'
+], function(app, $, _, I18n) {
 	
 	var Utils = {
 
@@ -241,13 +242,13 @@ define([
 		},
 		
 		showModalConfirm: function(label, message, onOk, onCancel, context, okText, cancelText) {
-			var label = label || 'Message';
+			var label = label || I18n.t('message');
 			var message = message || '';
 			var onCancel = onCancel !== undefined && typeof onCancel === 'function' ? onCancel : false;
 			var onOk = onOk !== undefined && typeof onOk === 'function' ? onOk : false;
 			context = context || null;
-			okText = okText || 'OK';
-			cancelText = cancelText || 'Cancel';
+			okText = okText || I18n.t('ok');
+			cancelText = cancelText || I18n.t('cancel');
 			
 			$('.modal-confirm-cancel').off().click(function() {
             	if (onCancel !== false) {
@@ -271,11 +272,11 @@ define([
 		},
 		
 		showModalDialog: function(label, message, callback, context, closeText) {
-			var label = label || 'Message';
+			var label = label || I18n.t('message');
 			var message = message || '';
 			var callback = callback !== undefined && typeof callback === 'function' ? callback : false;
 			context = context || null;
-			closeText = closeText || 'Continue';
+			closeText = closeText || I18n.t('continue');
 			
 			$('.modal-dialog-close').off().click(function() {
 				if (callback !== false) {
@@ -291,11 +292,11 @@ define([
 		},
 		
 		showModalWarning: function(label, message, callback, context, closeText) {
-			var label = label || 'Error';
-			var message = message || 'An application error has occurred.';
+			var label = label || I18n.t('error');
+			var message = message || I18n.t('error.general.unknown', label + ':');
 			var callback = callback !== undefined && typeof callback === 'function' ? callback : false;
 			context = context || null;
-			closeText = closeText || 'Continue';
+			closeText = closeText || I18n.t('continue');
 			
 			$('.modal-warning-close').off().click(function() {
             	if (callback !== false) {

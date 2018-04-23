@@ -2,8 +2,9 @@ define([
 	'config',
 	'jquery',
 	'underscore',
+    'classes/I18n',
 	'classes/Class'
-], function(app, $, _, C) {
+], function(app, $, _, I18n) {
 
     /**
      * Class for validating forms. By default, this class has the following field validation types:<br/><br/>
@@ -21,7 +22,7 @@ define([
      * @requires config
      * @requires jquery
      * @requires Underscore
-     * @requires classes/Class
+     * @requires classes/I18n
      * @constructor
      * @augments classes/Class
      */
@@ -51,31 +52,31 @@ define([
 		_rules: {
 			required: {
 				param: null,
-				message: 'This field is required'
+				message: I18n.t('validate.required')
 			},
 			email: {
 				param: null,
-				message: 'Please enter a valid email'
+				message: I18n.t('validate.email')
 			},
 			min: {
 				param: 0,
-				message: 'Please select at least %p item(s)'
+				message: I18n.t('validate.min')
 			},
 			max: {
 				param: 1,
-				message: 'Please select at most %p item(s)'
+				message: I18n.t('validate.max')
 			},
 			natural: {
 				param: null,
-				message: 'Please enter a whole number'
+				message: I18n.t('validate.natural')
 			},
 			natural_not_zero: {
 				param: null,
-				message: 'Please enter a whole number greater than zero'
+				message: I18n.t('validate.not_zero')
 			},
 			strong_password: {
 				param: null,
-				message: 'Password must contain at least 1 uppercase, 1 lowercase and 1 number'
+				message: I18n.t('validate.password')
 			}
 		},
 
@@ -144,12 +145,13 @@ define([
                     }
 
                     if ( ! is_valid) {
-                        if (app.debug) {
-                            //rule undefined, see this.rules
-                            var message = 'FormValidator.addField: Rule ['+ rule + '] undefined or invalid for field [';
-                            message += field_name + '], validation skipped';
-                            console.log(message);
-                        }
+                        //rule undefined, see this.rules
+						var args = [
+							'FormValidator.addField:',
+                            rule,
+                            field_name
+						];
+                        console.log( I18n.t('error.validate.rule', args) );
                         continue;
                     }
 				} else {
@@ -219,22 +221,13 @@ define([
 			
 			if ( ! _.isString(name) || $.trim(name).length == 0) {
 				is_valid = false;
-				if (app.debug) {
-					message = 'FormValidator.rule: Invalid param 1 [name] must be non-zero length string';
-					console.log(message);
-				}
+                console.log( I18n.t('error.validate.name', 'FormValidator.rule:') );
 			} else if ( ! _.isFunction(fn) && typeof fn === 'string' && $.trim(fn).length == 0 ) {
 				is_valid = false;
-				if (app.debug) {
-					message = 'FormValidator.rule: Invalid param 2 [fn] must be a function or executable javascript';
-					console.log(message);
-				}
+                console.log( I18n.t('error.validate.fn', 'FormValidator.rule:') );
 			} else if ( ! _.isString(error_msg) || $.trim(error_msg).length == 0) {
 				is_valid = false;
-				if (app.debug) {
-					message = 'FormValidator.rule: Invalid param 3 [error_msg] must be non-zero length string';
-					console.log(message);
-				}
+                console.log( I18n.t('error.validate.error_msg', 'FormValidator.rule:') );
 			}
 			
             if (is_valid) {
@@ -294,7 +287,7 @@ define([
 				for (var rule in rules) {
 					var r = rules[rule];
 					if ( this._validators[rule].call(this, value, r['param']) === false ) {
-						var message = r['message'].replace('%p', r['param']);
+						var message = r['message'].replace('%s', r['param']);
 						field_errors.push(message);
 					}
 				}
@@ -346,12 +339,9 @@ define([
 			max: function(value, param) {
 				var length = parseInt(param);
 				if ( isNaN(length)) {
-					if (app.debug) {
 					//rule parameter invalid, must be an int
 					//return true to skip validation
-						var message = 'FormValidator.max: Invalid parameter ['+ param + '] found, validation skipped';
-						console.log(message);
-					} 
+                    console.log( I18n.t('error.validate.param', ['FormValidator._validators.max:', param]) );
 					return true;
 				}
 				return value.length <= length;
@@ -360,12 +350,9 @@ define([
 			min: function(value, param) {
 				var length = parseInt(param);
 				if ( isNaN(length)) {
-					if (app.debug) {
 					//rule parameter invalid, must be an int
 					//return true to skip validation
-						var message = 'FormValidator.min: Invalid parameter ['+ param + '] found, validation skipped';
-						console.log(message);
-					} 
+                    console.log( I18n.t('error.validate.param', ['FormValidator._validators.min:', param]) );
 					return true;
 				}
 				return value.length >= length;

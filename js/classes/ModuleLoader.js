@@ -3,8 +3,9 @@ define([
 	'jquery',
 	'underscore',
 	'classes/Utils',
+    'classes/I18n',
     'classes/Class'
-], function(app, $, _, Utils) {
+], function(app, $, _, Utils, I18n) {
 
 	/**
 	 * Configures the API urls and loads data for application modules.
@@ -14,6 +15,7 @@ define([
 	 * @requires jQuery
 	 * @requires Underscore
 	 * @requires classes/Utils
+     * @requires classes/I18n
 	 * @requires classes/Class
 	 * @constructor
 	 * @augments classes/Class
@@ -146,16 +148,16 @@ define([
          * @return {jqXHR} The jQuery XMLHttpRequest object
          */
 		loadData: function() {
-			if ( ! this._hasModule) {
-				if (app.debug) {
-					console.log('ModuleLoader.loadData: setModule() must be called to initialize data retrieval');
-				}
+            var message = '';
+            if ( ! this._hasModule) {
+                message = I18n.t('error.module.init', 'ModuleLoader.loadData: setModule()');
+                console.log(message);
 				return false;
 			}
 			
 			var deferred = $.Deferred();
 			var self = this;
-			var error_label = 'Error';
+			var error_label = I18n.t('error');
 
 			$.ajax({
 				url : self._apiRoot,
@@ -163,7 +165,12 @@ define([
 				dataType: 'json'
 			}).done(function(data) {
                 if (app.debug) {
-                    console.log('ModuleLoader: [' + self._module + '] data retrieved ' + self._apiRoot);
+                    var args = [
+                        'ModuleLoader.loadData: [' + self._module + ']',
+                        self._apiRoot
+                    ];
+                    message = I18n.t('message.data.loaded', args);
+                    console.log(message);
                 }
                 self._deferredData = _.extend(self._deferredData, data);
                 var clone = _.clone(self._deferredData);

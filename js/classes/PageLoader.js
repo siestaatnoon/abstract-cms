@@ -2,8 +2,9 @@ define([
 	'config',
 	'jquery',
 	'classes/Class',
-	'classes/Utils'
-], function(app, $, C, Utils) {
+	'classes/Utils',
+    'classes/I18n'
+], function(app, $, C, Utils, I18n) {
 
     /**
      * Utility class that polls the server at regular intervals to check for an active session,
@@ -14,6 +15,7 @@ define([
      * @requires jquery
      * @requires classes/Class
      * @requires classes/Utils
+     * @requires classes/I18n
      * @constructor
      * @augments classes/Class
      */
@@ -47,21 +49,22 @@ define([
 		load: function(slug) {
 			var deferred = $.Deferred();
 			var url = (this.isCms ? app.adminPageRoot : app.frontPageRoot) + '/' + slug;
-			var error_label = 'Error';
+			var error_label = I18n.t('error');
 			
 			$.ajax({
 				url:    url,
 				type:   'GET'
 			}).done(function(data) {
                 if (app.debug) {
-                    console.log('Loaded page [' + slug + '] from URL: ' + url);
+                    var message = I18n.t('message.page.loaded', [slug, url]);
+                    console.log(message);
                 }
                 deferred.resolve(data);
 			}).fail(function(jqXHR) {
                 var resp = Utils.parseJqXHR(jqXHR);
                 var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
                 if (error.length === 0) {
-                    error = 'AbstractTplView.load() an error has occurred';
+                    error = I18n.t('error.general.unknown', 'AbstractTplView.load()');
                 }
                 Utils.showModalWarning(error_label, error);
 				if (app.debug) {
