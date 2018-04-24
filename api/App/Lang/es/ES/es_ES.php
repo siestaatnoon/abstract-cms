@@ -202,6 +202,13 @@ $lang['tooltip.css_includes.files'] 	        = 'La ruta relativa al raíz (prefi
 $lang['tooltip.js_includes.files'] 		        = 'La ruta relativa al raíz (prefijado con "/") a los ficheros JS';
 $lang['tooltip.js_unload_block'] 		        = 'Hay que desatar todos los eventos, poner objetos a null y/o llamar destroy() a los objetos de plugin jQuery';
 
+// Cargar ficheros
+$lang['uploads.uploaded'] 			= 'Ficheros cargados';
+$lang['uploads.queued'] 			= 'Ficheros en cola';
+$lang['uploads.click'] 			    = 'pulsa Cargar para guardar';
+$lang['uploads.add'] 			    = 'Añadir Ficheros';
+$lang['uploads.upload'] 			= 'Cargar';
+
 // Validación
 $lang['validate.required'] 			= 'Valor obligatorio';
 $lang['validate.email'] 			= 'Email válido';

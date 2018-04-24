@@ -1917,20 +1917,25 @@ NVP;
 		
 		$html .= " data-files='".(self::$ADD_TEMPLATE_VARS ? "<%= JSON.stringify(uploads.".$this->name.") %>" : '');
 		$html .= "'>\n";
-		
+
+		$uploaded = __('uploads.uploaded');
+        $queued = __('uploads.queued');
+        $click = __('uploads.click');
+        $add = __('uploads.add');
+        $upload = __('uploads.upload');
 		$html .= <<<UPLOAD
       <div class="plupload-uploaded-list">
-        <p>Uploaded Files</p>
+        <p>{$uploaded}</p>
         <ul data-role="listview" data-split-icon="delete" data-split-theme="a" class="plupload-list"></ul>
       </div>
       <div class="plupload-queued-list">
-		<p>Queued for Upload: <em>click Upload to save</em></p>
+		<p>{$queued}: <em>{$click}</em></p>
         <ul data-role="listview" data-split-icon="delete" data-split-theme="a" class="plupload-queue"></ul>
       </div>
       <div class="plupload-status"><span class="ui-corner-all"></span></div>
       <div class="plupload-buttons"{$hide_buttons}>
-        <button class="btn btn-primary ui-btn plupload-btn plupload-add-btn">+ Add Files</button>
-        <button class="btn btn-primary ui-btn plupload-btn plupload-upload-btn" disabled="disabled">Upload</button>
+        <button class="btn btn-primary ui-btn plupload-btn plupload-add-btn">+ {$add}</button>
+        <button class="btn btn-primary ui-btn plupload-btn plupload-upload-btn" disabled="disabled">{$upload}</button>
       </div>
       <div class="plupload-hidden">
         <input type="hidden" name="{$attr['data-field']}" value="" />

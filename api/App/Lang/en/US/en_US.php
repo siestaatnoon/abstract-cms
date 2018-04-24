@@ -202,6 +202,13 @@ $lang['tooltip.css_includes.files'] 	        = 'Root relative path (begins with 
 $lang['tooltip.js_includes.files'] 		        = 'Root relative path (begins with "/") to JS script';
 $lang['tooltip.js_unload_block'] 		        = 'All events must be unbound, Javascript objects set to null and/or destroy() called on jQuery plugin objects';
 
+// Uploads
+$lang['uploads.uploaded'] 			= 'Uploaded Files';
+$lang['uploads.queued'] 			= 'Queued for Upload';
+$lang['uploads.click'] 			    = 'click Upload to save';
+$lang['uploads.add'] 			    = 'Add Files';
+$lang['uploads.upload'] 			= 'Upload';
+
 // Validation
 $lang['validate.required'] 			= 'Required value';
 $lang['validate.email'] 			= 'Valid Email';
