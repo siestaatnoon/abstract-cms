@@ -206,7 +206,7 @@ $lang['tooltip.js_unload_block'] 		        = 'Hay que desatar todos los eventos,
 $lang['uploads.uploaded'] 			= 'Ficheros cargados';
 $lang['uploads.queued'] 			= 'Ficheros en cola';
 $lang['uploads.click'] 			    = 'pulsa Cargar para guardar';
-$lang['uploads.add'] 			    = 'Añadir Ficheros';
+$lang['uploads.add'] 			    = 'Añadir';
 $lang['uploads.upload'] 			= 'Cargar';
 
 // Validación

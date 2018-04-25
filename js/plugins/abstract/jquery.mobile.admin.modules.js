@@ -4,12 +4,13 @@ define([
     'underscore',
     'backbone',
     'classes/Utils',
+    'classes/I18n',
     'plugins/codemirror/codemirror.min',
     'plugins/codemirror/mode/htmlembedded',
     'plugins/codemirror/addon/display/autorefresh',
     'plugins/codemirror/addon/selection/active-line',
     'plugins/codemirror/addon/edit/matchbrackets'
-], function(app, $, _, Backbone, Utils, CodeMirror) {
+], function(app, $, _, Backbone, Utils, I18n, CodeMirror) {
     $(function() {
         var showHideDelay = 300;
         var $formModules = $('#form-modules');
@@ -480,7 +481,7 @@ define([
                     $('<a/>')
                         .attr('href', widgetId)
                         .addClass('modules-validation-delete')
-                        .text('Delete')
+                        .text( I18n.t('delete') )
                         .appendTo($li);
                 }
 
@@ -509,7 +510,7 @@ define([
             $('.validation-field-max', $widget).val('');
             $('.validation-field-param', $widget).val('');
             $('.validation-field-message', $widget).val('');
-            $widgetSave.text( $widgetSave.data('addText') + ' Rule' );
+            $widgetSave.text( $widgetSave.data('addText') + ' ' + I18n.t('rule') );
             $('.modules-validation-cancel-cnt', $widget).slideUp(300);
             widgetSetCM("\t");
             $ffValidationType.val('').removeAttr('data-old');
@@ -591,7 +592,7 @@ define([
             }
 
             Utils.removeAllFieldErrors($widget); //in case leftover from previous edit
-            $widgetSave.text( $widgetSave.data('updateText') + ' Rule' );
+            $widgetSave.text( $widgetSave.data('updateText') + ' ' + I18n.t('rule') );
             $('.modules-validation-cancel-cnt', $widget).slideDown(300);
             widgetEnableForm();
             validationOptionsDisplay();
@@ -617,7 +618,7 @@ define([
             var validEmpty = function($field) {
                 var val = $.trim( $field.val() );
                 if (val.length === 0) {
-                    Utils.showFieldError($field, 'Required field');
+                    Utils.showFieldError($field, I18n.t('validate.required') );
                     has_error = true;
                     return;
                 }
@@ -628,7 +629,7 @@ define([
                 var val = $.trim( $field.val() );
                 val = parseInt(val);
                 if ( isNaN(val) || val <= 0 ) {
-                    Utils.showFieldError($field, 'Must be whole number greater than zero');
+                    Utils.showFieldError($field, I18n.t('validate.not_zero') );
                     has_error = true;
                     return;
                 }
@@ -645,7 +646,7 @@ define([
                 case 'custom':
                     var rules = widgetGetCM();
                     if ( $.trim(rules) === '' ) {
-                        Utils.showFieldError($widgetRules, 'Required field');
+                        Utils.showFieldError($widgetRules, I18n.t('validate.required') );
                     }
 
                     var type_custom = validEmpty($custom);
@@ -713,7 +714,7 @@ define([
                 $('<a/>')
                     .attr('href', widgetId)
                     .addClass('modules-validation-delete')
-                    .text('Delete')
+                    .text( I18n.t('delete') )
                     .appendTo($li);
                 $widgetUl.append($li);
             } else {
@@ -752,7 +753,7 @@ define([
             if (module.length > 0) {
                 $('select[name="field_type_module"] option', $formFormFields).each(function () {
                     if (module === $(this).val() && module !== moduleName) {
-                        var error = 'Module [' + module + '] already exists, please enter another name';
+                        var error = I18n.t('error.module.exists', module);
                         Utils.showFieldError($field, error);
                         isValidModuleForm = false;
                         return false;
@@ -771,8 +772,7 @@ define([
                 // check form fields for duplicate name
                 $.each(formFields, function(field, label) {
                     if (val === field) {
-                        var name = label.length ? label : field;
-                        var error = 'Field name [' + field + '] is already in use for Form Field "' + name + '", change name or delete field';
+                        var error = I18n.t('error.field.exists', [field, name]);
                         Utils.showFieldError($pkField, error);
                         isValidModuleForm = false;
                         return false;
@@ -805,14 +805,14 @@ define([
             if (val.length > 0) {
                 // check field name is not module primary key field
                 if (val === $pkField.val() ) {
-                    var error = 'Field name [' + val + '] cannot be the same as the module primary key field';
+                    var error = I18n.t('error.field.dupe.pk', val);
                     Utils.showFieldError($ffFieldName, error);
                     isValidFieldForm = false;
                 } else {
                     // check reserved model fields for duplicate name
                     $.each(reservedFields, function (i, field) {
                         if (val === field) {
-                            var error = 'Field name [' + field + '] is a reserved name';
+                            var error = I18n.t('error.field.reserved', field);
                             Utils.showFieldError($ffFieldName, error);
                             isValidFieldForm = false;
                             return false;
@@ -825,7 +825,7 @@ define([
                 var field_id = parseInt( $ffFieldId.val() );
                 $.each(formFields, function(i, ff) {
                     if (field_id !== parseInt(ff.field_id) && val === ff.name) {
-                        var error = 'Field name [' + val + '] is already in use';
+                        var error = I18n.t('error.field.exists', [val, ff.name]);
                         Utils.showFieldError($ffFieldName, error);
                         isValidFieldForm = false;
                         return false;
@@ -939,8 +939,8 @@ define([
 				return false;
 			}
             $link = $(this);
-            var message = 'Delete ' + $link.prev().find('h3').text() + '?';
-            Utils.showModalConfirm('Confirm', message, function() {
+            var message = I18n.t('delete') + ' ' + $link.prev().find('h3').text() + '?';
+            Utils.showModalConfirm( I18n.t('confirm'), message, function() {
                 widgetDeleteRule($link);
             });
         });

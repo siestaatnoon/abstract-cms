@@ -3,8 +3,9 @@ define([
 	'jquery',
 	'underscore',
 	'backbone',
-	'classes/Utils'
-], function(app, $, _, Backbone, Utils) {
+	'classes/Utils',
+    'classes/I18n'
+], function(app, $, _, Backbone, Utils, I18n) {
 	$(function() {
 		var pagesLiItem = _.template( $('#pages-li-item').html() );
 		var collection = app.AppView.contentView.collection;
@@ -14,7 +15,7 @@ define([
 		var max_depth = parseInt( $tree.attr('data-max-depth') );
 		var get_subpages_url = $tree.attr('data-subpages-url');
 		var $loading = $('<div/>').addClass('toggle-loading');
-		$('<img/>').attr('src', loaderUrl).attr('alt', 'Loading...').attr('align', 'absmiddle').appendTo($loading);
+		$('<img/>').attr('src', loaderUrl).attr('alt', I18n.t('loading') + '...').attr('align', 'absmiddle').appendTo($loading);
 		
 		//stop collection render on model delete
 		app.AppView.contentView.stopListening(collection, 'remove');
@@ -42,8 +43,9 @@ define([
 				
 				$tree.empty();
 				$('div', $pager).not('#pagination-link-prev,#pagination-link-next').remove();
-				
-				$result.text('Results ' + from + ' - ' + to + ' of ' + totalRecords + ' total');
+
+				var title = I18n.t('list.results.title', [from, to, totalRecords]);
+				$result.text(title);
 				$result.show();
 
 				if (has_query && totalPages > 1) {
@@ -98,8 +100,8 @@ define([
 		
 		var showErrors = function(errors) {
 			if (errors.length) {
-				error_msg = typeof errors === 'Array' ? errors.join('<br/><br/>') : errors;
-				Utils.showModalWarning('Error', error_msg);
+				error_msg = typeof errors === 'Array' ? errors.join('<br/>') : errors;
+				Utils.showModalWarning( I18n.t('error'), error_msg);
 			}
 		};
 		
@@ -165,9 +167,13 @@ define([
 					} else if (data.errors) {
 						showErrors(data.errors);
 					}
-				}).fail(function(jqXHR, status, error) {
-					var error_msg = 'Pages could not be retrieved.';
-					showErrors(error_msg);
+				}).fail(function(jqXHR) {
+                    var resp = Utils.parseJqXHR(jqXHR);
+                    var errors = resp.errors.length ? resp.errors : (resp.response.length ? [resp.response] : []);
+                    if (errors.length === 0) {
+                        errors = [ I18n.t('error.general.unknown', 'jquery.mobile.admin.pages') ];
+                    }
+					showErrors(errors);
 				});
 				
 				var $loader = $loading.clone();
@@ -183,7 +189,7 @@ define([
 			var id = $(this).attr('rel');
 			var title = $(this).attr('title');
 			
-			Utils.showModalConfirm('Confirm', 'Delete "' + title + '"?', function() {
+			Utils.showModalConfirm( I18n.t('confirm'), I18n.t('delete') + ' "' + title + '"?', function() {
 				var $obj = $('#toggle-' + id);
 				var $loader = $loading.clone();
 				$loader.find('img').css('width', 13).css('height', 13);
@@ -201,10 +207,10 @@ define([
 								$obj.closest('li').fadeOut(500, function() {
 									$(this).remove();
 								});
-								Utils.showModalDialog('Message', '"' + title + '" has deleted successfully', false);
+								Utils.showModalDialog( I18n.t('message'), I18n.t('confirm.deleted', title), false);
 							}, 
 							error: function(model, response) {
-								Utils.showModalWarning('Error', '"' + title + '" could not be deleted', false);
+								Utils.showModalWarning( I18n.t('error'), I18n.t('error.delete', title), false);
 							}
 						});
 					}

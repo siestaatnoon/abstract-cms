@@ -1,11 +1,12 @@
 define([
 	'config',
 	'jquery',
-	'classes/Utils'
-], function(app, $, Utils) {
+	'classes/Utils',
+    'classes/I18n'
+], function(app, $, Utils, I18n) {
 	$(function() {
 		var hasEdits = false;
-		var leaveMsg = 'There are pending changes in this page.';
+		var leaveMsg = I18n.t('message.pending.changes');
 		
 		var activateFormEdits = function($field) {
 			var $form = $field.parents('form');
@@ -27,11 +28,11 @@ define([
 			e.preventDefault();	
 			e.stopPropagation();
 			var href = $(this).attr('href');
-			var message = leaveMsg + '<br/><br/>' + 'Are you sure you would like to exit?';
+			var message = leaveMsg + '<br/><br/>' + I18n.t('message.exit');
 			
-			Utils.showModalConfirm('Confirm', message, false, function() {
+			Utils.showModalConfirm( I18n.t('confirm'), message, false, function() {
 				app.Router.navigate(href, {trigger: true});
-			}, false, 'Stay', 'Exit');
+			}, false, I18n.t('stay'), I18n.t('exit') );
 
 		});
 		

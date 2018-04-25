@@ -1,12 +1,12 @@
 define([
 	'config',
 	'jquery',
-	'plugins/jquery-ui/jquery-ui.min',
-	'plugins/abstract/jquery.ui.touch-punch.min',
-	'classes/Class', 
 	'classes/FormValidator',
-	'classes/Utils'
-], function(app, $, ui, tp, C, FormValidator, Utils) {
+    'classes/Utils',
+    'classes/I18n',
+    'plugins/jquery-ui/jquery-ui.min',
+    'plugins/abstract/jquery.ui.touch-punch.min'
+], function(app, $, FormValidator, Utils, I18n) {
 	$(function() {
 		var validateVal = null;
 		
@@ -39,15 +39,18 @@ define([
 			$panel.panel('close');
 			
 			//reset form header title
+            var newText = I18n.t('new');
+            var updateText = I18n.t('update');
+            var regex = new RegExp('(' + newText + '|' + updateText + ')[ ]');
 			var $header = $panel.find('[data-role="header"]').children('h1');
 			var title = $header.text();
-			if ( title.indexOf('Update') === 0) {
+			if ( title.indexOf(updateText) === 0) {
 				var pos = title.indexOf(':');
 				if (pos >= 0) {
 					title = title.substr(0, pos);
 				}
 			}
-			title = title.replace(/(New|Update)[ ]/, '');
+			title = title.replace(regex, '');
 			$header.text(title);
             $form.trigger('subform:close');
 		};
@@ -219,9 +222,9 @@ define([
 			var $header = $panel.find('[data-role="header"]').children('h1');
 			var title = $header.text();
 			if (is_default) {
-				title = 'New ' + title;
+				title = I18n.t('new') + ' ' + title;
 			} else {
-				title = 'Update ' + title + ($values[title_field] ? ': ' + $values[title_field] : '');
+				title = I18n.t('update') + ' ' + title + ($values[title_field] ? ': ' + $values[title_field] : '');
 			}
 			$header.text(title);
 			$form.trigger('subform:init');
@@ -346,7 +349,7 @@ define([
 						})(field);
 					}
 					
-					Utils.showModalWarning('Error', 'Errors were found that need correction', false);
+					Utils.showModalWarning( I18n.t('error'), I18n.t('message.errors.found'), false);
 					return false;
 				}
 			}
@@ -417,7 +420,7 @@ define([
 				$('<a/>')
 					.attr('href', '#form-panel-' + module)
 					.addClass('form-panel-delete')
-					.text('Delete')
+					.text( I18n.t('delete') )
 				.appendTo($li);
 				$ul.append($li);
 			} else {
@@ -467,7 +470,7 @@ define([
                     $('<a/>')
                         .attr('href', '#form-panel-' + module)
                         .addClass('form-panel-delete')
-                        .text('Delete')
+                        .text( I18n.t('delete') )
                     .appendTo($li);
                 }
 				$li.appendTo($ul);
@@ -520,8 +523,8 @@ define([
 			e.preventDefault();
 			e.stopPropagation();
 			$link = $(this);
-			var message = 'Delete ' + $link.prev().find('h3').text() + '?';
-			Utils.showModalConfirm('Confirm', message, function() {
+			var message = I18n.t('delete') + ' ' + $link.prev().find('h3').text() + '?';
+			Utils.showModalConfirm( I18n.t('confirm'), message, function() {
 				deleteSubformObject($link);
 			});
 		});

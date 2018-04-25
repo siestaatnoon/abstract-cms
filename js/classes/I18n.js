@@ -25,8 +25,10 @@ define([
          * @return {String} The converted string
          */
         sprintf: function(str, args) {
-            if ( _.isString(args) ) {
+            if ( _.isString(args) || _.isNumber(args) ) {
                 args = [args];
+            } else if ( _.isArray(args) === false && _.isObject(args) ) {
+                args = [ args.toString() ];
             } else if ( ! args) {
                 args = [];
             }

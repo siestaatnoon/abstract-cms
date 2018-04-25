@@ -1,8 +1,9 @@
 define([
 	'config',
 	'jquery',
-	'classes/Utils'
-], function(app, $, Utils) {
+	'classes/Utils',
+    'classes/I18n'
+], function(app, $, Utils, I18n) {
 	$(function() {
 		var plupload_icons = {
 			file: 'octicon-file-text',
@@ -34,7 +35,7 @@ define([
 			var max_uploads = parseInt( $pl_cnt.attr('data-max-files') );
             var max_size = $pl_cnt.attr('data-max-size');
 			var num_uploaded = 0;
-			var ext_title = is_image ? 'Image files' : 'Allowed Files';
+			var ext_title = is_image ? I18n.t('upload.allow.image') : I18n.t('upload.allow.file');
 			
 			//set AJAX URLs
 			var plupload_url = app.adminFileUploadURL + '/' + module_name + '/' + config_name + '/' + (is_image ? 'i' : 'f');
@@ -137,8 +138,8 @@ define([
 						.attr('href', '#')
 						.click(function (e) {
 							var $a = $(this);
-							var message = 'Delete ' + data.filename + '?';
-							Utils.showModalConfirm('Confirm', message, function () {
+							var message = I18n.t('delete') + ' ' + data.filename + '?';
+							Utils.showModalConfirm( I18n.t('confirm'), message, function () {
 								$.ajax({
 									url: plupload_delete_url,
 									type: 'DELETE',
@@ -197,14 +198,17 @@ define([
 									} else if (status.errors) {
 										err_message = status.errors.join("<br/>");
 									} else {
-										err_message = 'Could not delete file ' + data.filename;
+                                        err_message = I18n.t('error.delete', data.filename);
 									}
 
-									Utils.showModalWarning('Error', err_message);
-								}).fail(function (jqXHR, status, error) {
-									if (app.debug) {
-										console.log('Plupload: could not delete file [' + data.filename + ']');
-									}
+									Utils.showModalWarning( I18n.t('error'), err_message);
+								}).fail(function (jqXHR) {
+                                    var resp = Utils.parseJqXHR(jqXHR);
+                                    var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                                    if (error.length === 0) {
+                                        error = I18n.t('error.delete', data.filename);
+                                    }
+                                    Utils.showModalWarning( I18n.t('error'), error);
 								});
 							});
 					}).appendTo($li);
@@ -288,10 +292,12 @@ define([
 
 						if ( (num_uploaded + num_queued + num_added) > max_uploads) {
 							var num_removed = num_uploaded + num_queued + num_added - max_uploads;
-							var message = 'There is a maximum of ' + max_uploads + ' files for upload. ';
-							message += num_removed + ' ' + (num_removed===1 ? 'file has' : 'files have');
-							message += ' been removed from the queue.';
-							Utils.showModalDialog('Message', message);
+							var args = [
+                                max_uploads,
+                                num_removed === 1 ? I18n.t('file.has') : I18n.t('files.have', num_removed)
+                            ];
+                            var message = I18n.t('message.upload.max', args);
+							Utils.showModalDialog( I18n.t('message'), message);
 							for (var i=num_added-1; i >= (num_added - num_removed); i--) {
 								uploader.removeFile(files[i]);
 							}
@@ -313,8 +319,8 @@ define([
 									.attr('href', '#')
 									.click(function() {
 										var $a = $(this);
-										var message = 'Remove ' + File.name + ' from queue?';
-										Utils.showModalConfirm('Confirm', message, function() {
+                                        var message = I18n.t('message.remove', File.name);
+										Utils.showModalConfirm( I18n.t('confirm'), message, function() {
 											uploader.removeFile(File);
 											$a.parent('li').remove();
 											if (uploader.files.length === 0) {
@@ -343,7 +349,7 @@ define([
 							err_message = response.errors.join("<br/>");
 						} else if (resp.status !== 200) {
 						//file not uploaded to server
-							err_message = 'File ' + file.name + 'could not be uploaded';
+                            err_message = I18n.t('error.upload', file.name);
 						} else {
 						//file uploaded succesfully
 							if (response.errors) {
@@ -360,7 +366,7 @@ define([
 						
 						$pl_upload_btn.attr('disabled', true);
 						if (err_message.length) {
-							Utils.showModalWarning('Error', err_message);
+							Utils.showModalWarning( I18n.t('error'), err_message);
 							uploader.disableBrowse(false);
 							$pl_add_btn.attr('disabled', false);
 						}
@@ -387,15 +393,15 @@ define([
 					Error: function(uploader, error) {
 						var message = error.message;
 						if (error.code === plupload.FILE_EXTENSION_ERROR) {
-							message = 'The file selected is not valid for upload';
+							message = I18n.t('error.upload.invalid');
 						} else if (error.code === plupload.FILE_SIZE_ERROR) {
-							message = 'The file selected is too large for upload';
+							message = I18n.t('error.upload.maxsize');
 						} else if (error.code === plupload.FILE_DUPLICATE_ERROR) {
-							message = 'The selected file has already been added to the queue';
+							message = I18n.t('error.upload.dupe');
 						}
 						
 						message += ": " + error.file.name;
-						Utils.showModalWarning('Error', message);
+						Utils.showModalWarning( I18n.t('error'), message);
 					}
 				}
 			});
