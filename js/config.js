@@ -84,10 +84,12 @@ define([
                 //to function
                 //$.mobile.linkBindingEnabled = false;
 
+                var loadingText = app.i18n['loading'].toLowerCase();
+                var loadingHTML = '<div class="ui-loader-centered"><span class="ui-icon-loading"></span><h1>' + loadingText + '</h1></div>';
                 $.mobile.loader.prototype.options.text = "";
                 $.mobile.loader.prototype.options.textVisible = true;
                 $.mobile.loader.prototype.options.theme = "a";
-                $.mobile.loader.prototype.options.html = '<div class="ui-loader-centered"><span class="ui-icon-loading"></span><h1>loading</h1></div>';
+                $.mobile.loader.prototype.options.html = loadingHTML;
 
                 //add loading splash on page load/reload
                 $('body').pagecontainer({

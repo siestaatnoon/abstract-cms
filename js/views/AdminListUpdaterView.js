@@ -3,8 +3,9 @@ define([
 	'jquery',
 	'underscore', 
 	'backbone',
-	'classes/Utils'
-], function(app, $, _, Backbone, Utils) {
+	'classes/Utils',
+    'classes/I18n'
+], function(app, $, _, Backbone, Utils, I18n) {
 	
 	var AdminListUpdaterModel = Backbone.Model.extend({	
 		defaults: {
@@ -45,27 +46,27 @@ define([
 		
 		updates: {
 			active: {
-				label: 'Set active',
+				label: I18n.t('set.active'),
 				value: 'active',
 				inUse: false
 			},
 			inactive: {
-				label: 'Set inactive',
+				label: I18n.t('set.inactive'),
 				value: 'inactive',
 				inUse: false
 			},
 			archive: {
-				label: 'Archive',
+				label: I18n.t('archive'),
 				value: 'archive',
 				inUse: false
 			},
 			unarchive: {
-				label: 'Unarchive',
+				label: I18n.t('unarchive'),
 				value: 'unarchive',
 				inUse: false
 			},
 			del: {
-				label: 'Delete',
+				label: I18n.t('delete'),
 				value: 'delete',
 				inUse: false
 			}
@@ -114,8 +115,8 @@ define([
 			});
 
 			if (ids.length === 0) {
-				label = 'Error';
-				message = 'Please select one or more items';
+				label = I18n.t('error');
+				message = I18n.t('validate.one.more');
 				Utils.showModalDialog(label, message, 
 					function() {
 						$select.prop('selectedIndex', 0);
@@ -127,12 +128,11 @@ define([
 			}
 			
 			var task = '';
-			label = 'Confirm';
-			message = ' the selected items?';
+			label = I18n.t('confirm');
 			for (var prop in this.updates) {
 				var task = this.updates[prop];
 				if (task.value === selected) {
-					message = task.label + message;
+                    message = I18n.t('message.bulk.update', task.label);
 					task = prop;
 					break;
 				}
@@ -171,20 +171,28 @@ define([
 				task: this.updates[task].value,
 				ids: ids
 			};
-			var action = task === 'del' ? 'deleted' : 'updated';
+			var message = task === 'del' ? I18n.t('message.bulk.deleted') : I18n.t('message.bulk.saved');
 			this.model.save(attr, {
 				type: 'PUT',
 				success: function(response) {
 					self.trigger('view:update:end');
-	            	Utils.showModalDialog('Confirmation', 'The items have ' + action + ' successfully',
+	            	Utils.showModalDialog( I18n.t('confirm'), message,
 	            		function() {
 			            	self.trigger('view:refresh');
 	            		}
 	            	);
 	            },
-	            error: function () {
+	            error: function (model, response, options) {
 	            	self.trigger('view:update:end');
-	            	Utils.showModalWarning('Error', 'An error occurred while updating the items');
+                    var resp = Utils.parseJqXHR(response);
+                    var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                    if (error.length === 0) {
+                        error = I18n.t('error.general.unknown', 'AdminListUpdaterView.doTask()');
+                    }
+                    Utils.showModalWarning( I18n.t('error'), error);
+                    if (app.debug) {
+                        console.log( error.replace('<br/>', "\n") );
+                    }
 	            }
 			});
 		},
@@ -263,7 +271,7 @@ define([
 			});
 			
 			var $span = $('<span/>', {
-				text: 'All',
+				text: I18n.t('all'),
 				class: spanClass
 			});
 			
@@ -302,7 +310,7 @@ define([
 				})(model);
 				
 				var $span = $('<span/>', {
-					text: 'Select',
+					text: I18n.t('select'),
 					class: spanClass
 				});
 				var $label = $('<label/>').append($cb).append($span);
@@ -339,7 +347,7 @@ define([
 				class: 'bulk-update-selector',
 				disabled: true
 			});
-			$('<option/>', { text:'With selected items', val:'' }).appendTo(this.$selector);
+			$('<option/>', { text: I18n.t('with.selected'), val:'' }).appendTo(this.$selector);
 			for (var prop in this.updates) {
 				var task = this.updates[prop];
 				if (task.inUse) {
@@ -367,19 +375,24 @@ define([
 			$('.list-action-delete', $popup).on('click', function(e) {
 				e.preventDefault();
 				$popup.popup('close');
-				var message = 'Delete "' + title + '"?';
+				var message = I18n.t('delete') + ' "' + title + '"?';
 				
-				Utils.showModalConfirm('Confirm', message, function() {
+				Utils.showModalConfirm( I18n.t('confirm'), message, function() {
 					model.destroy({ 
 						wait: true, 
 						success: function(model, response) {
-                            Utils.showModalDialog('Message', '"' + title + '" has deleted successfully', false);
+                            Utils.showModalDialog( I18n.t('message'), I18n.t('confirm.deleted', title), false);
 						}, 
 						error: function(model, response) {
-						    var error = response.responseJSON.errors ?
-                                        response.responseJSON.errors.join('<br/>') :
-                                        '"' + title + '" could not be deleted';
-							Utils.showModalWarning('Error', error, false);
+                            var resp = Utils.parseJqXHR(response);
+                            var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                            if (error.length === 0) {
+                                error = I18n.t('error.delete', title);
+                            }
+                            Utils.showModalWarning( I18n.t('error'), error);
+                            if (app.debug) {
+                                console.log( error.replace('<br/>', "\n") );
+                            }
 						}
 					});
 				}, false, this);

@@ -9,8 +9,9 @@ define([
 	'backgrid.textcell',
 	'classes/ScriptLoader',
 	'classes/Utils',
+    'classes/I18n',
 	'views/AdminListUpdaterView'
-], function(app, $, _, Backbone, Backgrid, BBPaginator, Paginator, TextCell, ScriptLoader, Utils, AdminListUpdaterView) {
+], function(app, $, _, Backbone, Backgrid, BBPaginator, Paginator, TextCell, ScriptLoader, Utils, I18n, AdminListUpdaterView) {
 	var AdminListView = Backbone.View.extend({
 
 		id: '#tpl-list-view',
@@ -191,7 +192,7 @@ define([
                         self.grid = new Backgrid.Grid({
                             columns: self.collection.columns,
                             collection: self.collection,
-                            emptyText: 'No records found',
+                            emptyText: I18n.t('message.items.not.found'),
                             presort: function() {
                                 self.trigger('view:update:start');
                                 self.$container.empty();
@@ -224,12 +225,12 @@ define([
                     var resp = Utils.parseJqXHR(response);
                     var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
                     if (error.length === 0) {
-                        error = 'AdminListView.render() an error has occurred';
+                        error = I18n.t('error.general.unknown', 'AdminListView.render()');
                     }
+                    Utils.showModalWarning( I18n.t('error'), error);
                     if (app.debug) {
                         console.log( error.replace('<br/>', "\n") );
                     }
-                    Utils.showModalWarning('Error', error);
                     deferred.resolveWith(self, []);
                 }
             });
@@ -245,7 +246,7 @@ define([
 			if (end > total) {
 				end = total;
 			}
-			return 'Results ' + start + ' - ' + end + ' of ' + total + ' total';
+			return I18n.t('list.results.title', [start, end, total]);
 		},
 		
 		_setGrid: function() {
@@ -320,7 +321,7 @@ define([
                             (j === 1 && state.order === -1)
                         );
 						$('<option/>', {
-							text: 'Sort by: ' + column.label + ' ' + sort[j],
+							text: I18n.t('sort.by') + ': ' + column.label + ' ' + sort[j],
 							val: column.name + ':' + sort[j],
 							selected: is_selected
 						}).appendTo($select);

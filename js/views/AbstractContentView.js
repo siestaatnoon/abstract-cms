@@ -3,8 +3,9 @@ define([
     'jquery',
     'underscore',
     'backbone',
-    'classes/Utils'
-], function(app, $, _, Backbone, Utils) {
+    'classes/Utils',
+    'classes/I18n'
+], function(app, $, _, Backbone, Utils, I18n) {
     var AbstractContentView = Backbone.View.extend({
 
         id: app.pageDynContentId.replace('#', ''),
@@ -93,16 +94,16 @@ define([
                             self.viewData = _.extend(self.viewData, {items: self.collection.toJSON()});
                             self.viewData['state'] = self.collection.state;
                             delete data.items;
-                        } else if (app.debug) {
-                            console.log('AbstractContentView.render: collection data unavailable');
+                        } else {
+                            console.log( I18n.t('error.collection', 'AbstractContentView.render:') );
                         }
                     } else if (self.model) {
                         if (data.model) {
                             self.model.set(data.model);
                             self.viewData = _.extend(self.viewData, self.model.toJSON());
                             delete data.model;
-                        } else if (app.debug) {
-                            console.log('AbstractContentView.render: model data unavailable');
+                        } else {
+                            console.log( I18n.t('error.model', 'AbstractContentView.render:') );
                         }
                     }
 

@@ -134,7 +134,8 @@ require.config({
 			'jquery',
 			'underscore',
 			'backbone',
-			'backgrid'
+			'backgrid',
+            'classes/I18n'
 		],
 		
 		'views/AdminTplView': 	[
