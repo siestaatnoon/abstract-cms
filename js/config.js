@@ -61,12 +61,14 @@ define([
 	// execute following only for admin
     if (app.isAdmin) {
         // Load i18n translations for admin
+        var loadingText = 'loading';
         var parts = app.locale.split('_');
         if (parts.length === 2) {
             parts = [abstractCfg.localeAppDir].concat(parts);
             var textModule = 'text!' + parts.join('/') + '/' + app.locale + '.json';
             require([textModule], function(i18nJson){
                 app.i18n = $.parseJSON(i18nJson);
+                loadingText = app.i18n['loading'].toLowerCase();
             });
         }
 
@@ -84,7 +86,6 @@ define([
                 //to function
                 //$.mobile.linkBindingEnabled = false;
 
-                var loadingText = app.i18n['loading'].toLowerCase();
                 var loadingHTML = '<div class="ui-loader-centered"><span class="ui-icon-loading"></span><h1>' + loadingText + '</h1></div>';
                 $.mobile.loader.prototype.options.text = "";
                 $.mobile.loader.prototype.options.textVisible = true;

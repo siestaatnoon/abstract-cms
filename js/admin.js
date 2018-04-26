@@ -26,6 +26,8 @@ require.config({
 			deps: ['jquery'],
 			exports: '_'
 		},
+
+        'classes/I18n': ['config', 'jquery', 'underscore'],
 		
 		'backbone.paginator': ['underscore', 'backbone'],
 		
@@ -33,8 +35,6 @@ require.config({
 			deps: ['jquery', 'underscore', 'backbone'],
 			exports: 'Backgrid'
 		},
-
-        'classes/I18n': ['config', 'jquery', 'underscore'],
 		
 		'abstract.paginator': [
 			'underscore', 
@@ -93,7 +93,8 @@ require.config({
 			'jquery',
 			'underscore',
 			'backbone', 
-			'classes/Utils'
+			'classes/Utils',
+            'classes/I18n'
 		],
 		
 		'views/AdminAuthView': 	[
@@ -101,7 +102,8 @@ require.config({
 			'jquery',
 			'underscore',
 			'backbone',
-			'classes/Utils', 
+			'classes/Utils',
+            'classes/I18n',
 			'classes/admin/AdminAuth'
 		],
 		
@@ -114,7 +116,9 @@ require.config({
 			'backbone',
 			'classes/admin/AdminModuleLoader',
 			'classes/FormValidator',
-			'models/AdminModel'
+			'models/AdminModel',
+            'classes/Utils',
+            'classes/I18n'
 		],
 		
 		'views/AdminListView': 	[
@@ -127,6 +131,8 @@ require.config({
 			'abstract.paginator',
 			'backgrid.textcell',
 			'classes/admin/AdminModuleLoader',
+            'classes/Utils',
+            'classes/I18n',
 			'collections/AdminCollection',
 			'views/AdminListUpdaterView'
 		],
