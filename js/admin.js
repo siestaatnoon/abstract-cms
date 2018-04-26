@@ -33,12 +33,15 @@ require.config({
 			deps: ['jquery', 'underscore', 'backbone'],
 			exports: 'Backgrid'
 		},
+
+        'classes/I18n': ['config', 'jquery', 'underscore'],
 		
 		'abstract.paginator': [
 			'underscore', 
 			'backbone',
 			'backgrid',
-			'backbone.paginator'
+			'backbone.paginator',
+            'classes/I18n'
 		],
 					
 		'backgrid.textcell': 		[
@@ -47,7 +50,6 @@ require.config({
 		],
 		
 		'classes/Class': 					['config', 'jquery', 'underscore'],
-        'classes/I18n': 					['config', 'jquery', 'underscore'],
 		'classes/Utils': 					['config', 'jquery', 'underscore', 'classes/I18n'],
 		'classes/FormValidator': 			['config', 'jquery', 'underscore', 'classes/Class', 'classes/I18n'],
 		'classes/ScriptLoader': 			['config', 'jquery', 'underscore', 'classes/Class', 'classes/I18n'],

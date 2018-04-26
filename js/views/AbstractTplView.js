@@ -172,7 +172,7 @@ define([
                     // may be contained in this AJAX call and/or modal error
                     // may not be set up
                     //
-                    if (error.length) {
+                    if (app.isAdmin && error.length) {
                         alert(error);
                         if (app.debug) {
                             console.log(error);

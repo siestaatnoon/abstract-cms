@@ -1,6 +1,8 @@
 <?php
 
 // Common terms
+$lang['active']     = 'active';
+$lang['archived']   = 'archived';
 $lang['error']      = 'error';
 $lang['file']       = 'file';
 $lang['hour']       = 'hour';
@@ -10,16 +12,20 @@ $lang['minute']     = 'minute';
 $lang['minutes']    = 'minutes';
 $lang['module']     = 'module';
 $lang['navigation'] = 'navigation';
+$lang['no']         = 'no';
 $lang['relation']   = 'relation';
 $lang['second']     = 'second';
 $lang['seconds']    = 'seconds';
+$lang['yes']        = 'yes';
 
 // Buttons
 $lang['add']        = 'Add';
 $lang['cancel']     = 'Cancel';
+$lang['close']      = 'Close';
 $lang['continue']   = 'Continue';
 $lang['delete']     = 'Delete';
 $lang['edit']       = 'Edit';
+$lang['filter']     = 'Filter';
 $lang['go']         = 'Go';
 $lang['first']      = 'First';
 $lang['last']       = 'Last';
@@ -30,6 +36,14 @@ $lang['previous']   = 'Previous';
 $lang['search']     = 'Search';
 $lang['update']     = 'Update';
 $lang['view']       = 'View';
+
+// Phrases
+$lang['add.new']                    = 'Add New Item';
+$lang['filter.clear']               = 'Clear Filters';
+$lang['filter.results']             = 'Filter Results';
+$lang['return.list']                = 'Return to List';
+$lang['select.action']              = 'Select an Action';
+$lang['view.archived']              = 'View Archived';
 
 // Form field types
 $lang['field.boolean'] 		        = 'True/False (checkbox)';

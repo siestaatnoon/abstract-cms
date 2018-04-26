@@ -56,10 +56,10 @@ define([
 	app.i18n                = {};
 
 	// check if we're in admin or frontend
-	var isAdmin = location.pathname.indexOf(app.adminRoot) === 0;
+    app.isAdmin = location.pathname.indexOf(app.adminRoot) === 0;
 
 	// execute following only for admin
-    if (isAdmin) {
+    if (app.isAdmin) {
         // Load i18n translations for admin
         var parts = app.locale.split('_');
         if (parts.length === 2) {

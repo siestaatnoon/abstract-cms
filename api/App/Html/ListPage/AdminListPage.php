@@ -109,13 +109,16 @@ class AdminListPage extends \App\Html\ListPage\ListPage {
 		$data = $this->module->get_module_data();
 		$module_name = $data['name'];
         $title_field = $data['title_field'];
-		$edit_text = $this->permission->has_update() ? 'Edit' : 'View';
+		$edit_text = $this->permission->has_update() ? __('edit') : __('view');
+		$close = __('close');
+        $delete = __('delete');
+        $select_action = __('select.action');
 		
 		$html = <<<HTML
 <div data-role="popup" id="list-action-popup" class="ui-corner-all ui-popup ui-body-a ui-overlay-shadow" data-title-field="{$title_field}">
-  <a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
+  <a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right">{$close}</a>
   <div data-role="header" class="ui-corner-top ui-header ui-bar-a">
-    <h3>Select an Action</h3>
+    <h3>{$select_action}</h3>
   </div>
   <div role="main" class="ui-content">
     <div class="model-title"></div>
@@ -127,7 +130,7 @@ HTML;
 		if ( $this->permission->has_delete() ) {
 			$html .= <<<HTML
     <div>
-      <a href="#" data-transition="fade" class="list-action-delete ui-btn ui-corner-all ui-shadow ui-mini ui-icon-delete ui-btn-icon-right">Delete</a>
+      <a href="#" data-transition="fade" class="list-action-delete ui-btn ui-corner-all ui-shadow ui-mini ui-icon-delete ui-btn-icon-right">{$delete}</a>
     </div>
 
 HTML;
@@ -156,10 +159,10 @@ HTML;
 		$title = $data['label_plural'];
 		$module_name = $data['name'];
         $archive = $this->is_archive ? '' : '/archive';
-        $archive_text = $this->is_archive ? 'Return to List' : 'View Archived';
+        $archive_text = $this->is_archive ? __('return.list') : __('view.archived');
 		$class = array('module-filter-field', 'filter-select');
         if ($this->is_archive) {
-            $title .= ' <span class="header-archived">[ Archived ]</span>';
+            $title .= ' <span class="header-archived">[ '.ucfirst( __('archived') ).' ]</span>';
         }
 		
 		$html = <<<HTML
@@ -173,21 +176,25 @@ HTML;
 HTML;
         }
 
+        $add_new = __('add.new');
 		if ( $this->permission->has_add() ) {
 			$html .= <<<HTML
-  <a href="admin/{$module_name}/add" class="module-add-new module-top-button btn btn-primary ui-btn ui-icon-plus ui-btn-icon-right ui-corner-all ui-mini">Add New Item</a>
+  <a href="admin/{$module_name}/add" class="module-add-new module-top-button btn btn-primary ui-btn ui-icon-plus ui-btn-icon-right ui-corner-all ui-mini">{$add_new}</a>
 
 HTML;
 		}
-		
+
+		$filter_results = __('filter.results');
+        $filter_clear = __('filter.clear');
+        $search = __('search');
 		$html .= <<<HTML
   <h1>{$title}</h1>
   <div id="{$module_name}-filter" class="module-filter ui-corner-all ui-shadow ui-mini">
-    <a href="#" class="module-filter-clear btn btn-primary ui-btn ui-icon-delete ui-btn-icon-right ui-corner-all ui-mini">Clear Filters &nbsp;</a>
-    <h3>Filter Results</h3>
+    <a href="#" class="module-filter-clear btn btn-primary ui-btn ui-icon-delete ui-btn-icon-right ui-corner-all ui-mini">{$filter_clear}</a>
+    <h3>{$filter_results}</h3>
     <div class="module-filter-group">
       <div class="module-filter-item">
-        <input type="text" name="search" class="module-filter-field filter-input" placeholder="Search..." />
+        <input type="text" name="search" class="module-filter-field filter-input" placeholder="{$search}..." />
       </div>
 
 HTML;
@@ -203,19 +210,23 @@ HTML;
 		}
 		
 		//if module uses "active" field, then last filter
+        $active = ucfirst( __('active') );
+        $yes = ucfirst( __('yes') );
+        $no = ucfirst( __('no') );
 		if ($data['use_active']) {
 			$html .= '<div class="module-filter-item">'."\n";
 			$html .= '<select name="is_active" class="'.implode(' ', $class).'">'."\n";
-			$html .= '  <option value="">Active?</option>'."\n";
-			$html .= '  <option value="1">Active: Yes</option>'."\n";
-			$html .= '  <option value="0">Active: No</option>'."\n";
+			$html .= '  <option value="">'.$active.'?</option>'."\n";
+			$html .= '  <option value="1">'.$active.': '.$yes.'</option>'."\n";
+			$html .= '  <option value="0">'.$active.': '.$no.'</option>'."\n";
 			$html .= '</select>'."\n";
 			$html .= '</div>'."\n";
 		}
 
+		$filter = __('filter');
 		$html .= <<<HTML
       <div class="module-filter-button">
-        <button id="module-filter-submit" name="submit-filter" class="btn btn-primary" disabled="disabled">Filter</button>
+        <button id="module-filter-submit" name="submit-filter" class="btn btn-primary" disabled="disabled">{$filter}</button>
       </div>
     </div><!--close module-filter-->
   </div>

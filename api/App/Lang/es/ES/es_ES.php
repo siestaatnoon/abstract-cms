@@ -1,6 +1,8 @@
 <?php
 
 // Términos comunes
+$lang['active']     = 'activado';
+$lang['archived']   = 'archivado';
 $lang['error']      = 'error';
 $lang['file']       = 'fichero';
 $lang['hour']       = 'hora';
@@ -10,16 +12,20 @@ $lang['minute']     = 'minuto';
 $lang['minutes']    = 'minutos';
 $lang['module']     = 'modulo';
 $lang['navigation'] = 'navigación';
+$lang['no']         = 'no';
 $lang['relation']   = 'relación';
 $lang['second']     = 'segundo';
 $lang['seconds']    = 'segundos';
+$lang['yes']        = 'sí';
 
 // Botones
 $lang['add']        = 'Añadir';
 $lang['cancel']     = 'Cancelar';
+$lang['close']      = 'Cerrar';
 $lang['continue']   = 'Continuar';
 $lang['delete']     = 'Borrar';
 $lang['edit']       = 'Editar';
+$lang['filter']     = 'Filtrar';
 $lang['go']         = 'Ir';
 $lang['first']      = 'Inicio';
 $lang['last']       = 'Fin';
@@ -30,6 +36,14 @@ $lang['previous']   = 'Anterior';
 $lang['search']     = 'Buscar';
 $lang['update']     = 'Actualizar';
 $lang['view']       = 'Ver';
+
+// Frases
+$lang['add.new']                    = 'Añadir nuevo';
+$lang['filter.clear']               = 'Eliminar filtros';
+$lang['filter.results']             = 'Filtrar resultados';
+$lang['return.list']                = 'Volver al listado';
+$lang['select.action']              = 'Seleccionar un acción';
+$lang['view.archived']              = 'Ver archivado';
 
 // Tipos de campos del formulario
 $lang['field.boolean'] 		        = 'True/False (checkbox)';

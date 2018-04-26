@@ -184,7 +184,7 @@ define([
                 // may not be set up
                 //
                 //Utils.showModalWarning('Error', error);
-				if (error.length) {
+				if (app.isAdmin && error.length) {
                     alert(error);
                     if (app.debug) {
                         console.log(error);
