@@ -308,7 +308,7 @@ define([
 			var columns = this.collection.columns;
 			var state = this.collection.state;
 			var $select = $('<select/>');
-			var sort = ['descending', 'ascending'];
+			var sort = [ I18n.t('descending'), I18n.t('ascending')];
 			var self = this;
 
 			for (var i=0; i < columns.length; i++) {

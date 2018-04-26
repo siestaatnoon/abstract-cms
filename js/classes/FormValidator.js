@@ -60,11 +60,11 @@ define([
 			},
 			min: {
 				param: 0,
-				message: I18n.t('validate.min')
+				message: I18n.t('validate.min', '%p')
 			},
 			max: {
 				param: 1,
-				message: I18n.t('validate.max')
+				message: I18n.t('validate.max', '%p')
 			},
 			natural: {
 				param: null,
@@ -287,7 +287,7 @@ define([
 				for (var rule in rules) {
 					var r = rules[rule];
 					if ( this._validators[rule].call(this, value, r['param']) === false ) {
-						var message = r['message'].replace('%s', r['param']);
+						var message = r['message'].replace('%p', r['param']);
 						field_errors.push(message);
 					}
 				}

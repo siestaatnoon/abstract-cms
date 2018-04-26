@@ -58,20 +58,20 @@ define([
 	// check if we're in admin or frontend
     app.isAdmin = location.pathname.indexOf(app.adminRoot) === 0;
 
+    // Load i18n translations for admin
+    var loadingText = 'loading';
+    var parts = app.locale.split('_');
+    if (parts.length === 2) {
+        parts = [abstractCfg.localeAppDir].concat(parts);
+        var textModule = 'text!' + parts.join('/') + '/' + app.locale + '.json';
+        require([textModule], function(i18nJson){
+            app.i18n = $.parseJSON(i18nJson);
+            loadingText = app.i18n['loading'].toLowerCase();
+        });
+    }
+
 	// execute following only for admin
     if (app.isAdmin) {
-        // Load i18n translations for admin
-        var loadingText = 'loading';
-        var parts = app.locale.split('_');
-        if (parts.length === 2) {
-            parts = [abstractCfg.localeAppDir].concat(parts);
-            var textModule = 'text!' + parts.join('/') + '/' + app.locale + '.json';
-            require([textModule], function(i18nJson){
-                app.i18n = $.parseJSON(i18nJson);
-                loadingText = app.i18n['loading'].toLowerCase();
-            });
-        }
-
         //JQM initialization... note that this comes
         //before JQM loads page
         //
