@@ -16,6 +16,7 @@ $lang['no']         = 'no';
 $lang['relation']   = 'relación';
 $lang['second']     = 'segundo';
 $lang['seconds']    = 'segundos';
+$lang['select']     = 'seleccionar';
 $lang['yes']        = 'sí';
 
 // Botones

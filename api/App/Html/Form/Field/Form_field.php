@@ -1605,7 +1605,7 @@ NVP;
 		if ( ! empty($this->params['is_custom']) ) {
 			$html = $this->field_custom();
 		} else if ($type === Relation::RELATION_TYPE_N1 || $type === Relation::RELATION_TYPE_NN) {
-            $this->params['placeholder'] = 'Select '.$relation_data['label_plural'];
+            $this->params['placeholder'] = ucfirst( __('select') ).' '.$relation_data['label_plural'];
 			$this->params['values'] = $relation->get_property('indep_model')->get_id_list();
 			
 			if ($type === Relation::RELATION_TYPE_NN) {
@@ -2075,7 +2075,7 @@ NVP;
 		
 		$name = $relation_data['name'];
 		$label = empty($relation_data['label_plural']) ? '' : $relation_data['label_plural'];
-		
+		$add_new = __('add.new');
 		$html = <<<HTML
 		
 <div id="relation-{$name}" class="relation">
@@ -2084,7 +2084,7 @@ NVP;
 HTML;
         if (self::$IS_READONLY === false) {
             $html .= <<<HTML
-    <a href="#form-panel-{$name}" data-transition="fade" class="form-panel-add ui-btn ui-corner-all ui-shadow ui-icon-plus ui-mini ui-btn-icon-right">Add New</a>
+    <a href="#form-panel-{$name}" data-transition="fade" class="form-panel-add ui-btn ui-corner-all ui-shadow ui-icon-plus ui-mini ui-btn-icon-right">{$add_new}</a>
 HTML;
         }
         $html .= <<<HTML
@@ -2113,13 +2113,14 @@ HTML;
 		if ( empty($label) || empty($panel_id) || empty($form_html) ) {
 			return '';
 		}
-		
+
+		$close = ucfirst( __('close') );
 		$html = <<<HTML
 		
 <div id="{$panel_id}" class="form-panel" data-role="panel" data-position="right" data-display="push" data-swipe-close="false" data-dismissible="false">
 
   <div class="ui-corner-all" data-role="header" data-theme="b">
-    <a href="#{$panel_id}" class="form-panel-close ui-btn-right" data-icon="delete" data-iconpos="notext" data-shadow="false" data-icon-shadow="false">Close</a>
+    <a href="#{$panel_id}" class="form-panel-close ui-btn-right" data-icon="delete" data-iconpos="notext" data-shadow="false" data-icon-shadow="false">{$close}</a>
     <h1>{$label}</h1>
   </div><!--role:header -->
       
