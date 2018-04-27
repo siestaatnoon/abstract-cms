@@ -12,7 +12,7 @@ require '../vendor/autoload.php';
 require 'App/App.php';
 define('ERROR_LOG', '../logs/errors.log');
 App::register_autoload();
-$App = App::get_instance();
+$App = App::get_instance(true);
 $Auth = new Authenticate();
 
 // common vars/functions for admin/front

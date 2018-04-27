@@ -2,10 +2,9 @@ define([
 	'jquery',
     'text!../abstract.json'
     ], function($, abstractCfgJson) {
-    var abstractCfg = $.parseJSON(abstractCfgJson);
+    var abstractCfg = JSON.parse(abstractCfgJson);
 	var app = app || {};
 	app.debug 				= abstractCfg.debug;
-    app.locale 				= abstractCfg.locale;
 	app.csrfToken 			= abstractCfg.csrfToken;
     app.docRoot 			= abstractCfg.docRoot + '/';
     app.loadingId 	    	= abstractCfg.loadingId;
@@ -59,19 +58,40 @@ define([
     app.isAdmin = location.pathname.indexOf(app.adminRoot) === 0;
 
     // Load i18n translations for admin
+    app.locale = app.isAdmin ? abstractCfg.localeAdmin : abstractCfg.localeFront;
     var loadingText = 'loading';
     var parts = app.locale.split('_');
     if (parts.length === 2) {
+        // NOTE: AJAX used to load I18n translations instead of
+        // requirejs since other module loads would not get in the
+        // way here
+        //
+        // TODO: Also note the larger the i18n file gets, the bigger the possibility
+        // of I18n files loading before... something to think about
+        //
         parts = [abstractCfg.localeAppDir].concat(parts);
-        var textModule = 'text!' + parts.join('/') + '/' + app.locale + '.json';
+        var url = parts.join('/') + '/' + app.locale + '.json';
+        $.ajax({
+            url : 		url,
+            type: 		'GET',
+            dataType: 	'text'
+        }).done(function(data) {
+            app.i18n = JSON.parse(data);
+        }).fail(function(jqXHR) {
+            console.log(jqXHR.responseText);
+        });
+
+        /*
+        var textModule = 'text!../' + parts.join('/') + '/' + app.locale + '.json';
         require([textModule], function(i18nJson){
-            app.i18n = $.parseJSON(i18nJson);
+            app.i18n = JSON.parse(i18nJson);
             loadingText = app.i18n['loading'].toLowerCase();
         });
+        */
     }
 
-	// execute following only for admin
-    if (app.isAdmin) {
+	// execute following only for admin or if front uses jQm
+    if (app.isAdmin || app.useFrontJqm) {
         //JQM initialization... note that this comes
         //before JQM loads page
         //

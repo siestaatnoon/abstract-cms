@@ -1,7 +1,8 @@
 {
   "debug":             true,
-  "locale":            "en_US",
-  "localeAppDir":      "../api/App/Lang",
+  "localeAdmin":       "en_US",
+  "localeFront":       "en_US",
+  "localeAppDir":      "api/App/Lang",
   "adminUri":          "admin",
   "adminPagerPerPage": 4,
   "frontPagerPerPage": 2,

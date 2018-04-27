@@ -76,6 +76,11 @@ class App {
      * @var \App\App Singleton instance of this class
      */
 	private static $instance = NULL;
+
+    /**
+     * @var bool True if class used by admin pages
+     */
+    private static $is_admin = false;
 	
     /**
      * @var array Language translations for current locale
@@ -126,10 +131,11 @@ class App {
 	* errors if set to debug. An instance of this class will be a singleton.
 	* 
 	* @access private
+    * @param bool $is_admin True if instance in use for admin pages
 	* @return void
     * @throws \App\Exception\AppException if an application error occurred, handled in this class
 	*/
-	private function __construct() {
+	private function __construct($is_admin) {
 		$doc_root = $_SERVER['DOCUMENT_ROOT'];
 		$app_path = __DIR__;
 		$web_root = str_replace('\\', '/', realpath($app_path.'/../../') );
@@ -149,7 +155,8 @@ class App {
 		//set all PHP errors and exceptions to behandled by this class
 		set_error_handler( array($this, 'error_handler') );
 		set_exception_handler( array($this, 'exception_handler') );
-		
+
+        self::$is_admin = $is_admin;
 		$this->load_util('functions');
 		$this->config = $this->load_config('config');
 		$this->lang = $this->load_lang($this->config['locale']);
@@ -378,12 +385,13 @@ class App {
 	* Returns a singleton instance of this App class.
 	*
 	* @access public
+    * @param bool $is_admin True if instance in use for admin pages
 	* @return \App\App The singleton instance
     * @throws \App\Exception\AppException if an application error occurred, handled in this class
 	*/
-	public static function get_instance() {
+	public static function get_instance($is_admin=false) {
 		if ( is_null(self::$instance) ) {
-			self::$instance = new self();
+			self::$instance = new self($is_admin);
 		}
 		return self::$instance;
 	}
@@ -488,7 +496,7 @@ class App {
                     $config['debug'] = $cfg['debug'];
 
                     // Locale to use for I18n translations
-                    $config['locale'] = $cfg['locale'];
+                    $config['locale'] = self::$is_admin ? $cfg['localeAdmin'] : $cfg['localeFront'];
 
                     // Number of default items to initially show in admin list pages
                     $config['admin_list_per_page'] = $cfg['adminPagerPerPage'];

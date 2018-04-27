@@ -102,6 +102,6 @@
   "validate.password"       : "Password must contain at least 1 uppercase, 1 lowercase and 1 number",
   "validate.required"       : "Required field",
   "validate.username"       : "Please enter a username",
-  "warning.unload"          : "%s WARNING parameter [unload_script] events need to be unbound if they exist in parameter [onload_script]"
+  "warning.unload"          : "%s WARNING parameter [unload_script] events need to be unbound if they exist in parameter [onload_script]",
   "with.selected"           : "With selected items"
 }
