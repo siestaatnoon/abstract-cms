@@ -194,9 +194,15 @@ function app_template_navigation() {
 $mw_authorize = function($request, $response, $next) use ($Auth) {
     $route = $request->getAttribute('route');
     $module_name = $route->getArgument('module');
+    $slug = $route->getArgument('slug'); // in case a page
     $method = $request->getMethod();
 
-    if ( $Auth->authorize($module_name, $method) === false ) {
+    if ( ! empty($slug) ) {
+        if ( $Auth->is_logged_in() === false ) {
+        // Is page which doesn't need permission but not logged in here
+            return $response->withStatus(401);
+        }
+    } else if ( $Auth->authorize($module_name, $method) === false ) {
         $status_code = $Auth->is_logged_in() ? 403 : 401;
         return $response->withStatus($status_code);
     }
@@ -932,7 +938,6 @@ $route_upload_file = function($request, $response, $args) use ($App, $Auth, $ERR
 $Slim = new \Slim\App($Container);
 
 // GET routes
-$Slim->get('/admin/page/{slug}', $route_data_pages);             //
 $Slim->get('/admin/authenticate/logout', $route_logout);			 //
 $Slim->get('/admin/session_poll', $route_session_poll);			 //Do not need authentication since
 $Slim->get('/admin/session_poll/ping', $route_session_ping);		 //are global access template, form
@@ -943,6 +948,7 @@ $Slim->get('/admin/data/{module}/form[/{id}]', $route_page_form)->add($mw_author
 $Slim->get('/admin/data/{module}/list[/{archive}]', $route_page_list)->add($mw_authorize);
 $Slim->get('/admin/data/{module}/sort[/{field_name}[/{id}]]', $route_data_form_arrange)->add($mw_authorize);
 $Slim->get('/admin/form_field_custom/{module}[/{params:.*}]', $route_form_field_custom)->add($mw_authorize);
+$Slim->get('/admin/page/{slug}', $route_data_pages)->add($mw_authorize);
 $Slim->get('/admin/{module}/add[/{params:.*}]', $route_form_defaults)->add($mw_authorize);
 $Slim->get('/admin/{module}/defaults[/{params:.*}]', $route_form_defaults)->add($mw_authorize);
 $Slim->get('/admin/{module}/edit/{id}[/{params:.*}]', $route_data_form)->add($mw_authorize);

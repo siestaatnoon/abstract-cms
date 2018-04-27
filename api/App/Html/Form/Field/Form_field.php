@@ -1303,12 +1303,8 @@ class Form_field {
 		}
 
 		$attr = array();
-		$name_label = empty($this->params['name_label']) ? 
-					  $this->App->lang('form.field_type.values.name') :
-					  $this->params['name_label'];
-		$value_label = empty($this->params['value_label']) ? 
-					  $this->App->lang('form.field_type.values.value') :
-					  $this->params['value_label'];
+		$name_label = $this->App->lang('form.field_type.values.name');
+		$value_label = $this->App->lang('form.field_type.values.value');
 		$max_items = isset($this->params['max_items']) && is_numeric($this->params['max_items']) ? 
 					 $this->params['max_items'] :
 					 '';
@@ -1350,6 +1346,8 @@ NVP;
     <ul id="name-value-list-{$id_postfix}" class="name-value-pairs-list ui-mini" data-role="listview" data-split-icon="delete" data-split-theme="a"></ul>
     <input class="name-value-field-index" type="hidden" value="" />
 NVP;
+		$add = __('add');
+		$cancel = __('cancel');
         if (self::$IS_READONLY === false) {
             $html .= <<<NVP
     <div class="form-group">
@@ -1359,10 +1357,10 @@ NVP;
       <input class="name-value-field-value" type="text" class="form-control" placeholder="{$value_label}" />
     </div>
     <div class="form-group">
-      <button class="name-value-pairs-save btn btn-primary ui-mini ui-btn ui-corner-all ui-icon-action ui-btn-icon-right">Add</button>
+      <button class="name-value-pairs-save btn btn-primary ui-mini ui-btn ui-corner-all ui-icon-action ui-btn-icon-right">{$add}</button>
     </div>
     <div class="form-group name-value-pairs-cancel-cnt">
-      <button class="name-value-pairs-cancel btn btn-primary ui-mini ui-btn ui-corner-all ui-icon-minus ui-btn-icon-right">Cancel</button>
+      <button class="name-value-pairs-cancel btn btn-primary ui-mini ui-btn ui-corner-all ui-icon-minus ui-btn-icon-right">{$cancel}</button>
     </div>
 NVP;
         }
@@ -1735,8 +1733,9 @@ NVP;
 		}  
 		
 		$is_multiple= ! empty($this->params['is_multiple']);
+		$select = ucfirst( __('select') );
 		if ( ! $is_multiple) {
-			$values = array('' => '-- Select --') + $values;
+			$values = array('' => '-- '.$select.' --') + $values;
 		}
 		
 		$params = $this->params;
@@ -1969,7 +1968,7 @@ UPLOAD;
 		}
 
 		$attr = array();
-		$value_label = empty($this->params['value_label']) ? 'Value' : $this->params['value_label'];
+		$value_label = $this->App->lang('form.field_type.values.value');
 		$max_items = isset($this->params['max_items']) && is_numeric($this->params['max_items']) ? 
 					 $this->params['max_items'] :
 					 '';
@@ -2013,16 +2012,18 @@ NVP;
     <ul id="widget-values-list-{$id_postfix}" class="widget-values-list ui-mini" data-role="listview" data-split-icon="delete" data-split-theme="a"></ul>
     <input class="widget-values-field-index" type="hidden" value="" />
 NVP;
+		$add = __('add');
+		$cancel = __('cancel');
         if (self::$IS_READONLY === false) {
             $html .= <<<NVP
     <div class="form-group">
       <input class="widget-values-field-value" type="text" class="form-control" placeholder="{$value_label}" />
     </div>
     <div class="form-group">
-      <button class="widget-values-save btn btn-primary ui-mini ui-btn ui-corner-all ui-icon-action ui-btn-icon-right">Add</button>
+      <button class="widget-values-save btn btn-primary ui-mini ui-btn ui-corner-all ui-icon-action ui-btn-icon-right">{$add}</button>
     </div>
     <div class="form-group widget-values-cancel-cnt">
-      <button class="widget-values-cancel btn btn-primary ui-mini ui-btn ui-corner-all ui-icon-minus ui-btn-icon-right">Cancel</button>
+      <button class="widget-values-cancel btn btn-primary ui-mini ui-btn ui-corner-all ui-icon-minus ui-btn-icon-right">{$cancel}</button>
     </div>
 NVP;
         }

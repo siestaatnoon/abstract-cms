@@ -193,7 +193,7 @@ require([
 	$.ajaxSetup({
         cache: false, // don't cache AJAX calls
 		statusCode: {
-			401: function(){
+			401: function() {
 				app.Router.navigate('admin/401', {trigger: true});
 		    },
 			403: function() {
