@@ -5,7 +5,7 @@
     baseUrl: 				'js',
     name: 					'front',
     fileExclusionRegExp: 	/^(r|build|lib)\.js$/,
-    out: 					'dist/front.js',
+    out: 					'js/front-build.js',
     wrapShim: 				true,
 
     paths: {

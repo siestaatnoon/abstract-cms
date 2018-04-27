@@ -44,7 +44,7 @@
 	baseUrl: 				'js',
 	name: 					'admin',
 	fileExclusionRegExp: 	/^(r|build|lib)\.js$/,
-	out: 					'dist/admin.js',
+	out: 					'js/admin-build.js',
 	wrapShim: 				true,
 	
 	paths: {
