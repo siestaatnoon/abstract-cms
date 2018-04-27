@@ -102,7 +102,7 @@ class Csrf {
 	*
 	* @access public
 	* @param string $token The session saved token to check
-	* @return boolean True if token value matches the CSRF cookie token
+	* @return bool True if token value matches the CSRF cookie token
 	*/
 	public function is_valid($token) {
 		return ! empty($token) &&
@@ -131,7 +131,7 @@ class Csrf {
 	* Sets the CSRF token cookie.
 	*
 	* @access public
-	* @param boolean $replace True to replace if a token cookie already exists
+	* @param bool $replace True to replace if a token cookie already exists
 	* @return string The generated CSRF token
 	*/
 	public function set_token($replace=true) {

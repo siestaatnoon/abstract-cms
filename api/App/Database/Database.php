@@ -103,8 +103,9 @@ class Database {
 		$config = $app->config('database');
 	
 		if ( empty($config[$config_name]) ) {
-			$message = 'Invalid param (string) $config_name "'.$config_name.'", connection ';
-			$message .= 'parameters not defined in main config file';
+			$args = array('$config_name "'.$config_name.'"', '\\App\\Config\\Config.php');
+            $msg_part = error_str('error.database.config', $args);
+            $message = error_str('error.type.param.invalid', $msg_part);
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 
@@ -131,9 +132,10 @@ class Database {
 	 * @access public
 	 * @param array $config The database configuration parameters
 	 * @return \App\Database\Driver\Driver The driver-dependant database connection
-	 * @see \App\Model\Database\Driver\Driver The database driver abstract class definition
-	 * @see \App\Model\Database\Driver\Mysqli\DriverMysqli The mysqli driver
-	 * @see \App\Model\Database\Driver\PdoMysql\DriverPdoMysql The PDO MySQL driver
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
+	 * @see \App\Database\Driver\Driver The database driver abstract class definition
+	 * @see \App\Database\Driver\Mysqli\DriverMysqli The mysqli driver
+	 * @see \App\Database\Driver\PdoMysql\DriverPdoMysql The PDO MySQL driver
 	 */
 	private static function db_connect($config) {
 		$db = NULL;

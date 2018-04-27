@@ -8,7 +8,10 @@ use App\Exception\AppException;
 /**
  * AdminListPage class
  * 
- * 
+ * Generates the page template and module list data for the admin list pages and according to the
+ * current admin logged-in user's permissions. Subclasses the ListPage class for use for the admin area.
+ *
+ * TODO: Remove HTML and put into helper functions
  * 
  * @author      Johnny Spence <info@projectabstractcms.org>
  * @copyright   2014 Johnny Spence
@@ -22,12 +25,23 @@ class AdminListPage extends \App\Html\ListPage\ListPage {
      * @var \App\User\Permission Object containing CMS user permission for page
      */	
 	protected $permission;
-	
-	
-	
+
+
+    /**
+     * __construct
+     *
+     * Initializes the AdminListPage.
+     *
+     * @access public
+     * @param mixed $mixed The \App\Module\Module object or module name to load module
+     * @param bool $is_archive True if list page for items marked as archived
+     * @param @param \App\User\Permission $permission The current CMS user Permission object
+     * @throws \App\Exception\AppException if an error occurs while loading module, handled by \App\App class
+     */
 	public function __construct($mixed, $is_archive, $permission) {
 		if ($permission instanceof \App\User\Permission === false ) {
-			$message = 'Invalid param $permission: must be instance of \\App\\User\\Permission';
+            $msg_part = error_str('error.param.type', array('$permission', '\\App\\User\\Permission') );
+            $message = error_str('error.type.param.invalid', array($msg_part) );
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 
@@ -35,8 +49,17 @@ class AdminListPage extends \App\Html\ListPage\ListPage {
 		$this->permission = $permission;
         $this->pagination['per_page'] = $this->App->config('admin_list_per_page');
 	}
-	
-	
+
+
+    /**
+     * bulk_update_params
+     *
+     * Returns the module boolean values to activate/deactivate bulk update features within
+     * the admin list pages.
+     *
+     * @access public
+     * @return array Assoc array of boolean values
+     */
 	public function bulk_update_params() {
 		$data = $this->module->get_module_data();
 		return array(
@@ -46,8 +69,16 @@ class AdminListPage extends \App\Html\ListPage\ListPage {
             'is_archive' 	=> $this->is_archive
 		);
 	}
-	
-	
+
+
+    /**
+     * template
+     *
+     * Returns the list page template HTML and associated data blocks.
+     *
+     * @access public
+     * @return array Assoc array of template data
+     */
 	public function template() {
 		$data = $this->module->get_module_data();
 		$block = array(
@@ -64,19 +95,30 @@ class AdminListPage extends \App\Html\ListPage\ListPage {
 			'template'	=> $this->template_html()
 		);
 	}
-	
-	
+
+
+    /**
+     * selector_popup
+     *
+     * Returns popup selector HTML with options to view/edit and/or delete.
+     *
+     * @access protected
+     * @return string The popup selector HTML
+     */
 	protected function selector_popup() {
 		$data = $this->module->get_module_data();
 		$module_name = $data['name'];
         $title_field = $data['title_field'];
-		$edit_text = $this->permission->has_update() ? 'Edit' : 'View';
+		$edit_text = $this->permission->has_update() ? __('edit') : __('view');
+		$close = __('close');
+        $delete = __('delete');
+        $select_action = __('select.action');
 		
 		$html = <<<HTML
 <div data-role="popup" id="list-action-popup" class="ui-corner-all ui-popup ui-body-a ui-overlay-shadow" data-title-field="{$title_field}">
-  <a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right">Close</a>
+  <a href="#" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right">{$close}</a>
   <div data-role="header" class="ui-corner-top ui-header ui-bar-a">
-    <h3>Select an Action</h3>
+    <h3>{$select_action}</h3>
   </div>
   <div role="main" class="ui-content">
     <div class="model-title"></div>
@@ -88,7 +130,7 @@ HTML;
 		if ( $this->permission->has_delete() ) {
 			$html .= <<<HTML
     <div>
-      <a href="#" data-transition="fade" class="list-action-delete ui-btn ui-corner-all ui-shadow ui-mini ui-icon-delete ui-btn-icon-right">Delete</a>
+      <a href="#" data-transition="fade" class="list-action-delete ui-btn ui-corner-all ui-shadow ui-mini ui-icon-delete ui-btn-icon-right">{$delete}</a>
     </div>
 
 HTML;
@@ -102,17 +144,25 @@ HTML;
 		
 		return $html;
 	}
-	
-	
+
+
+    /**
+     * template_html
+     *
+     * Returns the admin list page tenplate HTML.
+     *
+     * @access protected
+     * @return string The list page HTML
+     */
 	protected function template_html() {
 		$data = $this->module->get_module_data();
 		$title = $data['label_plural'];
 		$module_name = $data['name'];
         $archive = $this->is_archive ? '' : '/archive';
-        $archive_text = $this->is_archive ? 'Return to List' : 'View Archived';
+        $archive_text = $this->is_archive ? __('return.list') : __('view.archived');
 		$class = array('module-filter-field', 'filter-select');
         if ($this->is_archive) {
-            $title .= ' <span class="header-archived">[ Archived ]</span>';
+            $title .= ' <span class="header-archived">[ '.ucfirst( __('archived') ).' ]</span>';
         }
 		
 		$html = <<<HTML
@@ -126,21 +176,25 @@ HTML;
 HTML;
         }
 
+        $add_new = __('add.new');
 		if ( $this->permission->has_add() ) {
 			$html .= <<<HTML
-  <a href="admin/{$module_name}/add" class="module-add-new module-top-button btn btn-primary ui-btn ui-icon-plus ui-btn-icon-right ui-corner-all ui-mini">Add New Item</a>
+  <a href="admin/{$module_name}/add" class="module-add-new module-top-button btn btn-primary ui-btn ui-icon-plus ui-btn-icon-right ui-corner-all ui-mini">{$add_new}</a>
 
 HTML;
 		}
-		
+
+		$filter_results = __('filter.results');
+        $filter_clear = __('filter.clear');
+        $search = __('search');
 		$html .= <<<HTML
   <h1>{$title}</h1>
   <div id="{$module_name}-filter" class="module-filter ui-corner-all ui-shadow ui-mini">
-    <a href="#" class="module-filter-clear btn btn-primary ui-btn ui-icon-delete ui-btn-icon-right ui-corner-all ui-mini">Clear Filters &nbsp;</a>
-    <h3>Filter Results</h3>
+    <a href="#" class="module-filter-clear btn btn-primary ui-btn ui-icon-delete ui-btn-icon-right ui-corner-all ui-mini">{$filter_clear}</a>
+    <h3>{$filter_results}</h3>
     <div class="module-filter-group">
       <div class="module-filter-item">
-        <input type="text" name="search" class="module-filter-field filter-input" placeholder="Search..." />
+        <input type="text" name="search" class="module-filter-field filter-input" placeholder="{$search}..." />
       </div>
 
 HTML;
@@ -156,19 +210,23 @@ HTML;
 		}
 		
 		//if module uses "active" field, then last filter
+        $active = ucfirst( __('active') );
+        $yes = ucfirst( __('yes') );
+        $no = ucfirst( __('no') );
 		if ($data['use_active']) {
 			$html .= '<div class="module-filter-item">'."\n";
 			$html .= '<select name="is_active" class="'.implode(' ', $class).'">'."\n";
-			$html .= '  <option value="">Active?</option>'."\n";
-			$html .= '  <option value="1">Active: Yes</option>'."\n";
-			$html .= '  <option value="0">Active: No</option>'."\n";
+			$html .= '  <option value="">'.$active.'?</option>'."\n";
+			$html .= '  <option value="1">'.$active.': '.$yes.'</option>'."\n";
+			$html .= '  <option value="0">'.$active.': '.$no.'</option>'."\n";
 			$html .= '</select>'."\n";
 			$html .= '</div>'."\n";
 		}
 
+		$filter = __('filter');
 		$html .= <<<HTML
       <div class="module-filter-button">
-        <button id="module-filter-submit" name="submit-filter" class="btn btn-primary" disabled="disabled">Filter</button>
+        <button id="module-filter-submit" name="submit-filter" class="btn btn-primary" disabled="disabled">{$filter}</button>
       </div>
     </div><!--close module-filter-->
   </div>

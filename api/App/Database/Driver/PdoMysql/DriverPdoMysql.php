@@ -55,8 +55,10 @@ class DriverPdoMysql extends \App\Database\Driver\Driver {
 			$errors[] = '[db_name]';
 		}
 		if ( ! empty($errors) ) {
-			$error = 'Invalid param (array) $config '.implode(', ', $errors).' parameter not defined';
-			throw new AppException($errors, AppException::ERROR_FATAL);
+            $args = array('(array) $config '.implode(', ', $errors), '');
+            $msg_part = error_str('error.param.undefined.multi', $args);
+            $message = error_str('error.type.param.invalid', $msg_part);
+			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 		
 		$dbhost	= empty($config['host']) ? "localhost" : $config['host'];
@@ -238,6 +240,7 @@ class DriverPdoMysql extends \App\Database\Driver\Driver {
 	 * @access public
 	 * @param string $query The query to perform
 	 * @return mixed The rows affected (int) or (Result) object
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 * @see \App\Database\Driver\Result The result set abstract class definition
 	 * @see \App\Database\Driver\PdoMysql\ResultPdoMysql The PDO MySQL result set
 	 */

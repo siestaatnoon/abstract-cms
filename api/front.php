@@ -97,14 +97,14 @@ function app_custom_func($module_name, $fn, $params=array(), $args=array(), $dat
             }
             $json['model_url'] = get_data_api_url($module_name, $fn, $params);
         } catch (Exception $e) {
-            $error = 'An error has occurred in '.$module_name.'->'.$function . '()';
+            $msg_part = ': '.$module_name.'->'.$function . '()';
             if ($App->config('debug')) {
-                $error .= ": ".$e->getMessage();
+                $msg_part .= ": ".$e->getMessage();
             }
-            $errors[] = $error;
+            $errors[] = error_str('error.general.single', $msg_part);
         }
     } else {
-        $errors[] = 'Module_'.$module_name.'->'.$function.'() undefined';
+        $errors[] = error_str('error.general.undefined', 'Module_'.$module_name.'->'.$function.'()');
     }
 
     if ( ! empty($errors) ) {
@@ -309,15 +309,15 @@ function check_for_module($module_name, $show_404=false) {
     $error = '';
 
     if ( Module::is_module($module_name) === false ) {
-        $error = 'Module ['.$module_name.'] not found.';
+        $error = error_str('error.module.missing', $module_name);
     } else if ( Module::is_core($module_name) ) {
-        $error = 'Module ['.$module_name.'] not valid for use in web page.';
+        $error = error_str('error.module.invalid', $module_name);
     } else {
         $Module = Module::load($module_name);
         if ( $Module->is_options() ) {
-            $error = 'Module ['.$module_name.'] is of options type, not valid for use in web page.';
+            $error = error_str('error.module.options', $module_name);
         } else if ( $Module->is_active() === false ) {
-            $error = 'Module ['.$module_name.'] is an inactive module.';
+            $error = error_str('error.module.inactive', $module_name);
         }
     }
 
@@ -441,15 +441,11 @@ function get_template($tpl, $tpl_file, $model=array(), $data_only=false, $is_mod
                 //if not, check for page/content/[file].phtml and if not there, we're done
                 if ( Template::is_template($PAGE_TEMPLATE, $tpl_file, true) === false ) {
                     $static_dir = Template::get_static_dir();
-                    $err = array('Template '.$tpl_file.' not found in:');
-                    $err[] = $static_dir.'/'.$tpl.'/'.$default_file.'.phtml';
-                    $err[] = $static_dir.'/'.$tpl.'/content/'.$tpl_file.'.phtml';
-                    $err[] = $static_dir.'/'.$PAGE_TEMPLATE.'/content/'.$tpl_file.'.phtml';
-                    $errors = array(
-                        'errors' => $err
-                    );
-                    $Slim->halt(500, json_encode($errors));
-                    exit;
+                    $msg_part = $static_dir.'/'.$tpl.'/'.$default_file.'.phtml, ';
+                    $msg_part .= $static_dir.'/'.$tpl.'/content/'.$tpl_file.'.phtml, ';
+                    $msg_part .= $static_dir.'/'.$PAGE_TEMPLATE.'/content/'.$tpl_file.'.phtml';
+                    $error = error_str('error.template.missing', array($tpl_file, $msg_part));
+                    throw new \Exception($error);
                 }
 
                 //module uses default page template and is content file
@@ -742,7 +738,8 @@ $route_form_handler = function($request, $response, $args) use ($App, $CSRF_FIEL
     $json = array();
     if ( empty($post[$CSRF_FIELD]) || $Csrf->is_valid($post[$CSRF_FIELD]) === false ) {
         //CSRF token invalid, cannot continue
-        throw new \Exception('Please refresh this page and fill out the form again.');
+        $error = error_str('error.front.refresh');
+        throw new \Exception($error);
     }
     unset($post[$CSRF_FIELD]);
 
@@ -781,7 +778,8 @@ $route_form_handler = function($request, $response, $args) use ($App, $CSRF_FIEL
         $anon();
     } else {
         $script = $module_name.(empty($func) ? '.phtml' : '/'.$func.'.phtml');
-        throw new \Exception('Form handler '.$script.' not found.');
+        $error = error_str('error.form.handler', $script);
+        throw new \Exception($error);
     }
 
     if ( empty($script_response) ) {

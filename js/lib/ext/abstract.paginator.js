@@ -1,13 +1,10 @@
-(function (root, factory) {
-	if (typeof exports == "object") {
-		module.exports = factory(require("underscore"),
-						 require("backbone"),
-						 require("backgrid"),
-						 require("backbone.paginator"));
-	} else {
-		factory(root._, root.Backbone, root.Backgrid);
-	}
-}(this, function (_, Backbone, Backgrid) {
+define([
+    'underscore',
+    'backbone',
+    'backgrid',
+    'classes/I18n',
+    'backbone.paginator'
+], function(_, Backbone, Backgrid, I18n) {
 
   "use strict";
 
@@ -30,22 +27,22 @@
 	    attr: {
 			first: {
 				class: ['pager-control', 'page-first'],
-				title: 'First page'
+				title: I18n.t('first')
 			},
 			prev: {
 				class: ['pager-control', 'page-prev'],
-				title: 'Previous page'
+				title: I18n.t('previous')
 			},
 			page: {
 				class: ['pager-selector']
 			},
 			next: {
 				class: ['pager-control', 'page-next'],
-				title: 'Next page'
+				title: I18n.t('next')
 			},
 			last: {
 				class: ['pager-control', 'page-last'],
-				title: 'Last page'
+				title: I18n.t('last')
 			},
 			perPage: {
 				class: ['pager-size']
@@ -59,20 +56,16 @@
 		isMobile: false,
 		
 		listProps: {
-			first: { text:'&laquo;', title:'First page' },
-			prev: { text:'<', title:'Previous page' },
-			next: { text:'>', title:'Next page' },
-			last: { text:'&raquo;', title:'Last page' },
+			first: { text:'&laquo;', title: I18n.t('first') },
+			prev: { text:'<', title: I18n.t('previous') },
+			next: { text:'>', title: I18n.t('next') },
+			last: { text:'&raquo;', title: I18n.t('last') },
 		},
 		
 		pagerType: 'list',
 		
 		/*
-			TODO:
-			
-			1. isMobile?
-			2. UL list pagination option (default)
-			3. onRender, onPreRender for collection
+			TODO: 1. isMobile? 2. UL list pagination option (default) 3. onRender, onPreRender for collection
 		*/
 	    initialize: function(options) {
 	    	var options = options || {};
@@ -205,8 +198,8 @@
 				}).appendTo($select);
 			}
 			
-			var $pre = $.parseHTML('Go to page: ');
-			var $post = $.parseHTML(' of ' + totalPages);
+			var $pre = $.parseHTML( I18n.t('paginate.goto') + ': ');
+			var $post = $.parseHTML(' ' + I18n.t('of') + ' ' + totalPages);
 			var $div = $('<div/>', { class: 'pager-page-cnt' });
 			$div.append($pre).append($select).append($post);
 			return $div;
@@ -227,7 +220,7 @@
 					for (var i=1; i <= totalPages; i++) {
 						var $li = $('<li/>');
 						var $link = this._controlLink(prop);
-						$link.text(i).attr('title', 'Page ' + i).attr('data-page', i);
+						$link.text(i).attr('title', I18n.t('page') + ' ' + i).attr('data-page', i);
 						if (i === currentPage) {
 							$link.addClass(this.activeClass);
 						}
@@ -283,7 +276,9 @@
 			
 			for (var i=0; i < steps.length; i++) {
 				var step = steps[i];
-				var text = i < steps.length - 1 || this.isMobile ? i + ' per page' : 'View All';
+				var text = i < steps.length - 1 || this.isMobile ?
+					       i + ' ' + I18n.t('per.page') :
+					       I18n.t('view.all');
 				var is_selected = step === pageSize;
 				$('<option/>', {
 					text: text,
@@ -317,4 +312,4 @@
 		}
 	});
 
-}));
+});

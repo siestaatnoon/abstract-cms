@@ -22,7 +22,7 @@ App\Exception\AppException;
 class Module_pages extends \App\Module\Abstract_module {
 
 	/**
-	 * Number of rows to show before paginating, NOTE only if search filters used.
+	 * @var int Number of rows to show before paginating, NOTE only if search filters used.
 	 *
 	 */
 	private static $ITEMS_PER_PAGE = 4;
@@ -34,9 +34,15 @@ class Module_pages extends \App\Module\Abstract_module {
 	 * Initializes the Users module.
 	 * 
 	 * @access public
+     * @throws \App\Exception\AppException if an error occurs while loading module, rethrown and
+     * handled by \App\App class
 	 */
 	public function __construct() {
-		parent::__construct('pages');
+	    try {
+		    parent::__construct('pages');
+        } catch (AppException $e) {
+            throw $e;
+        }
         $this->sort_params = array(
             'parent_id' => array(
                 'name'      => 'Parent Page',
@@ -55,8 +61,8 @@ class Module_pages extends \App\Module\Abstract_module {
 	 * @access public
 	 * @param array $data The fields and corresponding values to insert
 	 * @return mixed The primary key of the inserted row OR an array of errors in format 
-	 * array( 'errors' => (array) $errors) if insert unsuccessful OR an App\Exception\SQLException 
-	 * is passed and to be handled by \App\App class if an SQL error occurred
+	 * array( 'errors' => (array) $errors) if insert unsuccessful
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 */
 	public function add($data) {
 		$return = parent::add($data);
@@ -80,9 +86,19 @@ class Module_pages extends \App\Module\Abstract_module {
 	}
 
 
+    /**
+     * admin_func_subpages
+     *
+     * Custom API function to return the subpage data given a parent page ID from POST vars.
+     *
+     * @access public
+     * @param array $params Assoc array of key => values to pass into the function
+     * @param array $vars The assoc array of GET or POST vars
+     * @return array The array of subpage data in format array(pages => array(...) )
+     */
     public function admin_func_subpages($params, $vars) {
         if ( empty($vars['parent_id']) ) {
-            $message = 'POST var parent_id missing or empty value.';
+            $message = error_str('error.var.empty', 'POST[parent_id]');
             return array('errors' => array($message) );
         }
 
@@ -106,10 +122,12 @@ class Module_pages extends \App\Module\Abstract_module {
      * @param \App\User\Permission $permission The current CMS user Permission object
      * @param array $params Additional parameters passed into function
      * @return string The module permissions form fields HTML
+     * @throws \App\Exception\AppException if $permission parameter invalid, handled by \App\App class
      */
     public function form_field_module_id_form($page_id, $value, $permission, $params=array()) {
         if ($permission instanceof \App\User\Permission === false ) {
-            $message = 'Invalid param $permission: must be instance of \\App\\User\\Permission';
+            $msg_part = error_str('error.param.type', array('$permission', '\\App\\User\\Permission'));
+            $message = error_str('error.type.param.invalid', $msg_part);
             throw new AppException($message, AppException::ERROR_FATAL);
         }
 
@@ -144,10 +162,12 @@ class Module_pages extends \App\Module\Abstract_module {
      * @param \App\User\Permission $permission The current CMS user Permission object
      * @param array $params Additional parameters passed into function
      * @return string The module permissions form fields HTML
+     * @throws \App\Exception\AppException if $permission parameter invalid, handled by \App\App class
      */
     public function form_field_module_id_list($page_id, $value, $permission, $params=array()) {
         if ($permission instanceof \App\User\Permission === false ) {
-            $message = 'Invalid param $permission: must be instance of \\App\\User\\Permission';
+            $msg_part = error_str('error.param.type', array('$permission', '\\App\\User\\Permission'));
+            $message = error_str('error.type.param.invalid', $msg_part);
             throw new AppException($message, AppException::ERROR_FATAL);
         }
 
@@ -184,10 +204,12 @@ class Module_pages extends \App\Module\Abstract_module {
      * @param \App\User\Permission $permission The current CMS user Permission object
      * @param array $params Additional parameters passed into function
 	 * @return string The module permissions form fields HTML
+     * @throws \App\Exception\AppException if $permission parameter invalid, handled by \App\App class
 	 */
 	public function form_field_parent_id($page_id, $value, $permission, $params=array()) {
 		if ($permission instanceof \App\User\Permission === false ) {
-			$message = 'Invalid param $permission: must be instance of \\App\\User\\Permission';
+            $msg_part = error_str('error.param.type', array('$permission', '\\App\\User\\Permission'));
+            $message = error_str('error.type.param.invalid', $msg_part);
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 
@@ -220,8 +242,18 @@ class Module_pages extends \App\Module\Abstract_module {
 		$params['is_readonly'] = $permission->has_add() === false && $permission->has_update() === false;
 		return form_select($params);
 	}
-	
-	
+
+
+    /**
+     * get_default_field_values
+     *
+     * Overwrites parent class method to update the parent_id ID value in a Pages module item.
+     *
+     * @access public
+     * @param array $params Array of parameters passed in and used by subclass method overwrites
+     * @return array The assoc array of default form fields and values
+     * @see Abstract_module::get_default_field_values() for method implementation
+     */
 	public function get_default_field_values($params=array()) {
 		$data = parent::get_default_field_values($params);
 		if ( ! empty($params) ) {
@@ -229,8 +261,22 @@ class Module_pages extends \App\Module\Abstract_module {
 		}
 		return $data;
 	}
-	
-	
+
+
+    /**
+     * get_cms_list
+     *
+     * Overwrites parent class method to return only top-level pages, not include uncategorized pages
+     * and to include parent_id, is_permanent and url query parameters.
+     *
+     * @access public
+     * @param array $get Assoc array of the query parameters for the list of rows
+     * @param bool $is_archive True if list of rows returned are marked as archived
+     * @param \App\User\Permission $permission The current logged in user permission object
+     * @return array Assoc array of the admin list data
+     * @throws \App\Exception\AppException if $permission invalid object, handled by \App\App class
+     * @see Abstract_module::get_cms_list() for method implementation
+     */
 	public function get_cms_list($get, $is_archive, $permission) {
 		if ( ! $this->module['use_model']) {
 		//if module uses options table instead of model, can't retrieve a row
@@ -387,6 +433,7 @@ class Module_pages extends \App\Module\Abstract_module {
      * @param bool $is_archive True if list page is archived records page
 	 * @return array The module variable and template parameters
 	 * @see \App\Html\ListPage\AdminListPage::template() for return parameters
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 */
 	public function get_list_template($permission, $is_archive) {
 		$module = parent::get_module_data();
@@ -477,15 +524,15 @@ class Module_pages extends \App\Module\Abstract_module {
         $has_saved = $this->model->set_sort_order($ids);
 
         if ( ! $has_saved) {
-            $error = 'Module ['.$this->module['name'].'], sort failed for IDs ';
-            $error .= (is_array($ids) ? '['.implode(', ', $ids).']' : $ids);
+            $msg_part = '';
             if ( ! empty($field_name) ) {
-                $error .= ', relation field ['.$field_name.']';
+                $msg_part .= __('relation').'['.$field_name.']';
             }
             if ( ! empty($relation_id) ) {
-                $error .= ', relation ID ['.$relation_id.']';
+                $msg_part .= '[ID: '.$relation_id.']';
             }
-            $errors[] = $error;
+            $msg_part .= ' ID: '.(is_array($ids) ? implode(', ', $ids) : $ids);
+            $errors[] = error_str('error.sort.save', $msg_part);
         }
 
         return empty($errors) ? true : array('errors' => $errors);
@@ -501,6 +548,7 @@ class Module_pages extends \App\Module\Abstract_module {
 	 * @param array $data The fields and corresponding values to update
 	 * @return mixed True if operation successful OR an array of errors in format 
 	 * array( 'errors' => (array) $errors) if update unsuccessful
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 */
 	public function update($data) {
 		$return = parent::update($data);
@@ -556,8 +604,17 @@ class Module_pages extends \App\Module\Abstract_module {
 		
 		return $data;
 	}
-	
-	
+
+
+    /**
+     * pages_sort
+     *
+     * Sorts an array of page items by short_title field.
+     *
+     * @access protected
+     * @param array &$list The array of page items
+     * @return array The array of page items sorted by short_title field
+     */
 	protected function pages_sort(&$list) {
 		if ( empty($list) || is_array($list) === false ) {
 			return $list;

@@ -68,7 +68,7 @@ if ( ! function_exists('fw_navbar')) {
         $html = '<nav class="navbar navbar-default" role="navigation">'."\n";
         $html .= '  <div class="navbar-header">'."\n";
         $html .= '    <button type="button" data-toggle="collapse" data-target="#nav1" class="navbar-toggle">'."\n";
-        $html .= '      <span class="sr-only">Toggle Navigation</span>'."\n";
+        $html .= '      <span class="sr-only">'.ucfirst( __('navigation') ).'</span>'."\n";
         $html .= '      <span class="icon-bar"></span>'."\n";
         $html .= '      <span class="icon-bar"></span>'."\n";
         $html .= '      <span class="icon-bar"></span>'."\n";

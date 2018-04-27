@@ -3,8 +3,9 @@ define([
 	'jquery',
 	'plugins/jquery-ui/jquery-ui.min',
 	'plugins/abstract/jquery.ui.touch-punch.min',
-	'classes/Utils'
-], function(app, $, ui, tp, Utils) {
+	'classes/Utils',
+    'classes/I18n'
+], function(app, $, ui, tp, Utils, I18n) {
 	$(function() {
 		
 		var clear = function(widget_id) {
@@ -19,7 +20,7 @@ define([
 			$('.name-value-field-index', $widget).val('');
 			$('.name-value-field-label', $widget).val('');
 			$('.name-value-field-value', $widget).val('');
-			$('.name-value-pairs-save', $widget).text('Add');
+			$('.name-value-pairs-save', $widget).text( I18n.t('add') );
 			$('.name-value-pairs-cancel-cnt', $widget).hide(300);
 			
 			$ul = $('.name-value-pairs-list', $widget);
@@ -135,7 +136,7 @@ define([
                     $('<a/>')
                         .attr('href', '#' + widget_id)
                         .addClass('name-value-pairs-delete')
-                        .text('Delete')
+                        .text( I18n.t('delete') )
                         .appendTo($li);
                 }
                 $li.appendTo($ul);
@@ -200,7 +201,7 @@ define([
 			$('.name-value-field-index', $widget).val('');
 			$('.name-value-field-label', $widget).val('');
 			$('.name-value-field-value', $widget).val('');
-			$('.name-value-pairs-save', $widget).text('Add');
+			$('.name-value-pairs-save', $widget).text( I18n.t('add') );
 			$('.name-value-pairs-cancel-cnt', $widget).slideUp(300);
 			
 			if ( isNaN(maxItems) ) {
@@ -249,7 +250,7 @@ define([
 			$('.name-value-field-index', $widget).val(index);
 			$('.name-value-field-label', $widget).val(label);
 			$('.name-value-field-value', $widget).val(value);
-			$('.name-value-pairs-save', $widget).text('Update');
+			$('.name-value-pairs-save', $widget).text( I18n.t('update') );
 			$('.name-value-pairs-cancel-cnt', $widget).slideDown(300);
 			enableForm(widget_id);
 			
@@ -282,7 +283,7 @@ define([
 			var label = $label.val();
 			var value = $value.val();
 			var val_required = $widget.data('required');
-			var error = ['Required field'];
+			var error = [ I18n.t('validate.required') ];
 			var has_error = false;
 			
 			Utils.removeAllFieldErrors($widget);
@@ -353,7 +354,7 @@ define([
                     $('<a/>')
                         .attr('href', widget_id)
                         .addClass('name-value-pairs-delete')
-                        .text('Delete')
+                        .text( I18n.t('delete') )
                     .appendTo($li);
                 }
 				$ul.append($li);
@@ -383,8 +384,8 @@ define([
 			e.preventDefault();
 			e.stopPropagation();
 			$link = $(this);
-			var message = 'Delete ' + $link.prev().find('h3').text() + '?';
-			Utils.showModalConfirm('Confirm', message, function() {
+			var message = I18n.t('delete') + ' ' + $link.prev().find('h3').text() + '?';
+			Utils.showModalConfirm( I18n.t('confirm'), message, function() {
 				deleteVal($link);
 			});
 		});

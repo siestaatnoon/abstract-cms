@@ -2,9 +2,10 @@ define([
 	'config',
 	'jquery',
 	'underscore',
-	'classes/Class',
-	'classes/Utils'
-], function(app, $, _, C, Utils) {
+	'classes/Utils',
+    'classes/I18n',
+	'classes/Class'
+], function(app, $, _, Utils, I18n) {
 
     /**
      * Utility class that polls the server at regular intervals to check for an active session,
@@ -14,8 +15,8 @@ define([
      * @requires config
      * @requires jquery
      * @requires Underscore
-     * @requires classes/Class
      * @requires classes/Utils
+     * @requires classes/I18n
      * @constructor
      * @augments classes/Class
      */
@@ -76,31 +77,30 @@ define([
 		},
 
         /**
-         * Pings the API server, keeping the session active. No data is returned.
+         * Pings the API server, keeping the session active. No data is expected to be returned.
          *
          */
 		keepAlive: function() {
 			var url = app.adminSessPollURL + '/ping';
-            var errorMsg = "SessionPoller.keepAlive: an API error has occurred";
+
 			$.ajax({
 				url:		url,
 				type: 		'GET',
 				dataType: 	'json'
-			}).done(function(data) {
-				if (data.errors) {
-				    if (app.debug) {
-                        errorMsg += ":\n" + data.errors.join("\n");
-                    }
-                    console.log(errorMsg);
-				}
+			}).done(function(response) {
+                if (app.debug) {
+                    console.log(response);
+                }
 			}).fail(function(jqXHR) {
-				if (app.debug) {
-                    var response = Utils.parseJqXHR(jqXHR);
-				    if (response.errors.length) {
-                        errorMsg += ":\n" + response.errors.join("\n");
-                    }
-				}
-                console.log(errorMsg);
+                var resp = Utils.parseJqXHR(jqXHR);
+                var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                if (error.length === 0) {
+                    error = I18n.t('error.general.unknown', 'SessionPoller.keepAlive()');
+                }
+                Utils.showModalWarning(I18n.t('error'), error);
+                if (app.debug) {
+                    console.log( error.replace('<br/>', "\n") );
+                }
 			});
 		},
 
@@ -132,26 +132,19 @@ define([
 				url:		app.adminSessPollURL + '/ping',
 				type: 		'GET',
 				dataType: 	'json'
-			}).done(function(data) {
-				if (data.session_active) { 
-					isActive = true;
-					self.sessionStart();
-				} else if (data.errors) {
-                    var message = "SessionPoller.sessionPing: an API error has occurred";
-                    if (app.debug) {
-                        message += ":\n" + data.errors.join("\n");
-                    }
-					console.log(message);
-				}
+			}).done(function(response) {
+                isActive = _.has(response, 'session_active') ? response.session_active : false;
+                self.sessionStart();
 			}).fail(function(jqXHR) {
-                var errorMsg = "SessionPoller.sessionPing: an API error has occurred";
-				if (app.debug) {
-                    var response = Utils.parseJqXHR(jqXHR);
-                    if (response.errors.length) {
-                        errorMsg += ":\n" + response.errors.join("\n");
-                    }
-				}
-                console.log(errorMsg);
+                var resp = Utils.parseJqXHR(jqXHR);
+                var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                if (error.length === 0) {
+                    error = I18n.t('error.general.unknown', 'SessionPoller.sessionPing()');
+                }
+                Utils.showModalWarning(I18n.t('error'), error);
+                if (app.debug) {
+                    console.log( error.replace('<br/>', "\n") );
+                }
 			}).always(function() {
 				if ( _.isFunction(callback)) {
 					callback.call(this, isActive);
@@ -188,40 +181,31 @@ define([
 						var minutes = Math.ceil(self._timeLeft / 60);
 
 						if (minutes < 5) {
-							label = 'Your Session is About to Expire';
-							message = 'Your session will end in less than %s. To continue your session, '; 
-							message += 'click the Continue button below.';
+                            label = I18n.t('label.session.expire');
 							var time = minutes + (minutes == 1 ? ' minute' : ' minutes');
 							if (self._timeLeft <= 30) {
 								time = '30 seconds';
 							}
-
-							Utils.showModalWarning(label, message.replace('%s', time), self.keepAlive, self);
-						} 
-					} else if (data.errors) {
-					//API error in AJAX call
-						var message = "SessionPoller.sessionStart: poll initialize failed";
-						if (app.debug) {
-                            message += ":\n" + data.errors.join("\n");
-                        }
-                        console.log(message);
-						self.sessionDestroy(); //end session
+                            message = I18n.t('message.session.expire', time);
+							Utils.showModalWarning(label, message, self.keepAlive, self);
+						}
 					} else {
 					//session ended
 						window.clearInterval(self._poller);
-						label = 'Your Session Has Ended';
-						message = 'Your session has ended. You will now be redirected to the login page.';
+                        label = I18n.t('label.session.ended');
+                        message = I18n.t('message.session.ended');
 						Utils.showModalWarning(label, message, self.sessionDestroy, self);
 					}
 				}).fail(function(jqXHR) {
-                    var errorMsg = "SessionPoller.sessionStart: poll initialize failed";
-					if (app.debug) {
-                        var response = Utils.parseJqXHR(jqXHR);
-                        if (response.errors.length) {
-                            errorMsg += ":\n" + response.errors.join("\n");
-                        }
-					}
-                    console.log(errorMsg);
+                    var resp = Utils.parseJqXHR(jqXHR);
+                    var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                    if (error.length === 0) {
+                        error = I18n.t('error.general.unknown', 'SessionPoller.sessionStart()');
+                    }
+                    Utils.showModalWarning(I18n.t('error'), error);
+                    if (app.debug) {
+                        console.log( error.replace('<br/>', "\n") );
+                    }
                     self.sessionDestroy(); //end session
 				});
 			};

@@ -170,13 +170,14 @@ class Form {
 		$errors = array();
 		
 		if ( empty($config['module_name']) ) {
-			$errors[] = '$config[module_name] empty, must be name of module';
+			$errors[] = error_str('error.module.slug', array('$config[module_name]'));
 		}
 		if ( empty($config['fields']) || ! is_array($config['fields']) ) {
-			$errors[] = '$config[fields] empty, must be array of \\App\\Html\\Form\\Form\\Field\\Form_field';
+			$errors[] = error_str('error.param.array', array('$config[fields]', '\\App\\Form\\Field\\Form_field'));
 		}
 		if ( ! empty($errors) ) {
-			$message = 'Invalid param (array) $config: '.implode("\n", $errors);
+		    $message = error_str('error.type.param.invalid', array('(array) $config: '));
+			$message .= implode(",\n", $errors);
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 		

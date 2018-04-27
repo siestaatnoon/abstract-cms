@@ -4,8 +4,9 @@ define([
     'underscore',
     'backbone',
     'classes/Utils',
+    'classes/I18n',
     'views/AbstractContentView'
-], function(app, $, _, Backbone,  Utils, AbstractContentView) {
+], function(app, $, _, Backbone,  Utils, I18n, AbstractContentView) {
     var FrontListView = AbstractContentView.extend({
 
         /**
@@ -78,10 +79,14 @@ define([
                     self.trigger('view:update:end');
                 },
                 error: function(collection, response, options) {
-                    var json = response.responseJSON;
+                    var resp = Utils.parseJqXHR(response);
+                    var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                    if (error.length === 0) {
+                        error = I18n.t('error.general.unknown', 'FrontListView.render()');
+                    }
+                    Utils.showModalWarning( I18n.t('error'), error);
                     if (app.debug) {
-                        var errors = json.errors ? json.errors.join("\n") : 'An unknown error has occurred';
-                        console.log("FrontListView.render: error(s) have occurred in AJAX call:\n" + errors);
+                        console.log( error.replace('<br/>', "\n") );
                     }
                     self.deferred.resolve(response);
                     self.trigger('view:update:end');

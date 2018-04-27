@@ -76,6 +76,11 @@ class App {
      * @var \App\App Singleton instance of this class
      */
 	private static $instance = NULL;
+
+    /**
+     * @var bool True if class used by admin pages
+     */
+    private static $is_admin = false;
 	
     /**
      * @var array Language translations for current locale
@@ -126,9 +131,11 @@ class App {
 	* errors if set to debug. An instance of this class will be a singleton.
 	* 
 	* @access private
+    * @param bool $is_admin True if instance in use for admin pages
 	* @return void
+    * @throws \App\Exception\AppException if an application error occurred, handled in this class
 	*/
-	private function __construct() {
+	private function __construct($is_admin) {
 		$doc_root = $_SERVER['DOCUMENT_ROOT'];
 		$app_path = __DIR__;
 		$web_root = str_replace('\\', '/', realpath($app_path.'/../../') );
@@ -140,7 +147,7 @@ class App {
 		
 		//set webroot and path to App
         define('DOC_ROOT', $doc_root);  // /full/path/to/docroot
-		define('API_DIR', $api_dir);    // [/baseurl]/api
+		define('API_DIR', $api_dir);    // api
 		define('APP_PATH', $app_path);  // [/baseurl]/api/App
 		define('WEB_ROOT', $web_root);  // /full/path/to/docroot[/baseurl]
 		define('WEB_BASE', $web_base);  // [/baseurl]
@@ -148,7 +155,8 @@ class App {
 		//set all PHP errors and exceptions to behandled by this class
 		set_error_handler( array($this, 'error_handler') );
 		set_exception_handler( array($this, 'exception_handler') );
-		
+
+        self::$is_admin = $is_admin;
 		$this->load_util('functions');
 		$this->config = $this->load_config('config');
 		$this->lang = $this->load_lang($this->config['locale']);
@@ -184,9 +192,11 @@ class App {
 	*/
 	public function __destruct() {
 		if ( ! empty($this->config['debug']) && ! empty(self::$debug_errors) ) {
-			$title = count(self::$debug_errors) === 1 ? 'An Application Error Has' : 'Application Errors Have';
+			$title = count(self::$debug_errors) === 1 ?
+                     error_str('error.general.single', '') :
+                     error_str('error.general.multi', '');
 			$out = '<div style="font-family:Arial;position:absolute;top:0;left:0;margin:15px;">';
-			$out .= '<p><strong>'.$title.' Occurred</strong></p>';
+			$out .= '<p><strong>'.$title.'</strong></p>';
 			
 			foreach (self::$debug_errors as $error) {
 				$out .=  '<p>'.nl2br($error).'</p>';
@@ -314,6 +324,7 @@ class App {
 	* @param mixed $files The filename or array of filenames
 	* @param bool $is_image True if image upload configuration, false for other file types
 	* @return mixed The upload configuration parameters or false if file config not found
+    * @throws \App\Exception\AppException if an application error occurred, handled in this class
 	*/
 	public function fileinfo($config_name, $files, $is_image) {
 		if ( empty($config_name) || empty($files) ) {
@@ -374,11 +385,13 @@ class App {
 	* Returns a singleton instance of this App class.
 	*
 	* @access public
+    * @param bool $is_admin True if instance in use for admin pages
 	* @return \App\App The singleton instance
+    * @throws \App\Exception\AppException if an application error occurred, handled in this class
 	*/
-	public static function get_instance() {
+	public static function get_instance($is_admin=false) {
 		if ( is_null(self::$instance) ) {
-			self::$instance = new self();
+			self::$instance = new self($is_admin);
 		}
 		return self::$instance;
 	}
@@ -391,7 +404,7 @@ class App {
 	* 
 	* @access public
 	* @param string $name The lang parameter name
-	* @return mixed The text translation value from the given parameter or false if undefined
+	* @return mixed The text translation value from the given parameter or the string parameter if undefined
 	*/
 	public function lang($name) {
 		if ( empty($name) ) {
@@ -400,6 +413,43 @@ class App {
 		
 		return isset($this->lang[$name]) ? $this->lang[$name] : $name;
 	}
+
+
+    /**
+     * lang_text
+     *
+     * Returns the text of a language translation (.txt) file from the current locale from the
+     * ./App/Lang/[lang]/[country]/text directory with a given filename parameter. This method
+     * is used for text translations for HTML or, in general, text too long to be placed in the
+     * main translation file.
+     *
+     * @access public
+     * @param string $filename The language file name, optionally minus .txt extension
+     * @return string The corresponding text from $filename or an empty string if
+     * $filename not found or parameter is empty
+     */
+    public function lang_text($filename) {
+        if ( empty($filename) ) {
+            return '';
+        }
+
+        $text = '';
+        $locale = empty($this->config['locale']) ? '' : $this->config['locale'];
+        $parts = explode('_', $locale);
+        if ( count($parts) === 2 ) {
+            $ext_check = strtolower( substr($filename, -4) );
+            if ($ext_check !== '.txt') {
+                $filename .= '.txt';
+            }
+            $dir =  dirname(__FILE__).DIRECTORY_SEPARATOR.'Lang'.DIRECTORY_SEPARATOR.$parts[0];
+            $dir .= DIRECTORY_SEPARATOR.$parts[1].DIRECTORY_SEPARATOR.'text'.DIRECTORY_SEPARATOR;
+            if ( is_file($dir.$filename) ) {
+                $text = file_get_contents($dir.$filename);
+            }
+        }
+
+        return empty($text) ? '' : $text;
+    }
 	
 	
 	/**
@@ -425,7 +475,8 @@ class App {
 	public function load_config($name) {
 		$error = '';
 		if ( empty($name) ) {
-			$error = 'Invalid param (string) $name: must not be empty value';
+            $msg_part = error_str('error.general.set', '(string) $name');
+            $error = error_str('error.type.param.invalid', $msg_part);
 		} else {
 			$dir =  dirname(__FILE__).DIRECTORY_SEPARATOR.'Config'.DIRECTORY_SEPARATOR;
 			$filename = $name.'.php';
@@ -443,6 +494,9 @@ class App {
                     // True to display all php errors in developement environment,
                     // false for production environment
                     $config['debug'] = $cfg['debug'];
+
+                    // Locale to use for I18n translations
+                    $config['locale'] = self::$is_admin ? $cfg['localeAdmin'] : $cfg['localeFront'];
 
                     // Number of default items to initially show in admin list pages
                     $config['admin_list_per_page'] = $cfg['adminPagerPerPage'];
@@ -477,7 +531,7 @@ class App {
 
 				return isset($config) ? $config : array();
 			} else {
-				$error = 'Configuration file not found: '.$dir.$filename;
+                $error = error_str('error.config.missing', $dir.$filename);
 			}
 		}
 		
@@ -502,12 +556,13 @@ class App {
 	public function load_lang($name) {
 		$error = '';
 		if ( empty($name) ) {
-			$error = 'Invalid param (string) $name: must not be empty value';
+            $msg_part = error_str('error.general.set', '(string) $name');
+            $error = error_str('error.type.param.invalid', $msg_part);
 		} else {
 			$locale = empty($this->config['locale']) ? '' : $this->config['locale'];
 			$parts = explode('_', $locale);
 			if (count($parts) !== 2) {
-				$error = 'Locale ($config[locale]) not set in ./App/Config/config.php';
+                $error = error_str('error.general.undefined.in', array('$config[locale]', './App/Config/config.php'));
 			} else {
 				$dir =  dirname(__FILE__).DIRECTORY_SEPARATOR.'Lang'.DIRECTORY_SEPARATOR;
 				$dir .= $parts[0].DIRECTORY_SEPARATOR.$parts[1].DIRECTORY_SEPARATOR;
@@ -516,7 +571,7 @@ class App {
 					include($dir.$filename);
 					return isset($lang) ? $lang : array();
 				} else {
-					$error = 'Language file not found: '.$dir.$filename;
+                    $error = error_str('error.lang.missing', $dir.$filename);
 				}
 			}
 		}
@@ -542,14 +597,15 @@ class App {
 	public function load_util($name) {
 		$error = '';
 		if ( empty($name) ) {
-			$error = 'Invalid param (string) $name: must not be empty value';
+            $msg_part = error_str('error.general.set', '(string) $name');
+            $error = error_str('error.type.param.invalid', $msg_part);
 		} else {
 			$dir =  dirname(__FILE__).DIRECTORY_SEPARATOR.'Util'.DIRECTORY_SEPARATOR;
 			$filename = $name.'.php';
 			if ( is_file($dir.$filename) ) {
 				require_once($dir.$filename);
 			} else {
-				$error = 'Utility file not found: '.$dir.$filename;
+                $error = error_str('error.util.missing', $dir.$filename);
 			}
 		}
 		
@@ -576,7 +632,8 @@ class App {
 	public function load_view($name, $data=array()) {
 		$error = '';
 		if ( empty($name) ) {
-			$error = 'Invalid param (string) $name: must not be empty value';
+            $msg_part = error_str('error.general.set', '(string) $name');
+            $error = error_str('error.type.param.invalid', $msg_part);
 		} else {
 			$dir =  dirname(__FILE__).DIRECTORY_SEPARATOR.'View'.DIRECTORY_SEPARATOR;
 			$filename = $name.'.phtml';
@@ -588,7 +645,7 @@ class App {
                 include($dir.$filename);
                 return ob_get_clean();
 			} else {
-				$error = 'View file not found: '.$dir.$filename;
+                $error = error_str('error.view.missing', $dir.$filename);
 			}
 		}
 		
@@ -607,6 +664,7 @@ class App {
 	* @param string $sess_cookie Optional name of the cookie holding the session ID
 	* @param int $sess_timeout Session lifetime in seconds, zero or false for default
 	* @return \App\User\Session The session singleton instance
+    * @throws \App\Exception\AppException if an application error occurred, handled in this class
 	*/
 	public static function session($sess_cookie='', $sess_timeout=0) {
 		return \App\User\Session::get_instance($sess_cookie, $sess_timeout);
@@ -623,6 +681,7 @@ class App {
 	* @param string $name The config key_name (minus "_image" or "_file" extension)
 	* @param bool $is_image True if image upload configuration, false for other file types
 	* @return mixed The upload configuration parameters or false if param $name not a key
+    * @throws \App\Exception\AppException if an application error occurred, handled in this class
 	*/
 	public function upload_config($name, $is_image) {
 		if ( empty($name) ) {

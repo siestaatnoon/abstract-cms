@@ -17,9 +17,9 @@ App\Exception\AppException;
  * In addition, provides functions to populate the CMS module form and list pages, and
  * retrieves data for frontend data population of these module pages.
  * 
- * [EXPLAIN MODULE DATA]
+ * [TODO: EXPLAIN MODULE DATA]
  * 
- * [EXPLAIN MODULE FORM DATA]
+ * [TODO:   EXPLAIN MODULE FORM DATA]
  * 
  * @author      Johnny Spence <info@projectabstractcms.com>
  * @copyright   2014 Johnny Spence
@@ -71,9 +71,15 @@ class Module extends \App\Module\Abstract_module {
 	 * Initializes the Module.
 	 * 
 	 * @access public
+     * @throws \App\Exception\AppException if an error occurs while loading module, rethrown and
+     * handled by \App\App class
 	 */
 	public function __construct($module_name='modules') {
-		parent::__construct($module_name);
+        try {
+            parent::__construct($module_name);
+        } catch (AppException $e) {
+            throw $e;
+        }
 	}
 	
 
@@ -93,8 +99,8 @@ class Module extends \App\Module\Abstract_module {
 	 */
 	public function add($data) {
 		if ($this->is_main_module && $this->is_called_by('create') === false ) {
-			$error = '\App\Module\Module.add() cannot be called for module [modules], use static ';
-			$error .= '\App\Module\Module::create() instead';
+			$args = array('\\App\\Module\\Module.add()', $this->module_name, '\\App\\Module\\Module::create()');
+            $error = error_str('error.module.static', $args);
 			throw new AppException($error, AppException::ERROR_FATAL);
 		}
 
@@ -112,8 +118,8 @@ class Module extends \App\Module\Abstract_module {
 	 * @param array $data The module definitions in an assoc array
 	 * @return mixed The Module object of the new module OR an array of 
 	 * errors in format array( 'errors' => (array) $errors) if the 
-	 * module was not properly created OR an App\Exception\SQLException 
-	 * is passed and to be handled by \App\App class if an SQL error occurred
+	 * module was not properly created
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 */
 	public static function create($data) {
 		$module = self::load();
@@ -156,7 +162,8 @@ class Module extends \App\Module\Abstract_module {
 			$fields_config = $row['field_data']['data_type'];
 			$new_model = Model::create_table($model_config, $fields_config, true);
 			if ($new_model === false) {
-				$errors[] = 'Module ['.$new_module_name.'] CREATE TABLE failed';
+			    $msg_part = __('module').' ['.$new_module_name.']';
+				$errors[] = error_str('error.sql.create', $msg_part);
 			} else {
 				self::$INSTANCES['models'][$new_module_name] = $new_model;
 			}
@@ -168,7 +175,7 @@ class Module extends \App\Module\Abstract_module {
 			);
 			$options = Options::create($o_config);
 			if ($options  === false) {
-				$errors[] = 'Options for module ['.$new_module_name.'] create failed';
+                $errors[] = error_str('error.module.options.create', array($new_module_name));
 			} else {
 			//add cached options object
 				self::$INSTANCES['options'][$new_module_name] = $options;
@@ -202,8 +209,9 @@ class Module extends \App\Module\Abstract_module {
                 try {
                     $rel = Relation::create_table($r_config, false);
                 } catch (AppException $ae) {
-                    $error = 'Relational table, module ['.$mod.'], for module ['.$new_module_name.'] CREATE TABLE failed';
-                    $errors[] = $error;
+                    $msg_part = __('relation').' '.__('module').' ['.$mod.']: ';
+                    $msg_part .= $ae->getMessage();
+                    $errors[] = error_str('error.sql.create', $msg_part);
                     continue;
                 }
                 $relations[$f] = $rel;
@@ -281,9 +289,7 @@ class Module extends \App\Module\Abstract_module {
                     }
                 }
                 if ( ! empty($mods) ) {
-                    $error = 'Module ['.$module_name.'] cannot be delete since it is a relation for module';
-                    $error .= (count($mods) === 1 ? '' : 's').' ['.implode('], [', $mods).']';
-                    $errors[] = $error;
+                    $errors[] = error_str('error.module.delete', array($module_name, implode('], [', $mods) ) );
                 }
                 $modules[$id] = $module_name;
             }
@@ -312,9 +318,10 @@ class Module extends \App\Module\Abstract_module {
 	 * form fields rows.
 	 * 
 	 * @access public
-	 * @param int $id The id of the module
-	 * @return mixed True if drop successful OR an array of errors that occurred OR an 
-	 * App\Exception\SQLException is passed and to be handled by \App\App class if an SQL error occurred
+	 * @param string $module_name The skug name of the module
+	 * @return mixed True if drop successful OR an array of errors that occurred in format
+     * array( 'errors' => (array) $errors)
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 */
 	public static function drop($module_name) {
 		$module = self::load();
@@ -324,7 +331,8 @@ class Module extends \App\Module\Abstract_module {
 		$errors = array();
 		
 		if ( empty($module_name) ) {
-		 	$errors[] = 'Param $module_name empty, must be module name';
+            $msg_part = error_str('error.module.slug', array('$module_name'));
+            $errors[] = error_str('error.type.param.invalid', $msg_part);
 		 	return $errors;
 		} 
 
@@ -349,7 +357,8 @@ class Module extends \App\Module\Abstract_module {
 					'relation_type' => $config['type']
 				);
 				if ( Relation::drop_table($r_config) === false ) {
-					$errors[] = 'Relational table, module ['.$mod.'], for module ['.$module_name.'] DROP TABLE failed';
+                    $msg_part = __('relation').' '.__('module').' ['.$mod.']';
+                    $errors[] = error_str('error.sql.drop', $msg_part);
 				} else {
 					//delete cached relation instance
 					unset(self::$INSTANCES['relations'][$module_name][$field]);
@@ -367,7 +376,8 @@ class Module extends \App\Module\Abstract_module {
 				'fields'		=> $module_data['field_data']['data_type']
 			);
 			if ( Model::drop_table($model_config) === false) {
-				$errors[] = 'Module ['.$module_name.'] DROP TABLE failed';
+                $msg_part = __('module').' ['.$module_name.']';
+                $errors[] = error_str('error.sql.drop', $msg_part);
 			} else {
 				//delete module instance from cache
 				unset(self::$INSTANCES['modules'][$module_name]);
@@ -380,7 +390,7 @@ class Module extends \App\Module\Abstract_module {
 			);
 			$options = Options::destroy($o_config);
 			if ($options  === false) {
-				$errors[] = 'Options for module ['.$module_name.'] destroy failed';
+                $errors[] = error_str('error.module.options.delete', array($module_name));
 			} else {
 			//delete cached options object
 				unset(self::$INSTANCES['options'][$module_name]);
@@ -405,6 +415,7 @@ class Module extends \App\Module\Abstract_module {
      * @param string $value The value for the form field
      * @param \App\User\Permission $permission The current CMS user Permission object
      * @return string The form field select HTML
+     * @throws \App\Exception\AppException if $permission parameter invalid, handled by \App\App class
      */
     public function form_field_slug_field($module_id, $value, $permission, $params=array()) {
         return $this->render_form_field_select('slug_field', $module_id, $value, $permission);
@@ -422,6 +433,7 @@ class Module extends \App\Module\Abstract_module {
      * @param string $value The value for the form field
      * @param \App\User\Permission $permission The current CMS user Permission object
      * @return string The form field select HTML
+     * @throws \App\Exception\AppException if $permission parameter invalid, handled by \App\App class
      */
     public function form_field_title_field($module_id, $value, $permission, $params=array()) {
         return $this->render_form_field_select('title_field', $module_id, $value, $permission);
@@ -493,6 +505,7 @@ class Module extends \App\Module\Abstract_module {
 	* @access public
 	* @param string $module_name The module name
 	* @return bool True if string is a module slug
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	*/
 	public static function is_module($module_name) {
 		if ( empty($module_name) ) {
@@ -516,7 +529,7 @@ class Module extends \App\Module\Abstract_module {
 	* @access public
 	* @param string The module name
 	* @return \App\Module\Abstract_module The module instance
-	* @throws \App\Exception\AppException if an error occurs while loading module
+	* @throws \App\Exception\AppException if an error occurs while loading module, handled by \App\App class
 	*/
 	public static function load($module_name='modules') {
 		if ( empty($module_name) ) {
@@ -552,8 +565,8 @@ class Module extends \App\Module\Abstract_module {
 	 * @param array $data The updated module definitions in an assoc array
 	 * @return mixed The Module object of the updated module OR an array of 
 	 * validation errors in format array( 'errors' => (array) $errors) if the module 
-	 * was not properly modified OR an App\Exception\SQLException is passed and to be 
-	 * handled by \App\App class if an SQL error occurred
+	 * was not properly modified
+     * @throws \App\Exception\AppException if an error occurs while loading module, handled by \App\App class
 	 */
 	public static function modify($data) {
 		$main_module = self::load();
@@ -564,10 +577,12 @@ class Module extends \App\Module\Abstract_module {
         $errors = array();
 
 		if ( empty($module_id) ) {
-			$errors[] = 'Param $data[id] empty value, must be module id';
+            $msg_part = error_str('error.module.id', array('$data[id]'));
+            $errors[] = error_str('error.type.param.invalid', $msg_part);
 		}
 		if ( empty($old_row) ) {
-			$errors[] = 'Module [ID: '.$module_id.'] does not exist';
+            $msg_part = '$data '.error_str('error.param.module.missing', array('ID: '.$module_id));
+            $errors[] = error_str('error.type.param.invalid', $msg_part);
 		}
 		if ( ! empty($errors) ) {
 			return $errors;
@@ -582,7 +597,7 @@ class Module extends \App\Module\Abstract_module {
 		$old_use_model = ! empty($old_module_data['use_model']);
 		if ($use_model !== $old_use_model) {
             if ($can_update_immutable === false) {
-                $error = 'Module ['.$old_module_name.'] cannot switch type model/options';
+                $error = error_str('error.module.options.change', $old_module_name);
                 return array('errors' => array($error) );
             } else {
             //module switched from using model to options, drop and return newly created
@@ -608,7 +623,7 @@ class Module extends \App\Module\Abstract_module {
             $module = self::load($module_name);
         } catch (AppException $ae) {
         // modules set to not allow change in name/slug then, return error
-            $error = 'Module ['.$module_name.'] cannnot be renamed from ['.$old_module_name.']';
+            $error = error_str('error.module.rename', array($old_module_name, $module_name));
             return array('errors' => array($error) );
         }
 
@@ -621,7 +636,7 @@ class Module extends \App\Module\Abstract_module {
 			$options = $module->load_options($module_name);
 			$options = $options->update_fields($new_module_data['field_data']['model']);
 			if ($options  === false) {
-				$errors[] = 'Options for module ['.$old_module_name.'] update failed';
+                $errors[] = error_str('error.module.options.update', array($old_module_name));
 			} else {
 			//update cached options object, return module object
 				self::$INSTANCES['options'][$module_name] = $options;
@@ -661,9 +676,9 @@ class Module extends \App\Module\Abstract_module {
                     try {
                         Relation::create_table($r_config, false);
                     } catch (AppException $ae) {
-                        $error = 'Relation, module [' . $mod . '], for module [' . $module_name;
-                        $error .= '] CREATE TABLE failed';
-                        $errors[] = $error;
+                        $msg_part = __('relation').' '.__('module').' ['.$mod.']: ';
+                        $msg_part .= $ae->getMessage();
+                        $errors[] = error_str('error.sql.create', $msg_part);
                         continue;
                     }
                 }
@@ -689,9 +704,9 @@ class Module extends \App\Module\Abstract_module {
                     try {
                         Relation::drop_table($r_config);
                     } catch (AppException $ae) {
-                        $error = 'Relational table, module [' . $mod . '], for module [' . $old_module_name;
-                        $error .= '] DROP TABLE failed';
-                        $errors[] = $error;
+                        $msg_part = __('relation').' '.__('module').' ['.$mod.']';
+                        $msg_part .= $ae->getMessage();
+                        $errors[] = error_str('error.sql.drop', $msg_part);
                         continue;
                     }
                 }
@@ -722,9 +737,9 @@ class Module extends \App\Module\Abstract_module {
                         $rel->update_field_name($field_name, $params['field_name']);
                     }
                 } catch (AppException $ae) {
-                    $error = 'Relational table, module [' . $mod . '], for module [' . $old_module_name;
-                    $error .= '] DROP TABLE failed';
-                    $errors[] = $error;
+                    $msg_part = __('relation').' '.__('module').' ['.$mod.']';
+                    $msg_part .= $ae->getMessage();
+                    $errors[] = error_str('error.sql.delete', $msg_part);
                     continue;
                 }
             }
@@ -814,7 +829,8 @@ class Module extends \App\Module\Abstract_module {
 			);
 
 			if ( Model::alter_table($model_config, $modify_params) === false ) {
-				$errors[] = 'Module ['.$old_module_name.'] ALTER TABLE failed';
+                $msg_part = __('module').' ['.$old_module_name.']';
+                $errors[] = error_str('error.sql.alter', $msg_part);
 			} else {
 				//delete cached model instance since it doesn't reflect updates
 				unset(self::$INSTANCES['models'][$old_module_name]);
@@ -836,6 +852,7 @@ class Module extends \App\Module\Abstract_module {
      * @return mixed True if reset successful, false if this function not called from "modules"
      * module or an array of errors in format array( 'errors' => (array) $errors) if errors
      * occurred during the operation
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
      */
 	public function reset($clear_all=false) {
 		if ($this->is_main_module === false) {
@@ -943,8 +960,8 @@ class Module extends \App\Module\Abstract_module {
 	 */
 	public function update($data) {
 		if ($this->is_main_module && $this->is_called_by('modify') === false ) {
-			$error = '\App\Module\Module.update() cannot be called for module [modules], use static ';
-			$error .= '\App\Module\Module::modify() instead';
+            $args = array('\\App\\Module\\Module.update()', $this->module_name, '\\App\\Module\\Module::modify()');
+            $error = error_str('error.module.static', $args);
 			throw new AppException($error, AppException::ERROR_FATAL);
 		}
 		
@@ -963,6 +980,7 @@ class Module extends \App\Module\Abstract_module {
 	 * @access protected
 	 * @param array $data The CMS form data
 	 * @return array The data converted to an assoc array for module table row
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 */
 	protected function module_form_data_to_row($data) {
         if (empty($data) || ! $this->is_main_module) {
@@ -1140,51 +1158,54 @@ class Module extends \App\Module\Abstract_module {
 	 * @param array $data The module row data as an assoc array
 	 * @param boolean $has_id True if $data param contains a non-empty id for the module row
 	 * @return mixed True if row data validated or an array of validation errors
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 */
 	protected function validate($data, $has_id=false) {
 		if ( ! $this->is_main_module) {
 			return true;
 		}
-		
-		$errors = array();
-		if ($has_id) {
-			if ( empty($data['id']) ) {
-				$errors[] = 'Module param [id] empty, must be module ID';
-			} else {
-				$old_module = parent::get_data($data['id'], false, true);
-				if ( empty($old_module) ) {
-					$errors[] = 'Module "'.$data['name'].'" does not exist and cannot be updated';
-				} else if ($data['name'] !== $old_module['name'] && array_key_exists($data['name'], parent::$MODULES) ) {
-					$errors[] = 'Module param [name] "'.$data['name'].'", already in use, must be unique name';
-				}
-			}
-		} else if ( array_key_exists($data['name'], parent::$MODULES) ) {
-			$errors[] = 'Module param [name] "'.$data['name'].'", already in use, must be unique name';
-		}
-		if ( empty($data['name']) ) {
-			$errors[] = 'Module ['.$data['name'].'] param [name] empty, must be name of module';
-		}
+
+        if ( empty($data['name']) ) {
+            $errors[] = error_str('error.module.slug', '$data[name]');
+        } else {
+            $module_name = $data['name'];
+            $errors = array();
+            if ($has_id) {
+                if (empty($data['id'])) {
+                    $errors[] = error_str('error.module.id', '$data[id]');
+                } else {
+                    $old_module = parent::get_data($data['id'], false, true);
+                    if (empty($old_module)) {
+                        $errors[] = ucfirst(error_str('error.general.missing', 'ID: '.$data['id']));
+                    } else if ($module_name !== $old_module['name'] && array_key_exists($module_name, parent::$MODULES)) {
+                        $errors[] = error_str('error.module.dupe', '$data[name] "'.$module_name.'"');
+                    }
+                }
+            } else if (array_key_exists($module_name, parent::$MODULES)) {
+                $errors[] = error_str('error.module.dupe', '$data[name] "'.$module_name.'"');
+            }
+        }
+
         if ( ! isset($data['use_model']) ) {
-            $errors[] = 'Module ['.$data['name'].'] param [use_model] not set';
+            $errors[] = error_str('error.param.missing', array('$data', 'use_model'));
         } else if ( ! empty($data['use_model']) ) {
             if ( empty($data['pk_field']) ) {
-                $errors[] = 'Module ['.$data['name'].'] param [pk_field] empty, must be name of module primary key field';
+                $errors[] = error_str('error.module.pk_field', '$data[pk_field]');
             }
             if ( empty($data['title_field']) ) {
-                $errors[] = 'Module ['.$data['name'].'] param [title_field] empty, must be name of module title reference field';
+                $errors[] = error_str('error.module.title_field', '$data[title_field]');
             }
             if ( empty($data['label_plural']) ) {
-                $errors[] = 'Module ['.$data['name'].'] param [label_plural] empty, must be plural display name of module';
+                $errors[] = error_str('error.module.label_plural', '$data[label_plural]');
             }
         }
 		if ( empty($data['label']) ) {
-			$errors[] = 'Module ['.$data['name'].'] param [label] empty, must be display name of module';
+            $errors[] = error_str('error.module.label', '$data[label]');
 		}
 		if ( empty($data['form_fields']) ) {
-			$errors[] = 'Module ['.$data['name'].'] param [form_fields] empty, must be array of \App\Form\Field\Form_field';
+            $errors[] = error_str('error.param.type', array('$data[form_fields]', '(array) \App\Form\Field\Form_field'));
 		}
 
-		
 		return empty($errors) ? true : $errors;
 	}
 
@@ -1388,12 +1409,14 @@ class Module extends \App\Module\Abstract_module {
      * @param string $value The value for the form field
      * @param \App\User\Permission $permission The current CMS user Permission object
      * @return string The form field select HTML
+     * @throws \App\Exception\AppException if $permission parameter invalid, handled by \App\App class
      *
      */
     private function render_form_field_select($field_name, $module_id, $value, $permission) {
         if ($permission instanceof \App\User\Permission === false ) {
-            $message = 'Invalid param $permission: must be instance of \\App\\User\\Permission';
-            throw new AppException($message, AppException::ERROR_FATAL);
+            $msg_part = error_str('error.param.type', array('$permission', '\\App\\User\\Permission'));
+            $error = error_str('error.type.param.invalid', $msg_part);
+            throw new AppException($error, AppException::ERROR_FATAL);
         } else if ( empty($field_name) ) {
             return '';
         }

@@ -21,10 +21,12 @@ require.config({
             exports: '_'
         },
 
-        'jquerymobile':       ['config', 'jquery'],
-        'backbone.paginator': ['underscore', 'backbone'],
-        'classes/Class': 	  ['config', 'jquery', 'underscore'],
-        'classes/Utils': 	  ['config', 'jquery', 'underscore']
+        'jquerymobile':             ['config', 'jquery'],
+        'backbone.paginator':       ['underscore', 'backbone'],
+        'classes/I18n':             ['config', 'jquery', 'underscore'],
+        'classes/Class': 	        ['config', 'jquery', 'underscore'],
+        'classes/Utils': 	        ['config', 'jquery', 'underscore'],
+        'classes/FormValidator': 	['config', 'jquery', 'underscore', 'classes/Class', 'classes/I18n'],
     }
 });
 

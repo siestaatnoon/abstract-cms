@@ -3,8 +3,9 @@ define([
     'jquery',
     'underscore',
     'backbone',
-    'classes/Utils'
-], function(app, $, _, Backbone, Utils) {
+    'classes/Utils',
+    'classes/I18n'
+], function(app, $, _, Backbone, Utils, I18n) {
     $(function() {
         var userCheckUri = 'check_user';
         var permDefault = {
@@ -91,18 +92,23 @@ define([
                     dataType: 	'json'
                 }).done(function(data) {
                     if ( parseInt(data) === 0 ) {
-                        var error = (isUsername ? 'Username' : 'Email') + ' [' + val + '] already in use';
+                        var type = isUsername ? I18n.t('username') : I18n.t('email');
+                        var error = I18n.t('error.general.exists', [type, val]);
                         Utils.showFieldError($field, error);
                         isValidForm = false;
                     } else if (data.errors) {
-                        var error_msg = data.errors.join('<br/><br/>');
-                        Utils.showModalWarning('Error', error_msg);
+                        var error_msg = data.errors.join('<br/>');
+                        Utils.showModalWarning( I18n.t('error'), error_msg);
                         isValidForm = false;
                     }
                     $submit.attr('disabled', false);
-                }).fail(function(jqXHR, status, error) {
-                    var error = 'Warning: ' + (isUsername ? 'username' : 'email') + ' [' + val + '] could not be verified';
-                    Utils.showModalWarning('Error', error);
+                }).fail(function() {
+                    var resp = Utils.parseJqXHR(jqXHR);
+                    var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                    if (error.length === 0) {
+                        error = I18n.t('error.general.unknown', 'jquery.mobile.admin.users');
+                    }
+                    Utils.showModalWarning( I18n.t('error'), error);
                     isValidForm = false;
                 }).then(defer.resolve, defer.reject);
             }).promise();

@@ -56,11 +56,6 @@ $config['db_table_prefix'] = 'aa_';
 $config['error_log'] = '../logs/errors.log';
 
 /**
- * Locale to use for I18n internacionalization
- */
-$config['locale'] = 'en_US';
-
-/**
  * Set true to display all application and php errors and should
  * only be set to true in development environment
  */

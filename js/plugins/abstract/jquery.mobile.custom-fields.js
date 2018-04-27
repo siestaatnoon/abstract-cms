@@ -1,8 +1,9 @@
 define([
 	'config',
 	'jquery',
-	'classes/Utils'
-], function(app, $, Utils) {
+	'classes/Utils',
+    'classes/I18n'
+], function(app, $, Utils, I18n) {
 	$(function() {
 		var deferreds = [];
 
@@ -26,8 +27,8 @@ define([
 			}
 			
 			if (is_complete && errors.length) {
-				error_msg = errors.join('<br/><br/>');
-				Utils.showModalWarning('Error', error_msg);
+				error_msg = errors.join('<br/>');
+				Utils.showModalWarning( I18n.t('error'), error_msg);
 			}
 		};
 		
@@ -60,10 +61,13 @@ define([
 					} else if (data.errors) {
 						setErrors(field, data.errors);
 					}
-				}).fail(function(jqXHR, status, error) {
-					var error_msg = 'Custom field not retrieved for module [' + data['module'] + '], field [' ;
-					error_msg += data['field'] + '], ID [' + data['id'] + '].';
-					setErrors(field, [error_msg]);
+				}).fail(function(jqXHR) {
+                    var resp = Utils.parseJqXHR(jqXHR);
+                    var errors = resp.errors.length ? resp.errors : (resp.response.length ? [resp.response] : []);
+                    if (errors.length === 0) {
+                        errors = [ I18n.t('error.general.unknown', 'jquery.mobile.custom-fields') ];
+                    }
+					setErrors(field, errors);
 				}).then(defer.resolve, defer.reject);
 			}).promise();
 

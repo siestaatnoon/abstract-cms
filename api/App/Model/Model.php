@@ -11,7 +11,7 @@ App\Module\Module;
 /**
  * Model class
  * 
- * Provides the database functions for a App\Module\Module object. The functions are limited to
+ * Provides the database functions for a App\Module\Abstract_module object. The functions are limited to
  * insert, update and delete as well as setting rows active (show on frontend or not), archived
  * (showing in CMS AND frontend or not) and sorting of rows. This class also provides functions
  * to generate unique SEO friendly URI segments (slugs) for rows.
@@ -181,23 +181,24 @@ class Model {
 		$errors = array();
 		
 		if ( empty($config['module']) ) {
-			$errors[] = '[module] empty, must be name of module utilizing this model';
+            $errors[] = error_str('error.param.module', array('$config[module]'));
 		}
 		if ( empty($config['fields']) || ! is_array($config['fields']) ) {
-			$errors[] = '[fields] empty or not array, must be assoc array of model field names and default values ['.$config['module'].']';
+			$errors[] = error_str('error.param.fields.array', array('$config[fields]'));
 		}
 		if ( empty($config['pk_field']) ) {
-			$errors[] = '[pk_field] empty, must be name of model table primary key field ['.$config['module'].']';
+            $errors[] = error_str('error.module.pk_field', array('$config[pk_field]'));
 		}
 		if ( empty($config['title_field']) ) {
-			$errors[] = '[title_field] empty, must be name of model field to identify row by name ['.$config['module'].']';
+			$errors[] = error_str('error.module.title_field', array('$config[title_field]'));
 		}
 		if ( ! empty($config['slug_field']) && ! array_key_exists($config['slug_field'], $config['fields']) ) {
-			$errors[] = '[slug_field] must be name of model field, "'.$config['slug_field'].'" not found ['.$config['module'].']';
+			$errors[] = error_str('error.module.slug_field', array('$config[slug_field]'));
 		}
 		
 		if ( ! empty($errors) ) {
-			$message = 'Invalid param (array) $config'.implode("\n", $errors);
+            $message = error_str('error.type.param.invalid', array('(array) $config: '));
+            $message .= implode(",\n", $errors);
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 		
@@ -309,7 +310,7 @@ class Model {
 	 * <br/><br/>
 	 * Note that invalid parameters values are ignored.
 	 * @return boolean True if operation successful or false if $options param empty or has invalid data
-	 * or an App\Exception\SQLException is passed and to be handled by \App\App class if an SQL error occurred
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 * @see __construct() for model configuration parameters
 	 */
 	public static function alter_table($model_config, $options) {
@@ -365,7 +366,7 @@ class Model {
 	 * </ul>
 	 * @param boolean $drop_if_exists True to first drop table if exists before creating
 	 * @return mixed The Model object if create successful, false if operation not performed
-	 * or an App\Exception\SQLException is passed and to be handled by \App\App class if an SQL error occurred
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 * @see __construct() for model configuration parameters
 	 */
 	public static function create_table($model_config, $fields, $drop_if_exists=false) {
@@ -422,9 +423,7 @@ class Model {
 	 *
 	 * @access public
 	 * @param mixed $mixed The row id or array of ids
-	 * @return boolean True if delete successful, false if not or an 
-	 * App\Exception\SQLException is passed and to be handled by 
-	 * \App\App class if an SQL error occurred
+	 * @return boolean True if delete successful, false if not
 	 */
 	public function delete($mixed) {
 		if ( empty($mixed)) {
@@ -453,8 +452,8 @@ class Model {
 	 *
 	 * @access public
 	 * @param array $model_config The model configuration assoc array, similar to constructor
-	 * @return boolean True if operation successful or an App\Exception\SQLException 
-	 * is passed and to be handled by \App\App class if an SQL error occurred
+	 * @return boolean True if operation successful
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 * @see __construct() for model configuration parameters
 	 */
 	public static function drop_table($model_config) {
@@ -654,8 +653,7 @@ class Model {
 	 * 
 	 * @access public
 	 * @param array $params The parameters for the query
-	 * @return mixed The query result in an assoc array or false if query failed an
-	 * App\Exception\SQLException is passed and to be handled by \App\App class if an 
+	 * @return mixed The query result in an assoc array or false if query failed
 	 * SQL error occurred
 	 */
 	public function get_rows($params=array()) {
@@ -1529,8 +1527,8 @@ class Model {
 		$change_fields = array();
 
 		if ($data_type === false) {
-			$mesage = 'Config $config[data_type] not found in ./App/Config/model.php';
-			throw new AppException($mesage, AppException::ERROR_FATAL);
+            $message = error_str('error.param.missing.in', array('$config[data_type]', './App/Config/model.php'));
+			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 		
 		foreach ($options as $option => $mixed) {

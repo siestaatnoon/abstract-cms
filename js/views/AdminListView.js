@@ -9,8 +9,9 @@ define([
 	'backgrid.textcell',
 	'classes/ScriptLoader',
 	'classes/Utils',
+    'classes/I18n',
 	'views/AdminListUpdaterView'
-], function(app, $, _, Backbone, Backgrid, BBPaginator, Paginator, TextCell, ScriptLoader, Utils, AdminListUpdaterView) {
+], function(app, $, _, Backbone, Backgrid, BBPaginator, Paginator, TextCell, ScriptLoader, Utils, I18n, AdminListUpdaterView) {
 	var AdminListView = Backbone.View.extend({
 
 		id: '#tpl-list-view',
@@ -191,7 +192,7 @@ define([
                         self.grid = new Backgrid.Grid({
                             columns: self.collection.columns,
                             collection: self.collection,
-                            emptyText: 'No records found',
+                            emptyText: I18n.t('message.items.not.found'),
                             presort: function() {
                                 self.trigger('view:update:start');
                                 self.$container.empty();
@@ -221,17 +222,15 @@ define([
                     deferred.resolveWith(self.collection);
                 },
                 error: function(collection, response, options) {
-                    var json = response.responseJSON;
-                    var error_msg = 'Error(s) have ocurred while rendering list view';
-                    var error_modal = error_msg;
-                    if ( app.debug && _.has(json, 'errors') ) {
-                        if (json.errors.length) {
-                            error_msg += ":\n" + json.errors.join("\n");
-                            error_modal = json.errors.join('<br/><br/>');
-                        }
-                        console.log(error_msg);
+                    var resp = Utils.parseJqXHR(response);
+                    var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                    if (error.length === 0) {
+                        error = I18n.t('error.general.unknown', 'AdminListView.render()');
                     }
-                    Utils.showModalWarning('Error', error_modal);
+                    Utils.showModalWarning( I18n.t('error'), error);
+                    if (app.debug) {
+                        console.log( error.replace('<br/>', "\n") );
+                    }
                     deferred.resolveWith(self, []);
                 }
             });
@@ -247,7 +246,7 @@ define([
 			if (end > total) {
 				end = total;
 			}
-			return 'Results ' + start + ' - ' + end + ' of ' + total + ' total';
+			return I18n.t('list.results.title', [start, end, total]);
 		},
 		
 		_setGrid: function() {
@@ -309,7 +308,7 @@ define([
 			var columns = this.collection.columns;
 			var state = this.collection.state;
 			var $select = $('<select/>');
-			var sort = ['descending', 'ascending'];
+			var sort = [ I18n.t('descending'), I18n.t('ascending')];
 			var self = this;
 
 			for (var i=0; i < columns.length; i++) {
@@ -322,7 +321,7 @@ define([
                             (j === 1 && state.order === -1)
                         );
 						$('<option/>', {
-							text: 'Sort by: ' + column.label + ' ' + sort[j],
+							text: I18n.t('sort.by') + ': ' + column.label + ' ' + sort[j],
 							val: column.name + ':' + sort[j],
 							selected: is_selected
 						}).appendTo($select);

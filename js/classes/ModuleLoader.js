@@ -3,8 +3,9 @@ define([
 	'jquery',
 	'underscore',
 	'classes/Utils',
+    'classes/I18n',
     'classes/Class'
-], function(app, $, _, Utils) {
+], function(app, $, _, Utils, I18n) {
 
 	/**
 	 * Configures the API urls and loads data for application modules.
@@ -14,6 +15,7 @@ define([
 	 * @requires jQuery
 	 * @requires Underscore
 	 * @requires classes/Utils
+     * @requires classes/I18n
 	 * @requires classes/Class
 	 * @constructor
 	 * @augments classes/Class
@@ -146,44 +148,49 @@ define([
          * @return {jqXHR} The jQuery XMLHttpRequest object
          */
 		loadData: function() {
-			if ( ! this._hasModule) {
-				if (app.debug) {
-					console.log('ModuleLoader.loadData: setModule() must be called to initialize data retrieval');
-				}
+            var message = '';
+            if ( ! this._hasModule) {
+                message = I18n.t('error.module.init', 'ModuleLoader.loadData: setModule()');
+                console.log(message);
 				return false;
 			}
 			
 			var deferred = $.Deferred();
 			var self = this;
-			var error_label = 'Error';
-			var error_msg  = '';
+			var error_label = I18n.t('error');
 
 			$.ajax({
 				url : self._apiRoot,
 				type: 'GET',
 				dataType: 'json'
 			}).done(function(data) {
-				var errors = data.errors || [];
-				if (errors.length === 0) {
-					if (app.debug) {
-						console.log('ModuleLoader: [' + self._module + '] data retrieved ' + self._apiRoot);
-					}
-					self._deferredData = _.extend(self._deferredData, data);
-					var clone = _.clone(self._deferredData);
-					deferred.resolve(clone);
-				} else {
-					if (app.debug) {
-						console.log( errors.join("\n") );
-					}
-                    error_msg = errors.join('<br/><br/>');
-					Utils.showModalWarning(error_label, error_msg);
-				}
+                if (app.debug) {
+                    var args = [
+                        'ModuleLoader.loadData: [' + self._module + ']',
+                        self._apiRoot
+                    ];
+                    message = I18n.t('message.data.loaded', args);
+                    console.log(message);
+                }
+                self._deferredData = _.extend(self._deferredData, data);
+                var clone = _.clone(self._deferredData);
+                deferred.resolve(clone);
 			}).fail(function(jqXHR) {
-				if (app.debug) {
-					error_msg = 'ModuleLoader: [' + self._module + '] data not retrieved [' + jqXHR.status;
-					error_msg += '] ' + jqXHR.statusText + '.';
-					console.log(error_msg);
-				}
+                var resp = Utils.parseJqXHR(jqXHR);
+                var error = resp.errors.length ? resp.errors.join("\n") : resp.response;
+
+                // NOTE: show alert() instead of modal error since HTML
+                // may be contained in this AJAX call and/or modal error
+                // may not be set up
+                //
+                //Utils.showModalWarning('Error', error);
+				if (app.isAdmin && error.length) {
+                    alert(error);
+                    if (app.debug) {
+                        console.log(error);
+                    }
+                }
+
                 self.errorCallback.call(this, jqXHR, deferred);
 			});
 					

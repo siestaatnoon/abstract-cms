@@ -38,7 +38,8 @@ class ResultMysqli extends \App\Database\Driver\Result {
 	 */
 	public function __construct($mysqli_result) {
 		if ( empty($mysqli_result) || ! $mysqli_result instanceof mysqli_result) {
-			$message = 'Invalid param (mysqli_result) $mysqli_result must be of type mysqli_result';
+            $msg_part = error_str('error.param.type', array('$mysqli_result', 'mysqli_result'));
+            $message = error_str('error.type.param.invalid', array($msg_part));
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 		

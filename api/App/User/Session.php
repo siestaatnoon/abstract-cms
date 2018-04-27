@@ -132,6 +132,7 @@ class Session {
 	 * @access private
 	 * @param string $sess_cookie Optional name of the cookie holding the session ID
 	 * @param int $sess_timeout Session lifetime in seconds, zero or false for default
+     * @throws \App\Exception\AppException if an error occurs while loading module, handled by \App\App class
 	 */
 	private function __construct($sess_cookie='', $sess_timeout=0) {
 		$App = App::get_instance();
@@ -194,6 +195,7 @@ class Session {
 	* @param string $sess_cookie Optional name of the cookie holding the session ID
 	* @param int $sess_timeout Session lifetime in seconds, zero or false for default
 	* @return \App\Session The singleton instance
+    * @throws \App\Exception\AppException if an error occurs while loading module, handled by \App\App class
 	*/
 	public static function get_instance($sess_cookie='', $sess_timeout=0) {
 		if ( empty(self::$instance) ) {
@@ -585,9 +587,9 @@ class Session {
 	 * write
 	 *
 	 * Saves the current session data to the database.<br/><br/>
-	* NOTE: If $sess_timeout param greater than one day then calls to $this->get_data(),
-	* $this->set_data(), this->touch() and $this->unset_data() will not reset the
-	* session countdown.
+	 * NOTE: If $sess_timeout param greater than one day then calls to $this->get_data(),
+	 * $this->set_data(), this->touch() and $this->unset_data() will not reset the
+	 * session countdown.
 	 *
 	 * @access protected
 	 * @return void
@@ -652,7 +654,7 @@ class Session {
      * Encrypt the given data
      *
      * @param mixed $data Session data to encrypt
-     * @return mixed $data Encrypted data
+     * @return string The encrypted data
      */
     private function encrypt($data) {
         $ivsize = openssl_cipher_iv_length(self::$ENCRYPT_METHOD);

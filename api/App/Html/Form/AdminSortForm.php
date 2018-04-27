@@ -137,16 +137,17 @@ class AdminSortForm {
         $errors = array();
 
         if ( empty($config['module_name']) ) {
-            $errors[] = '$config[module_name] empty, must be name of module';
+            $errors[] = error_str('error.module.slug', '$config[module_name]');
         }
 
         $this->module_name = $config['module_name'];
         $this->module = Module::load($this->module_name);
         if ( $this->module->has_sort() === false ) {
-            $errors[] = '$config[module_name] module ['.$this->module_name.'] not configured to use sorting';
+            $errors[] = error_str('error.module.sorting', '$config[module_name] "'.$this->module_name.'"');
         }
         if ( ! empty($errors) ) {
-            $message = 'Invalid param (array) $config: '.implode("\n", $errors);
+            $message = error_str('error.type.param.invalid', array('(array) $config: '));
+            $message .= implode(",\n", $errors);
             throw new AppException($message, AppException::ERROR_FATAL);
         }
 
@@ -192,6 +193,7 @@ class AdminSortForm {
      * @access public
      * @return array Associative array containing the form HTML, CSS/javascript includes and
      * javascript onload/unload to excecute
+     * @throws \App\Exception\AppException if an error occurs while loading module, handled by \App\App class
      */
     public function generate() {
         $module_data = $this->module->get_module_data();

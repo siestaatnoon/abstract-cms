@@ -65,6 +65,7 @@ class Authenticate {
 	 * Initializes the Authenticate class with default values.
 	 * 
 	 * @access public
+     * @throws \App\Exception\AppException if an error occurs while loading module, handled by \App\App class
 	 */
 	public function __construct() {
 		$this->App = App::get_instance();
@@ -137,7 +138,6 @@ class Authenticate {
 	 * Authorizes a page request in the CMS or a request to the API. Checks for
 	 * valid CRSF token and validates a user's permission for the request.
 	 * 
-	 * 
 	 * @access public
 	 * @param string $module_name The module name (slug)
 	 * @param string $method The request method, one of GET, POST, PUT or DELETE
@@ -181,7 +181,8 @@ class Authenticate {
 	 * 
 	 * @access public
 	 * @param string $module_name The module name (slug)
-	 * @return mixed The \App\User\Permission object or NULL if user or module name param invalid 
+	 * @return mixed The \App\User\Permission object or NULL if user or module name param invalid
+     * @throws \App\Exception\AppException if an error occurs while loading module, handled by \App\App class
 	 */
 	public function get_permission($module_name) {
 		$module = $this->modules->get_module_data($module_name);
@@ -215,7 +216,7 @@ class Authenticate {
 	/**
 	 * get_session
 	 *
-	 * Returns the CMS user Session object
+	 * Returns the CMS user Session object.
 	 * 
 	 * @access public
 	 * @return \App\User\Session The Session object
@@ -275,7 +276,7 @@ class Authenticate {
      * Checks if a user is currently logged in.
      *
      * @access public
-     * @return bool True if user curently logged in
+     * @return bool True if user currently logged in
      */
     public function is_logged_in() {
         $this->session = $this->get_session();
@@ -289,9 +290,9 @@ class Authenticate {
      *
      * Clears a user's login attempt.
      *
+     * @access private
      * @param  string $ip The user IP address
      * @return bool True if operation successful
-     * @access private
      */
     private function clear_attempt($ip) {
         return $this->Users->get_model()->clear_login_attempt($ip);
@@ -341,9 +342,9 @@ class Authenticate {
      *
      * Checks if user is locked out due to too many login attempts.
      *
+     * @access private
      * @param  string $ip The user IP address
      * @return bool True if locked out or false if lockout disabled or not locked out
-     * @access private
      */
     private function is_locked_out($ip) {
         $login_attempts = $this->App->config('login_max_attempts');
@@ -362,9 +363,9 @@ class Authenticate {
 	 *
 	 * Adds a user login attempt and returns the lockout timeout in seconds if max attempts reached.
 	 *
+     * @access private
 	 * @param  string $ip The user IP address
 	 * @return mixed The lockout timeout in seconds or false if lockout disabled
-	 * @access private
 	 */
 	private function set_attempt($ip) {
 		$login_attempts = $this->App->config('login_max_attempts');

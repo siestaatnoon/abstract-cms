@@ -29,7 +29,7 @@ App\Exception\AppException;
  * @copyright   2014 Johnny Spence
  * @link        http://www.projectabstractcms.com
  * @version     0.1.0
- * @package		App\Model
+ * @package		App\Module
  */
 abstract class Abstract_module {
 	
@@ -61,7 +61,7 @@ abstract class Abstract_module {
 	protected $App;
 	
     /**
-     * @var boolean True if module definition is the "modules" module
+     * @var bool True if module definition is the "modules" module
      */
 	protected $is_main_module;
 	
@@ -103,8 +103,8 @@ abstract class Abstract_module {
 	 * 
 	 * @access public
 	 * @param string $module_name The module name
-	 * @throws \App\Exception\AppException if $module_name does not exist or modules configuration
-	 * in ./App/Config/modules.php is missing or contains invalid data
+	 * @throws \App\Exception\AppException if modules configuration
+	 * in ./App/Config/modules.php contains invalid or missing data
 	 */
 	public function __construct($module_name='modules') {
 		$this->App = App::get_instance();
@@ -118,7 +118,7 @@ abstract class Abstract_module {
 			empty($modules_config['modules']['field_data']) || 
 			empty($modules_config['modules']['field_data']['model']) || 
 			empty($modules_config['modules']['field_data']['relations']) ) {
-			$error = './App/Config/modules.php does not exist or contains invalid data';
+            $error = error_str('error.param.invalid', array('./App/Config/modules.php') );
 			throw new AppException($error, AppException::ERROR_FATAL);
 		}
 		
@@ -136,7 +136,8 @@ abstract class Abstract_module {
 		);
 		$model = $this->load_model($config);
 		if ( is_array($model) && key($model) === 'errors') {
-			$message = 'Error(s) have occurred loading modules model: '.implode("\n", $model['errors']);
+		    $args = array( ': '.implode("\n", $model['errors']) );
+            $message = error_str('error.general.multi', $args);
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 		self::$MODULES_MODEL = $model;
@@ -166,6 +167,7 @@ abstract class Abstract_module {
 	 * @return mixed The primary key of the inserted row OR an array of errors in format 
 	 * array( 'errors' => (array) $errors) if insert unsuccessful OR an App\Exception\SQLException 
 	 * is passed and to be handled by \App\App class if an SQL error occurred
+     * @throws AppException if an error occurs retrieving relational data
 	 */
 	public function add($data) {
 		if ( empty($data) || ! $this->module['use_model'] ) {
@@ -186,57 +188,61 @@ abstract class Abstract_module {
 
 		if ( empty($id) ) {
 			$title_field = $this->model->get_property('title_field');
-			$errors[] = 'Module ['.$this->module['name'].'], INSERT failed for row "'.$row[$title_field].'"';
+            $errors[] = error_str('error.sql.insert', array('"'.$row[$title_field].'"'));
 			return array('errors' => $errors);
 		}
 		
 		//add relational rows
-		$relations = $this->get_relations();
-        $rel_config = $this->module['field_data']['relations'];
-		foreach ($relations as $field_name => $rel) {
-		    $module_name = empty($rel_config[$field_name]['module']) ? '' : $rel_config[$field_name]['module'];
-			if ( ! empty($field_name) && ! empty($row[$field_name]) ) {
-				$indep_ids = array();
-				$rel_data = $row[$field_name];
-				$rel_type = $rel->get_property('relation_type');
-				$is_1toN = $rel_type === $rel::RELATION_TYPE_1N;
-				$rel_module = $is_1toN ? Module::load($module_name) : NULL;
-				
-				//set args to pass into relation add
-				$args = isset($row[$field_name.'_args']) ? $row[$field_name.'_args'] : false;
+        try {
+            $relations = $this->get_relations();
+            $rel_config = $this->module['field_data']['relations'];
+            foreach ($relations as $field_name => $rel) {
+                $module_name = empty($rel_config[$field_name]['module']) ? '' : $rel_config[$field_name]['module'];
+                if (!empty($field_name) && !empty($row[$field_name])) {
+                    $indep_ids = array();
+                    $rel_data = $row[$field_name];
+                    $rel_type = $rel->get_property('relation_type');
+                    $is_1toN = $rel_type === $rel::RELATION_TYPE_1N;
+                    $rel_module = $is_1toN ? Module::load($module_name) : NULL;
 
-				if ( is_array($rel_data) ) { 
-					if ($is_1toN) {
-					//relation 1:n, indep object data
-						foreach ($rel_data as $rd) {
-							if (($result = $rel_module->validate($rd)) !== true) {
-								//validate relational data
-								$errors = array_merge($errors, $result);
-								continue;
-							}
-							$indep_id = $rel_module->add($rd);
-							if ( is_array($indep_id) ) {
-								$errors = array_merge($errors, $indep_id['errors']);
-								continue;
-							}
-							$indep_ids[] = $indep_id;
-						}
-					} else {
-					//relation n:n, array of indep ids
-						$indep_ids = $rel_data;
-					}
-				} else {
-				//relation n:1, so single id
-					$indep_ids[] = $rel_data;
-				}
+                    //set args to pass into relation add
+                    $args = isset($row[$field_name.'_args']) ? $row[$field_name.'_args'] : false;
 
-				if ( $rel->add($id, $indep_ids, $field_name, $args) === false ) {
-					$message = 'Module relation ['.$this->module_name.'], INSERT failed for ID: ';
-					$message .= implode(', ', $indep_ids);
-					$errors[] = $message;
-				}
-			}
-		}
+                    if (is_array($rel_data)) {
+                        if ($is_1toN) {
+                            //relation 1:n, indep object data
+                            foreach ($rel_data as $rd) {
+                                if (($result = $rel_module->validate($rd)) !== true) {
+                                    //validate relational data
+                                    $errors = array_merge($errors, $result);
+                                    continue;
+                                }
+                                $indep_id = $rel_module->add($rd);
+                                if (is_array($indep_id)) {
+                                    $errors = array_merge($errors, $indep_id['errors']);
+                                    continue;
+                                }
+                                $indep_ids[] = $indep_id;
+                            }
+                        } else {
+                            //relation n:n, array of indep ids
+                            $indep_ids = $rel_data;
+                        }
+                    } else {
+                        //relation n:1, so single id
+                        $indep_ids[] = $rel_data;
+                    }
+
+                    if ($rel->add($id, $indep_ids, $field_name, $args) === false) {
+                        $msg_part = __('relation').' ['.$this->module_name.'] ID: '.implode(', ', $indep_ids);
+                        $message = error_str('error.sql.insert', array($msg_part) );
+                        $errors[] = $message;
+                    }
+                }
+            }
+        } catch (AppException $e) {
+		    throw $e;
+        }
 		
 		//reset the static modules list of this class
 		if ( $this->is_main_module && empty($errors) ) {
@@ -248,15 +254,17 @@ abstract class Abstract_module {
 
 
     /**
-     * add
+     * bulk_update
      *
-     * Inserts a module table row from an assoc array of fields => values.
+     * Handles an update to multiple module rows, either setting active/inactive, archive/unarchive or deleting.
      *
      * @access public
-     * @param array $data The fields and corresponding values to insert
-     * @return mixed The primary key of the inserted row OR an array of errors in format
-     * array( 'errors' => (array) $errors) if insert unsuccessful OR an App\Exception\SQLException
-     * is passed and to be handled by \App\App class if an SQL error occurred
+     * @param string $task The bulk task to perform (active, inactive, archive, unarchive,
+     * delete)
+     * @param array $ids The array of row IDs to update
+     * @return mixed TRUE if update successful, FALSE if either parameter(s) invalid OR an array of
+     * errors in format array( 'errors' => (array) $errors) if insert unsuccessful
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
      */
     public function bulk_update($task, $ids) {
         if ( empty($task) || empty($ids) || empty($this->module['use_model']) ) {
@@ -268,22 +276,26 @@ abstract class Abstract_module {
         switch($task) {
             case 'active':
                 if ( $this->model->set_active($ids, true) === false ) {
-                    $errors[] = 'An error occurred while setting items active';
+                    $param = ' '.error_str('error.while.active');
+                    $errors[] = error_str('error.general.single', array($param));
                 }
                 break;
             case 'inactive':
                 if ( $this->model->set_active($ids, false) === false ) {
-                    $errors[] = 'An error occurred while setting items inactive';
+                    $param = ' '.error_str('error.while.inactive');
+                    $errors[] = error_str('error.general.single', array($param));
                 }
                 break;
             case 'archive':
                 if ( $this->model->set_archive($ids, true) === false ) {
-                    $errors[] = 'An error occurred while archiving items';
+                    $param = ' '.error_str('error.while.archive');
+                    $errors[] = error_str('error.general.single', array($param));
                 }
                 break;
             case 'unarchive':
                 if ( $this->model->set_archive($ids, false) === false ) {
-                    $errors[] = 'An error occurred while unarchiving items';
+                    $param = ' '.error_str('error.while.unarchive');
+                    $errors[] = error_str('error.general.single', array($param));
                 }
                 break;
             case 'delete':
@@ -291,7 +303,8 @@ abstract class Abstract_module {
                 if ( is_array($result) ) {
                     $errors = $result;
                 } else if ($result === false) {
-                    $errors[] = 'An error occurred while deleting items';
+                    $param = ' '.error_str('error.while.delete');
+                    $errors[] = error_str('error.general.single', array($param));
                 }
                 break;
             default:
@@ -312,9 +325,9 @@ abstract class Abstract_module {
 	 * @access public
 	 * @param mixed $mixed The row id or array of ids to delete
 	 * @return mixed True if delete successful OR an array of errors if delete 
-	 * unsuccessful OR false if empty $mixed parameter OR an App\Exception\SQLException 
-	 * is passed and to be handled by \App\App class if an SQL error occurred
-	 */
+	 * unsuccessful OR false if empty $mixed parameter
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
+     */
 	public function delete($mixed) {
 		if ( empty($mixed) || ! $this->module['use_model'] || ! $this->module['use_delete'] ) {
 		//no data to update or module uses options model, or delete not active for module
@@ -341,17 +354,17 @@ abstract class Abstract_module {
 				if ($relation_type === $rel::RELATION_TYPE_1N) {
 				//delete relation table rows if type 1:n
 					if ( $indep_model->delete($rel_ids) === false ) {
-						$error = 'Module ['.$this->module['name'].', ID: '.$id.'], relation ['.$module;
-						$error .= '] row DELETE failed for ID: '.implode(', ', $rel_ids);
-						$errors[] = $error;
+                        $msg_part = __('module').' ['.$this->module_name.' ID: '.$id.'], ';
+                        $msg_part .= __('relation').' ['.$module.'] ID: '.implode(', ', $rel_ids);
+						$errors[] = error_str('error.sql.delete', array($msg_part) );
 					}
 				}
 				
 				if ( $rel->delete($id, $rel_ids, $field_name) === false ) {
 				//delete relational rows
-					$error .= 'Module ['.$this->module['name'].', ID: '.$id.'], relation ['.$module;
-					$error .= '] relational DELETE failed for ID: '.implode(', ', $rel_ids);
-					$errors[] = $error;
+                    $msg_part = __('module').' ['.$this->module_name.' ID: '.$id.'], ';
+                    $msg_part .= __('relation').' ['.$module.'] ID: '.implode(', ', $rel_ids);
+                    $errors[] = error_str('error.sql.delete', array($msg_part) );
 				}
 			}
 		}
@@ -361,7 +374,7 @@ abstract class Abstract_module {
 		
 		//delete the module row
 		if ( $this->model->delete($ids) === false ) {
-			$errors[] = 'Module ['.$this->module['name'].'] DELETE failed [ID: '.implode(', ', $ids).']';
+            $errors[] = error_str('error.sql.delete', array('ID: '.implode(', ', $ids) ) );
 		}
 		
 		//reset the static modules list of this class
@@ -390,16 +403,19 @@ abstract class Abstract_module {
 	/**
 	 * get_cms_form
 	 *
-	 * Generates the CMS form for this module.
+	 * Generates the admin form for this module. The form returned will be read only if
+     * the permission is insufficient to edit the form.
 	 *
 	 * @access public
 	 * @param int $row_id The module row id
-	 * @return array The CMS form data
-     * @throws \App\Exception\AppException if $permission invalid object
+     * @param \App\User\Permission $permission The current logged in user permission object
+	 * @return array Assoc array of the admin form data
+     * @throws \App\Exception\AppException if $permission invalid object, handled by \App\App class
 	 */
 	public function get_cms_form($row_id, $permission) {
 		if ($permission instanceof \App\User\Permission === false ) {
-			$message = 'Invalid param $permission: must be instance of \\App\\User\\Permission';
+			$msg_part = error_str('error.param.type', array('$permission', '\\App\\User\\Permission') );
+            $message = error_str('error.type.param.invalid', array($msg_part) );
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 
@@ -465,6 +481,19 @@ abstract class Abstract_module {
 	}
 
 
+    /**
+     * get_cms_list
+     *
+     * Generates the admin list data for this module. User permission is necessary to determine
+     * if able to edit or delete a module row item.
+     *
+     * @access public
+     * @param array $get Assoc array of the query parameters for the list of rows
+     * @param bool $is_archive True if list of rows returned are marked as archived
+     * @param \App\User\Permission $permission The current logged in user permission object
+     * @return array Assoc array of the admin list data
+     * @throws \App\Exception\AppException if $permission invalid object, handled by \App\App class
+     */
     public function get_cms_list($get, $is_archive, $permission) {
         $List = new AdminListPage($this->module_name, $is_archive, $permission);
         return $this->list_data($List, $get, $is_archive, true);
@@ -474,20 +503,23 @@ abstract class Abstract_module {
     /**
      * get_cms_sort_form
      *
-     *
+     * Generates the admin sort form for this module. The form returned will be read only if
+     * the permission is insufficient to edit the form.
      *
      * @access public
      * @param string $field_name The relation field name if sorting by relational field
      * @param int $relation_id The relational row ID if sorting by relational field
-     * @param \App\User\Permission $permission The current CMS logged in user permission object
-     * @return array Assoc array of sort form data
+     * @param \App\User\Permission $permission The current logged in user permission object
+     * @return array Assoc array of module sort form data
+     * @throws \App\Exception\AppException if $permission invalid object, handled by \App\App class
      */
     public function get_cms_sort_form($field_name, $relation_id, $permission) {
         $error = '';
         if ($permission instanceof \App\User\Permission === false ) {
-            $error = 'Invalid param $permission: must be instance of \\App\\User\\Permission';
+            $msg_part = error_str('error.param.type', array('$permission', '\\App\\User\\Permission') );
+            $error = error_str('error.type.param.invalid', array($msg_part) );
         } else if ( $this->has_sort() === false ) {
-            $error = 'Module ['.$this->module_name.'] must have sorting activated to allow sort';
+            $error = error_str('error.sort.activate', array($this->module_name) );
         }
         if ( ! empty($error) ) {
             throw new AppException($error, AppException::ERROR_FATAL);
@@ -597,15 +629,15 @@ abstract class Abstract_module {
 	/**
 	 * get_data
 	 *
-	 * Retrieves a module row along with relations, from a given id or slug, and
+	 * Retrieves a module row along with relations, from a given id or slug, and optionally
 	 * formats it for use in a CMS form.
 	 *
 	 * @access public
-	 * @param mixed $id The row id or slug
-	 * @param boolean $is_slug True to use slug to retrieve row, defaults to false
-	 * @param boolean $is_cms_form True to convert data for CMS module form
-	 * @return mixed The associative array for the row data OR false if row not found OR 
-	 * an App\Exception\SQLException is passed and to be handled by \App\App class if an SQL error occurred
+	 * @param mixed $mixed The row id or slug
+	 * @param bool $is_slug True to use slug to retrieve row, defaults to false
+	 * @param bool $is_cms_form True to convert data for CMS module form
+	 * @return mixed The associative array for the row data OR false if row not found
+	 * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 */
 	public function get_data($mixed, $is_slug=false, $is_cms_form=false) {
 		if ( ! $this->module['use_model']) {
@@ -659,7 +691,7 @@ abstract class Abstract_module {
      *
      * @access public
      * @param array $params Array of parameters passed in and used by subclass method overwrites
-     * @return array The array of default form fields and values
+     * @return array The assoc array of default form fields and values
      */
 	public function get_default_field_values($params=array()) {
 		$defaults = $this->module['field_data']['defaults'];
@@ -675,7 +707,8 @@ abstract class Abstract_module {
      * @access public
      * @param int $id The id of the model row
      * @param array $params Array of parameters passed in and used by subclass method overwrites
-     * @return array The array of form fields and values
+     * @return array The assoc array of form fields and values
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
      */
 	public function get_field_values($id, $params=array()) {
 		$data = $this->get_data($id, false, true);
@@ -686,13 +719,13 @@ abstract class Abstract_module {
 	/**
 	 * get_form_fields
 	 *
-	 * Retrieves the CMS form fields corresponding to the module of the subclassed 
+	 * Retrieves the form field objects corresponding to the admin module form of the subclassed
 	 * \App\Module\Module.
 	 *
 	 * @access public
-	 * @return array The array of \App\Form\Field\Form_field field rows OR an App\Exception\SQLException  
-	 * is passed and to be handled by \App\App class if an SQL error occurred
-	 * @see \App\Module\Module subclass for module definitions
+	 * @return array The array of \App\Form\Field\Form_field fields
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
+     * @see \App\Module\Module subclass for module definitions
 	 */
 	public function get_form_fields() {
 		$module = Module::load();
@@ -738,6 +771,17 @@ abstract class Abstract_module {
 	}
 
 
+    /**
+     * get_front_list
+     *
+     * Generates the frontend list data for this module.
+     *
+     * @access public
+     * @param array $get Assoc array of the query parameters for the list of rows
+     * @param bool $is_archive True if list of rows returned are marked as archived
+     * @return array Assoc array of the frontend list data
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
+     */
     public function get_front_list($get, $is_archive) {
         $List = new ListPage($this->module_name, $is_archive);
         return $this->list_data($List, $get, $is_archive, false);
@@ -747,12 +791,14 @@ abstract class Abstract_module {
 	/**
 	 * get_list_template
 	 *
-	 * Retrieves the module list page variables and template parameters loaded via AJAX.
+	 * Retrieves the module admin list page variables and template parameters loaded via AJAX.
+     * User permission is necessary to determine if able to edit or delete a module row item.
 	 * 
 	 * @access public
-	 * @param \App\User\Permission $permission The current CMS user Permission object
-     * @param bool $is_archive True if list page is archived records page
-	 * @return array The module variable and template parameters
+	 * @param \App\User\Permission $permission The current admin user Permission object
+     * @param bool $is_archive True if list page is list of records marked as archived
+	 * @return array The assoc array of module variable and template parameters
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 * @see \App\Html\ListPage\AdminListPage::template() for return parameters
 	 */
 	public function get_list_template($permission, $is_archive) {
@@ -764,8 +810,7 @@ abstract class Abstract_module {
 	/**
 	 * get_model
 	 *
-	 * Returns the model class corresponding to the module of the subclassed 
-	 * \App\Module\Module.
+	 * Returns the model class corresponding to the module of this class.
 	 *
 	 * @access public
 	 * @return \App\Model\Model The Model class for the module
@@ -780,8 +825,7 @@ abstract class Abstract_module {
 	/**
 	 * get_model_fields
 	 *
-	 * Returns the model fields and data type params corresponding to the module 
-	 * of the subclassed \App\Module\Module.
+	 * Returns the model fields and data type params corresponding to the module of this class.
 	 *
 	 * @access public
 	 * @return array The assoc array of model field data in format 
@@ -796,15 +840,15 @@ abstract class Abstract_module {
 	/**
 	 * get_module_data
 	 *
-	 * Returns the module row data corresponding to the module of the subclassed \App\Module\Module.
+	 * Returns the module row data corresponding to the given module name or this module
+     * if $module_name parameter empty.
 	 *
 	 * @access public
-	 * @param $module_name Name of module to retrieve data, if empty then data 
-	 * for module subclass instance
-	 * @return array The assoc array of module row data or false if $module_name not a module
+	 * @param string $module_name Name (slug) of module, if empty then uses the module for this subclass
+	 * @return array The assoc array of module row data or false if $module_name does not correspond to a module
 	 * @see \App\Module\Module subclass for module definitions
 	 */
-	public function get_module_data($module_name=false) {
+	public function get_module_data($module_name='') {
 		$data = false;
 		if ( empty($module_name) ) {
 			$data = $this->module;
@@ -821,9 +865,7 @@ abstract class Abstract_module {
 	 * Retrieves the var => value options for this module.
 	 *
 	 * @access public
-	 * @return mixed The associative array of options OR false if module uses a model table OR 
-	 * an App\Exception\SQLException is passed and to be handled by \App\App class if an 
-	 * SQL error occurred
+	 * @return mixed The associative array of options OR false if module uses a model table instead
 	 */
 	public function get_options() {
 		//if module uses model table instead of options, 
@@ -846,11 +888,6 @@ abstract class Abstract_module {
 	 */
 	public function get_options_model() {
 		return $this->options;
-	}
-
-
-	public function get_pager_params() {
-		
 	}
 
 
@@ -889,7 +926,7 @@ abstract class Abstract_module {
         if ( isset(self::$INSTANCES['relations'][$module_name]) ) {
         // cached relations found, return those
             if ( ! empty($field_name) && ! isset(self::$INSTANCES['relations'][$module_name][$field_name]) ) {
-                $message = 'Abstract_module::get_relations($field_name): ['.$field_name.'] module field does not exist';
+                $message = error_str('error.type.relation', array($field_name, $module_name));
                 throw new AppException($message, AppException::ERROR_FATAL);
             }
             return empty($field_name) ?
@@ -901,15 +938,13 @@ abstract class Abstract_module {
         $rel_config = $module['field_data']['relations'];
 
         foreach($rel_config as $f_name => $config) {
-            $error_start = 'Relation config['.$module_name.']['.$f_name.'][type]';
+            $error_start = ucfirst( __('relation') ).' config['.$module_name.']['.$f_name.']';
             if ( empty($config['type']) ) {
-                $message = $error_start.'[type] missing or empty, must be relation type of value ';
-                $message .= 'Relation::RELATION_TYPE_N1, Relation::RELATION_TYPE_1N, Relation::RELATION_TYPE_NN';
-                $errors[] = $message;
+                $msg_part = 'Relation::RELATION_TYPE_N1, Relation::RELATION_TYPE_1N, Relation::RELATION_TYPE_NN';
+                $errors[] = error_str('error.param.value', array($error_start.'[type]', $msg_part));
             }
             if ( empty($config['module']) || ! isset(self::$MODULES[ $config['module'] ]) ) {
-                $message = $error_start.'[module] missing, empty or invalid module name of relation';
-                $errors[] = $message;
+                $errors[] = error_str('error.param.relation', array($error_start.'[module]'));
             }
             if ( ! empty($errors) ) {
                 break;
@@ -944,22 +979,31 @@ abstract class Abstract_module {
         }
 
         if ( ! empty($field_name) && ! isset($relations[$field_name]) ) {
-            $message = 'Abstract_module::get_relations($field_name): ['.$field_name.'] module field does not exist';
+            $message = error_str('error.type.relation', array($field_name, $module_name));
             throw new AppException($message, AppException::ERROR_FATAL);
         }
 		
 		if ( empty($errors) ) {
             self::$INSTANCES['relations'][$module_name] = $relations;
         } else {
-			$message = 'Error(s) have occurred loading relations for module ['.$module_name.']: ';
-			$message .= implode("\n", $errors);
+			$msg_part = error_str('error.while.load.relation').' '.__('module').' ['.$module_name.']): ';
+            $msg_part .= implode("\n", $errors);
+            $message = error_str('error.general.multi', array($msg_part));
 			throw new AppException($message, AppException::ERROR_FATAL);
 		}
 
         return empty($field_name) ? $relations : $relations[$field_name];
 	}
-	
-	
+
+
+    /**
+     * get_session_name
+     *
+     * Returns the session cookie name holding admin/frontend list page data.
+     *
+     * @access public
+     * @return string The cookie name
+     */
 	public function get_session_name() {
 		return $this->session_name;
 	}
@@ -981,11 +1025,11 @@ abstract class Abstract_module {
 	/**
 	 * get_model_fields
 	 *
-	 * Returns the assoc array of CMS form validation params corresponding to the module 
+	 * Returns the assoc array of admin form validation params corresponding to the module
 	 * of the subclassed \App\Module\Module.
 	 *
 	 * @access public
-	 * @return array The assoc array of CMS form validation params in format 
+	 * @return array The assoc array of admin form validation params in format
 	 * array( [field name] => (array) [validation params] )
 	 * @see \App\Module\Module subclass for module definitions
 	 */
@@ -1002,10 +1046,10 @@ abstract class Abstract_module {
     /**
      * has_cms_form
      *
-     * Returns true if instance of this module has use of CMS form activated.
+     * Returns true if instance of this module has use of admin form activated.
      *
      * @access public
-     * @return bool True if CMS form activated
+     * @return bool True if admin form activated
      */
     public function has_cms_form() {
         return ! empty($this->module['use_cms_form']);
@@ -1044,7 +1088,7 @@ abstract class Abstract_module {
      * Returns true if instance of this module has slug for row identifier activated.
      *
      * @access public
-     * @return bool True if slug activated
+     * @return bool True if slug use activated
      */
     public function has_slug() {
         return ! empty($this->module['use_slug']);
@@ -1114,6 +1158,7 @@ abstract class Abstract_module {
      * @param int $relation_id The independent module relation id, if sorted by relation
      * @return mixed True if operation successful OR an array of errors in format
      * array( 'errors' => (array) $errors) if sort update unsuccessful
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
      */
     public function set_sort($ids, $field_name='', $relation_id=0) {
         if ( empty($this->module['use_sort']) ) {
@@ -1136,15 +1181,16 @@ abstract class Abstract_module {
         }
 
         if ( ! $has_saved) {
-            $error = 'Module ['.$this->module['name'].'], sort failed for IDs ';
-            $error .= (is_array($ids) ? '['.implode(', ', $ids).']' : $ids);
+            $msg_part = '';
             if ( ! empty($field_name) ) {
-                $error .= ', relation field ['.$field_name.']';
+                $msg_part .= __('relation').'['.$field_name.']';
             }
             if ( ! empty($relation_id) ) {
-                $error .= ', relation ID ['.$relation_id.']';
+                $msg_part .= '[ID: '.$relation_id.']';
             }
-            $errors[] = $error;
+
+            $msg_part .= ' ID: '.(is_array($ids) ? implode(', ', $ids) : $ids);
+            $errors[] = error_str('error.sort.save', array($msg_part) );
         }
 
         return empty($errors) ? true : array('errors' => $errors);
@@ -1158,12 +1204,13 @@ abstract class Abstract_module {
 	 *
 	 * @access public
 	 * @param array $data The fields and corresponding values to update
-	 * @return mixed True if operation successful OR an array of errors in format 
-	 * array( 'errors' => (array) $errors) if update unsuccessful
+	 * @return mixed True if operation successful, false $data parameter empty or this module is "options" type
+     * OR an array of errors in format array( 'errors' => (array) $errors) if update unsuccessful
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 */
 	public function update($data) {
 		if ( empty($data) || ! $this->module['use_model'] ) {
-		//no data to delete or module uses options model instead
+		//no data to update or module uses options model instead
 			return false;
 		} else if (($result = $this->validate($data, true)) !== true) {
 			//validate data
@@ -1179,7 +1226,7 @@ abstract class Abstract_module {
 		
 		//update the module row
 		if ( $this->model->update($row) === false ) {
-			$errors[] = 'Module ['.$this->module['name'].'], UPDATE failed for ID ['.$module_id.']';
+            $errors[] = error_str('error.sql.update', array('ID: '.$module_id));
 			return array('errors' => $errors);
 		}
 		
@@ -1261,36 +1308,32 @@ abstract class Abstract_module {
 			
 			//add the new relations
 			if ( ! empty($new_indep_ids) && $rel->add($module_id, $new_indep_ids, $field_name, $args) === false) {
-				$message = 'Module relation ['.$this->module['name'].'], INSERT failed for ID: ';
-				$message .= implode(', ', $new_indep_ids);
-				$errors[] = $message;
+                $msg_part = __('relation').' ['.$field_name.'] ID: '.implode(', ', $new_indep_ids);
+                $errors[] = error_str('error.sql.insert', array($msg_part) );
 				continue;
 			}
 			
 			//update relations, if args is not empty
 			$diff = array_diff($new_indep_ids, $indep_ids);
 			if ( ! empty($args) && ! empty($diff) && $rel->update($module_id, $diff, $field_name, $args) === false) {
-				$message = 'Module relation ['.$this->module['name'].'], UPDATE failed for ID: ';
-				$message .= implode(', ', $diff);
-				$errors[] = $message;
+                $msg_part = __('relation').' ['.$field_name.'] ID: '.implode(', ', $diff);
+                $errors[] = error_str('error.sql.update', array($msg_part) );
 				continue;
 			}
 			
 			//delete old relations
 			$diff = array_diff($old_indep_ids, $indep_ids);
 			if ( ! empty($diff) &&  $rel->delete($module_id, $diff, $field_name) === false) {
-				$message = 'Module relation ['.$this->module['name'].'], DELETE failed for ID: ';
-				$message .= implode(', ', $diff);
-				$errors[] = $message;
+                $msg_part = __('relation').' ['.$field_name.'] ID: '.implode(', ', $diff);
+                $errors[] = error_str('error.sql.delete', array($msg_part) );
 				continue;
 			}
 
             //set sorting
             $diff = array_diff($indep_ids, $diff); //remove deleted relations
             if ( ! empty($diff) &&  $rel->set_sort_order($module_id, $diff, $field_name) === false) {
-                $message = 'Module relation ['.$this->module['name'].'], sorting failed for ID: ';
-                $message .= implode(', ', $diff);
-                $errors[] = $message;
+                $msg_part = __('relation').' ['.$field_name.'] ID: '.implode(', ', $diff);
+                $errors[] = error_str('error.sort.save', array($msg_part) );
                 continue;
             }
 		}
@@ -1330,7 +1373,8 @@ abstract class Abstract_module {
 
 		//update the module row
 		if ( $this->options->update($fields) === false ) {
-			$errors[] = 'Module ['.$this->module['name'].'], options UPDATE failed';
+            $msg_part = __('module').' ['.$this->module_name.']';
+            $errors[] = error_str('error.sql.update', array($msg_part));
 		}
 		
 		return empty($errors) ? true : array('errors' => $errors);
@@ -1400,29 +1444,34 @@ abstract class Abstract_module {
 	 * subclass file exists or else creates an instance of the \App\Model\Model class.
 	 * 
 	 * @access protected
-	 * @param array $mixed The model config array or module name
+	 * @param mixed $mixed The model config array or module name
 	 * @return mixed The \App\Model\Model model instance or array of errors if $mixed 
 	 * param contains missing or invalid parameters
-	 * @throws \App\Exception\AppException to be handled by \App\App class if $mixed parameter contains invalid data
+	 * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 */
 	protected function load_model($mixed) {
 		$errors = array();
 		
 		if ( is_string($mixed) === false ) {
 			if ( empty($mixed['module']) ) {
-				$errors[] = 'Param $mixed[module] missing or empty, must be module name';
+                $msg_part = error_str('error.module.slug', array('$mixed[module]'));
+				$errors[] = error_str('error.type.param.invalid', array($msg_part));
 			}
 			if ( empty($mixed['fields']) ) {
-				$errors[] = 'Param $mixed[fields] missing or empty, must be fields of module';
+                $msg_part = error_str('error.module.form_fields', array('$mixed[fields]'));
+                $errors[] = error_str('error.type.param.invalid', array($msg_part));
 			}
 			if ( empty($mixed['pk_field']) ) {
-				$errors[] = 'Param $mixed[pk_field] missing or empty, must be primary key field of module';
+                $msg_part = error_str('error.module.pk_field', array('$mixed[pk_field]'));
+                $errors[] = error_str('error.type.param.invalid', array($msg_part));
 			}
 			if ( empty($mixed['title_field']) ) {
-				$errors[] = 'Param $mixed[title_field] missing or empty, must be title field of module';
+                $msg_part = error_str('error.module.title_field', array('$mixed[title_field]'));
+                $errors[] = error_str('error.type.param.invalid', array($msg_part));
 			}
 		} else if ( ! isset(self::$MODULES[$mixed]) ) {
-			$errors[] = 'Param $mixed module ['.$mixed.'] not found';
+            $msg_part = '$mixed '.error_str('error.param.module.missing', array($mixed));
+            $errors[] = error_str('error.type.param.invalid', array($msg_part));
 		}
 		if ( ! empty($errors) ) {
 			return array('errors' => $errors);
@@ -1472,24 +1521,26 @@ abstract class Abstract_module {
 	 * subclass file exists or else creates an instance of the \App\Model\Options class.
 	 * 
 	 * @access protected
-	 * @param array $mixed The options config array or module name
+	 * @param mixed $mixed The options config array or module name
 	 * @return mixed The \App\Model\Options instance or array of errors if $mixed 
 	 * param contains missing or invalid parameters
-	 * @throws \App\Exception\AppException to be handled by \App\App class if $mixed 
-	 * parameter contains invalid data
+	 * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 */
 	protected function load_options($mixed) {
 		$errors = array();
 		
 		if ( is_string($mixed) === false ) {
 			if ( empty($mixed['module']) ) {
-				$errors[] = 'Param $mixed[module] missing or empty, must be module name';
+                $msg_part = error_str('error.module.slug', array('$mixed[module]'));
+                $errors[] = error_str('error.type.param.invalid', array($msg_part));
 			}
 			if ( empty($mixed['fields']) ) {
-				$errors[] = 'Param $mixed[fields] missing or empty, must be fields of options';
+                $msg_part = error_str('error.module.form_fields', array('$mixed[fields]'));
+                $errors[] = error_str('error.type.param.invalid', array($msg_part));
 			}
 		} else if ( ! isset(self::$MODULES[$mixed]) ) {
-			$errors[] = 'Param $mixed module ['.$mixed.'] not found';
+            $msg_part = '$mixed '.error_str('error.param.module.missing', array($mixed));
+            $errors[] = error_str('error.type.param.invalid', array($msg_part));
 		} 
 		if ( ! empty($errors) ) {
 			return array('errors' => $errors);
@@ -1580,7 +1631,7 @@ abstract class Abstract_module {
 	 * 
 	 * @access protected
 	 * @param array $data The module row data as an assoc array
-	 * @param boolean $has_id True if $data param contains a non-empty id for the module row
+	 * @param bool $has_id True if $data param contains a non-empty id for the module row
 	 * @return mixed True if row data validated or an array of validation errors in 
 	 * format array( 'errors' => (array) $errors)
 	 */
@@ -1598,7 +1649,7 @@ abstract class Abstract_module {
      * @param array $get Assoc array of database query parameters
      * @param bool $is_archive True if items returned are marked as archived
      * @param bool $is_admin True if list data for admin list page
-     * @return mixed False if module is of "options" type or assoc array of the following:
+     * @return mixed False if module is of "options" type or assoc array of list page data
      * @throws \App\Exception\AppException if $List not a valid object
      */
     private function list_data($List, $get, $is_archive, $is_admin) {
@@ -1606,7 +1657,8 @@ abstract class Abstract_module {
             //if module uses options table instead of model, can't retrieve a row
             return false;
         } else if ($List instanceof \App\Html\ListPage\ListPage === false ) {
-            $error = 'Invalid param $List: must be instance of \\App\\Html\\ListPage\\ListPage';
+            $msg_part = error_str('error.param.type', array('$List', '\\App\\Html\\ListPage\\ListPage'));
+            $error = error_str('error.type.param.invalid', array($msg_part));
             throw new AppException($error, AppException::ERROR_FATAL);
         }
 
@@ -1721,10 +1773,13 @@ abstract class Abstract_module {
 	 * @access private
 	 * @param string $module_name The module name/slug
 	 * @return void
+     * @throws \App\Exception\AppException if $module_name parameter invalid or errors occurred loading
+     * a module's model or, if a module is "options" type, an error occurred while loading
 	 */
 	private function load_module($module_name) {
 		if ( ! isset(self::$MODULES[$module_name]) ) {
-			$error = 'Module "'.$module_name.'" not found';
+            $msg_part = '$module_name '.error_str('error.param.module.missing', array($module_name));
+            $error = error_str('error.type.param.invalid', array($msg_part));
 			throw new AppException($error, AppException::ERROR_FATAL);
 		}
 		
@@ -1740,8 +1795,10 @@ abstract class Abstract_module {
 			} else {
 				$model = $this->load_model($module_name);
 				if ( is_array($model) && key($model) === 'errors') {
-					$message = 'Error(s) have occurred loading model for module ['.$module_name.']: ';
-					$message .= implode("\n", $model['errors']);
+                    $msg_part = ' '.error_str('error.while.load.model');
+                    $msg_part .= __('module').' ['.$module_name.']: ';
+                    $msg_part .= implode("\n", $model['errors']);
+                    $message = error_str('error.general.multi', array($msg_part));
 					throw new AppException($message, AppException::ERROR_FATAL);
 				}
 				self::$INSTANCES['models'][$module_name] = $model;
@@ -1751,8 +1808,10 @@ abstract class Abstract_module {
 		//load the module options model
 			$options = $this->load_options($module_name);
 			if ( is_array($options) && key($options) === 'errors') {
-				$message = 'Error(s) have occurred loading options for module ['.$module_name.']: ';
-				$message .= implode("\n", $options['errors']);
+                $msg_part = ' '.error_str('error.while.load.options');
+                $msg_part .= __('module').' ['.$module_name.']: ';
+                $msg_part .= implode("\n", $options['errors']);
+                $message = error_str('error.general.multi', array($msg_part));
 				throw new AppException($message, AppException::ERROR_FATAL);
 			}
 			self::$INSTANCES['options'][$module_name] = $options;
@@ -1770,6 +1829,7 @@ abstract class Abstract_module {
 	 * 
 	 * @access private
 	 * @return void
+     * @throws \App\Exception\AppException if an application error occurred, handled by \App\App class
 	 */
 	private function load_modules() {
 		$modules_config = $this->App->load_config('modules');

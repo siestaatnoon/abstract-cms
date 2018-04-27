@@ -26,6 +26,8 @@ require.config({
 			deps: ['jquery'],
 			exports: '_'
 		},
+
+        'classes/I18n': ['config', 'jquery', 'underscore'],
 		
 		'backbone.paginator': ['underscore', 'backbone'],
 		
@@ -38,7 +40,8 @@ require.config({
 			'underscore', 
 			'backbone',
 			'backgrid',
-			'backbone.paginator'
+			'backbone.paginator',
+            'classes/I18n'
 		],
 					
 		'backgrid.textcell': 		[
@@ -47,12 +50,12 @@ require.config({
 		],
 		
 		'classes/Class': 					['config', 'jquery', 'underscore'],
-		'classes/Utils': 					['config', 'jquery', 'underscore'],
-		'classes/FormValidator': 			['config', 'jquery', 'underscore', 'classes/Class'],
-		'classes/ScriptLoader': 			['config', 'jquery', 'underscore', 'classes/Class'],
-		'classes/PageLoader': 				['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils'],
-        'classes/admin/SessionPoller': 		['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils'],
-		'classes/ModuleLoader': 			['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils'],
+		'classes/Utils': 					['config', 'jquery', 'underscore', 'classes/I18n'],
+		'classes/FormValidator': 			['config', 'jquery', 'underscore', 'classes/Class', 'classes/I18n'],
+		'classes/ScriptLoader': 			['config', 'jquery', 'underscore', 'classes/Class', 'classes/I18n'],
+        'classes/admin/SessionPoller': 		['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils', 'classes/I18n'],
+		'classes/PageLoader': 				['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils', 'classes/I18n'],
+		'classes/ModuleLoader': 			['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils', 'classes/I18n'],
 		
 		'classes/admin/AdminAuth': 			[
 			'config', 
@@ -60,7 +63,8 @@ require.config({
 			'underscore', 
 			'classes/Class', 
 			'classes/admin/SessionPoller',
-			'classes/Utils'
+			'classes/Utils',
+            'classes/I18n'
 		],
 		
 		'classes/admin/AdminModuleLoader': 	['config', 'jquery', 'underscore', 'classes/Class', 'classes/ModuleLoader'],
@@ -89,7 +93,8 @@ require.config({
 			'jquery',
 			'underscore',
 			'backbone', 
-			'classes/Utils'
+			'classes/Utils',
+            'classes/I18n'
 		],
 		
 		'views/AdminAuthView': 	[
@@ -97,7 +102,8 @@ require.config({
 			'jquery',
 			'underscore',
 			'backbone',
-			'classes/Utils', 
+			'classes/Utils',
+            'classes/I18n',
 			'classes/admin/AdminAuth'
 		],
 		
@@ -110,7 +116,9 @@ require.config({
 			'backbone',
 			'classes/admin/AdminModuleLoader',
 			'classes/FormValidator',
-			'models/AdminModel'
+			'models/AdminModel',
+            'classes/Utils',
+            'classes/I18n'
 		],
 		
 		'views/AdminListView': 	[
@@ -123,6 +131,8 @@ require.config({
 			'abstract.paginator',
 			'backgrid.textcell',
 			'classes/admin/AdminModuleLoader',
+            'classes/Utils',
+            'classes/I18n',
 			'collections/AdminCollection',
 			'views/AdminListUpdaterView'
 		],
@@ -132,7 +142,8 @@ require.config({
 			'jquery',
 			'underscore',
 			'backbone',
-			'backgrid'
+			'backgrid',
+            'classes/I18n'
 		],
 		
 		'views/AdminTplView': 	[
@@ -182,7 +193,7 @@ require([
 	$.ajaxSetup({
         cache: false, // don't cache AJAX calls
 		statusCode: {
-			401: function(){
+			401: function() {
 				app.Router.navigate('admin/401', {trigger: true});
 		    },
 			403: function() {

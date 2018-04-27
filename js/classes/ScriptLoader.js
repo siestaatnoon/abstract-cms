@@ -3,8 +3,9 @@ define([
     'jquery',
     'underscore',
     'classes/Utils',
+    'classes/I18n',
     'classes/Class'
-], function(app, $, _, Utils) {
+], function(app, $, _, Utils, I18n) {
 
     /**
      * Dynamically loads to a page DOM CSS files plus Javascript files and executable code through RequireJS.
@@ -14,7 +15,7 @@ define([
      * @requires jquery
      * @requires Underscore
      * @requires classes/Utils
-     * @requires classes/Class
+     * @requires classes/I18n
      * @constructor
      * @augments classes/Class
      */
@@ -553,9 +554,8 @@ define([
         _hasRequire: function(funcName) {
             funcName = funcName || '_hasRequire';
             var hasRequire = typeof require === "function";
-            if ( ! hasRequire && app.debug) {
-                var message = 'ScriptLoader.' + funcName + ': RequireJS required to use this class';
-                console.log(message);
+            if ( ! hasRequire) {
+                console.log( I18n.t('error.requirejs', 'ScriptLoader.' + funcName + ':') );
             }
             return hasRequire;
         },
@@ -627,10 +627,8 @@ define([
                     code += unload_script + "\n";
                     code += "$(this).off('page:unload');\n";
                     code += "});\n";
-                } else if (app.debug) {
-                    var message = 'Warning, ScriptLoader.loadJs: param[unload_script] events ';
-                    message += 'need to be unbound if they exist in param[onload_script]';
-                    console.log(message);
+                } else {
+                    console.log( I18n.t('warning.unload', 'ScriptLoader.loadJs: ') );
                 }
                 code += "\n\t} catch(e) {\n\t\tif (app.debug) console.log(e.message);\n\t} finally {\n";
                 //code += "\t\tUtils.hideOverlay();\n";

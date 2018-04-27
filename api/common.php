@@ -71,7 +71,7 @@ $Container['errorHandler'] = function ($Container) {
         } else {
             $code = '';
         }
-        $file = $App->config('debug') ? " in ".$exception->getFile() : '';
+        $file = $App->config('debug') ? " in ".$exception->getFile().', '.$exception->getLine() : '';
         $errors = array(
             'errors' => array($code.$message.$file)
         );

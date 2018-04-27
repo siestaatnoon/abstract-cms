@@ -2,7 +2,7 @@ define([
 	'jquery',
     'text!../abstract.json'
     ], function($, abstractCfgJson) {
-    var abstractCfg = $.parseJSON(abstractCfgJson);
+    var abstractCfg = JSON.parse(abstractCfgJson);
 	var app = app || {};
 	app.debug 				= abstractCfg.debug;
 	app.csrfToken 			= abstractCfg.csrfToken;
@@ -52,34 +52,75 @@ define([
 	app.SessionPoller		= {};
 	app.PageLoader			= {};
 	app.appCache			= {};
+	app.i18n                = {};
 
-	//JQM initialization... note that this comes
-	//before JQM loads page
-	//
-	$(document).bind('mobileinit', function() {
-	    if ($.mobile) {
-            $.mobile.autoInitializePage = false;
-            $.mobile.ajaxEnabled = false;
-            $.mobile.hashListeningEnabled = false;
-            $.mobile.pushStateEnabled = false;
+	// check if we're in admin or frontend
+    app.isAdmin = location.pathname.indexOf(app.adminRoot) === 0;
 
-            //commented since this is needed for JQM listbox
-            //to function
-            //$.mobile.linkBindingEnabled = false;
+    // Load i18n translations for admin
+    app.locale = app.isAdmin ? abstractCfg.localeAdmin : abstractCfg.localeFront;
+    var loadingText = 'loading';
+    var parts = app.locale.split('_');
+    if (parts.length === 2) {
+        // NOTE: AJAX used to load I18n translations instead of
+        // requirejs since other module loads would not get in the
+        // way here
+        //
+        // TODO: Also note the larger the i18n file gets, the bigger the possibility
+        // of I18n files loading before... something to think about
+        //
+        parts = [abstractCfg.localeAppDir].concat(parts);
+        var url = parts.join('/') + '/' + app.locale + '.json';
+        $.ajax({
+            url : 		url,
+            type: 		'GET',
+            dataType: 	'text'
+        }).done(function(data) {
+            app.i18n = JSON.parse(data);
+        }).fail(function(jqXHR) {
+            console.log(jqXHR.responseText);
+        });
 
-            $.mobile.loader.prototype.options.text = "";
-            $.mobile.loader.prototype.options.textVisible = true;
-            $.mobile.loader.prototype.options.theme = "a";
-            $.mobile.loader.prototype.options.html = '<div class="ui-loader-centered"><span class="ui-icon-loading"></span><h1>loading</h1></div>';
+        /*
+        var textModule = 'text!../' + parts.join('/') + '/' + app.locale + '.json';
+        require([textModule], function(i18nJson){
+            app.i18n = JSON.parse(i18nJson);
+            loadingText = app.i18n['loading'].toLowerCase();
+        });
+        */
+    }
 
-            //add loading splash on page load/reload
-            $('body').pagecontainer({
-                beforeshow: function (e, ui) {
-                    $('html').removeClass('abstract-splash');
-                }
-            });
-        }
-	});
+	// execute following only for admin or if front uses jQm
+    if (app.isAdmin || app.useFrontJqm) {
+        //JQM initialization... note that this comes
+        //before JQM loads page
+        //
+        $(document).bind('mobileinit', function () {
+            if ($.mobile) {
+                $.mobile.autoInitializePage = false;
+                $.mobile.ajaxEnabled = false;
+                $.mobile.hashListeningEnabled = false;
+                $.mobile.pushStateEnabled = false;
+
+                //commented since this is needed for JQM listbox
+                //to function
+                //$.mobile.linkBindingEnabled = false;
+
+                var loadingHTML = '<div class="ui-loader-centered"><span class="ui-icon-loading"></span><h1>' + loadingText + '</h1></div>';
+                $.mobile.loader.prototype.options.text = "";
+                $.mobile.loader.prototype.options.textVisible = true;
+                $.mobile.loader.prototype.options.theme = "a";
+                $.mobile.loader.prototype.options.html = loadingHTML;
+
+                //add loading splash on page load/reload
+                $('body').pagecontainer({
+                    beforeshow: function (e, ui) {
+                        $('html').removeClass('abstract-splash');
+                    }
+                });
+            }
+        });
+    }
 
 	return app;
 });

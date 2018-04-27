@@ -4,8 +4,9 @@ define([
 	'underscore',
 	'classes/admin/SessionPoller',
 	'classes/Utils',
+    'classes/I18n',
     'classes/Class'
-], function(app, $, _, SessionPoller, Utils) {
+], function(app, $, _, SessionPoller, Utils, I18n) {
 
 	/**
 	 * Contains the authentication functions for the admin CMS.
@@ -14,6 +15,9 @@ define([
 	 * @requires config
 	 * @requires jquery
 	 * @requires Underscore
+     * @requires classes/SessionPoller
+     * @requires classes/Utils
+     * @requires classes/I18n
 	 * @constructor
 	 * @augments Class
 	 */
@@ -72,8 +76,7 @@ define([
 		authenticate: function(user, pass, is_remember) {
 			var deferred = $.Deferred();
 			var self = this;
-			var error_label = 'Error';
-			var error_msg  = 'Error(s) have occurred during authentication';
+			var error_label = I18n.t('error');
 			var data = {
 				user: user,
 				pass: pass,
@@ -91,13 +94,15 @@ define([
 				}
 				deferred.resolve(response);
 			}).fail(function(jqXHR) {
-				if (app.debug) {
-                    var response = Utils.parseJqXHR(jqXHR);
-                    if (response.errors.length) {
-                        error_msg += ":\n" + response.errors.join("\n");
-                    }
-				}
-                console.log(error_msg);
+                var resp = Utils.parseJqXHR(jqXHR);
+                var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                if (error.length === 0) {
+                    error = I18n.t('error.general.unknown', 'AdminAuth.authenticate()');
+                }
+                Utils.showModalWarning(error_label, error);
+                if (app.debug) {
+                    console.log( error.replace('<br/>', "\n") );
+                }
 			});
 			
 			return deferred.promise();
@@ -111,32 +116,26 @@ define([
 		invalidate: function() {
 			var deferred = $.Deferred();
 			var self = this;
-			var error_label = 'Error';
-			var error_msg  = 'Error(s) have occurred while ending session';
+			var error_label = I18n.t('error');
 			
 			$.ajax({
 				url:		this._urlRoot + '/logout',
 				type: 		'GET',
 				dataType: 	'json'
 			}).done(function(response) {
-				if (response.logged_out) {
-					self._session.sessionDestroy();
-					deferred.resolve(response.logged_out);
-				} else if (response.errors) {
-					if (app.debug) {
-						console.log( error_msg + ":\n" + response.errors.join("\n") );
-                        error_msg = response.errors.join('<br/><br/>');
-					}
-					Utils.showModalWarning(error_label, error_msg);
-				}
+			    var invalidated = _.has(response, 'logged_out') ? response.logged_out : false;
+                self._session.sessionDestroy();
+                deferred.resolve(invalidated);
 			}).fail(function(jqXHR) {
-				if (app.debug) {
-                    var response = Utils.parseJqXHR(jqXHR);
-                    if (response.errors.length) {
-                        error_msg += ":\n" + response.errors.join("\n");
-                    }
-				}
-                console.log(error_msg);
+                var resp = Utils.parseJqXHR(jqXHR);
+                var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                if (error.length === 0) {
+                    error = I18n.t('error.general.unknown', 'AdminAuth.invalidate()');
+                }
+                Utils.showModalWarning(error_label, error);
+                if (app.debug) {
+                    console.log( error.replace('<br/>', "\n") );
+                }
 			});
 			
 			return deferred.promise();
@@ -161,35 +160,32 @@ define([
 			var deferred = $.Deferred();
 			var apiUrl = this._dataRoot + '/' + route;
 			var self = this;
-			var error_label = 'Error';
-			var error_msg  = 'Error(s) have occurred while loading page';
+			var error_label = I18n.t('error');
 			
 			$.ajax({
 				url : 		apiUrl,
 				type: 		'GET',
 				dataType: 	'json'
 			}).done(function(response) {
-				if (response.fields && response.template) {
-					if (app.debug) {
-						console.log('AdminAuth.loadAuthPage[' + self._module + '] page data retrieved ' + apiUrl);
-					}
-					deferred.resolve(response);
-				} else if (response.errors) {
-					if (app.debug) {
-						error_msg = response.errors.join('<br/><br/>');
-						console.log( error_msg + ":\n" + response.errors.join("\n") );
-					}
-					Utils.showModalWarning(error_label, error_msg);
-				}
-				
+                if (app.debug) {
+                    var args = [
+                        'AdminAuth.loadPageData: [' + self._module + ']',
+                        apiUrl
+                    ];
+                    var message = I18n.t('message.data.loaded', args);
+                    console.log(message);
+                }
+                deferred.resolve(response);
 			}).fail(function(jqXHR) {
-				if (app.debug) {
-                    var response = Utils.parseJqXHR(jqXHR);
-                    if (response.errors.length) {
-                        error_msg += ":\n" + response.errors.join("\n");
-                    }
-				}
-                console.log(error_msg);
+                var resp = Utils.parseJqXHR(jqXHR);
+                var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                if (error.length === 0) {
+                    error = I18n.t('error.general.unknown', 'AdminAuth.loadPageData()');
+                }
+                Utils.showModalWarning(error_label, error);
+                if (app.debug) {
+                    console.log( error.replace('<br/>', "\n") );
+                }
 			});
 			
 			return deferred.promise();

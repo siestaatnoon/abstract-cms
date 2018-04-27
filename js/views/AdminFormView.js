@@ -4,8 +4,9 @@ define([
 	'underscore', 
 	'backbone',
 	'classes/ScriptLoader',
-	'classes/Utils'
-], function(app, $, _, Backbone, ScriptLoader, Utils) {
+	'classes/Utils',
+    'classes/I18n'
+], function(app, $, _, Backbone, ScriptLoader, Utils, I18n) {
 	var AdminFormView = Backbone.View.extend({
 
 		id: '#tpl-form-view',
@@ -30,12 +31,12 @@ define([
 			var tpl = options.template || '';
 			var fields = options.fields || [];
 			
-			if (_.isEmpty(fields) && app.debug) {
-				console.log('FormView.initialize: form [fields] not returned in API call.');
+			if ( _.isEmpty(fields) ) {
+                console.log( I18n.t('error.api.missing', ['FormView.initialize:', 'fields']) );
 			}
 			
-			if (tpl.length == 0 && app.debug) {
-				console.log('FormView.initialize: form [template] not returned in API call.');
+			if ( tpl.length == 0 ) {
+                console.log( I18n.t('error.api.missing', ['FormView.initialize:', 'template']) );
 			}
 		
 			this.fields = fields;
@@ -65,17 +66,15 @@ define([
 				self.setElement( $(template).first() );
 				deferred.resolveWith(self, self.model);
 			}, error: function(model, response, options) {
-                var json = response.responseJSON;
-			    var error_msg = 'Error(s) have ocurred while rendering form view';
-			    var error_modal = error_msg;
-				if ( app.debug && _.has(json, 'errors') ) {
-                    if (json.errors.length) {
-                        error_msg += ":\n" + json.errors.join("\n");
-                        error_modal = json.errors.join('<br/><br/>');
-                    }
-                    console.log(error_msg);
-				}
-                Utils.showModalWarning('Error', error_modal);
+			    var resp = Utils.parseJqXHR(response);
+			    var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+			    if (error.length === 0) {
+                    error = I18n.t('error.general.unknown', 'AdminFormView.render()');
+			    }
+                Utils.showModalWarning( I18n.t('error'), error);
+				if (app.debug) {
+				    console.log( error.replace('<br/>', "\n") );
+                }
                 deferred.resolveWith(self, {});
 			}});
 
@@ -94,22 +93,31 @@ define([
 			var $btn = $('#button-delete');
 			var titleField = $btn.data('titleField');
 			var title = this.model.get(titleField) || '';
-			var message = 'Delete "' + title + '"?';
+			var message = I18n.t('delete') + ' "' + title + '"?';
 			var self = this;
 
-			Utils.showModalConfirm('Confirm', message, function() {
+			Utils.showModalConfirm( I18n.t('confirm'), message, function() {
 				self.model.destroy({ 
 					wait: true, 
 					success: function(model, response) {
 						var redirect = $btn.data('redirect');
-						Utils.showModalDialog('Message', '"' + title + '" has deleted successfully', 
+						var message = I18n.t('confirm.deleted', title);
+						Utils.showModalDialog( I18n.t('message'), message,
 							function() {
 								app.Router.navigate(redirect, {trigger: true});
 							}
 						);
 					}, 
 					error: function(model, response) {
-						Utils.showModalWarning('Error', '"' + title + '" could not be deleted', false);
+                        var resp = Utils.parseJqXHR(response);
+                        var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                        if (error.length === 0) {
+                            error = I18n.t('error.general.unknown', 'AdminFormView.formDelete()');
+                        }
+                        Utils.showModalWarning( I18n.t('error'), error);
+                        if (app.debug) {
+                            console.log( error.replace('<br/>', "\n") );
+                        }
 					}
 				});
 			}, false);
@@ -169,7 +177,7 @@ define([
 					})(field);
 				}
 				
-				Utils.showModalWarning('Error', 'Errors were found that need correction', false);
+				Utils.showModalWarning( I18n.t('error'), I18n.t('message.errors.found'), false);
 				return false;
 			}
 			
@@ -186,7 +194,7 @@ define([
 				validate: false,
 	            success: function(model, response) {
 	            	self.trigger('view:update:end');
-	            	Utils.showModalDialog('Message', 'The form has saved successfully.', 
+	            	Utils.showModalDialog( I18n.t('message'), I18n.t('message.form.saved'),
 	            		function() {
 	            			var redirect = $('#submit-save').data('redirect');
 	            			if (redirect.length) {
@@ -197,18 +205,16 @@ define([
 	            },
 	            error: function (model, response) {
 	            	self.trigger('view:update:end');
-	            	var json = response.responseJSON;
-	            	var error_msg = 'Error(s) have occurred while saving the form';
-                    var error_modal = error_msg;
+                    var resp = Utils.parseJqXHR(response);
+                    var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                    if (error.length === 0) {
+                        error = I18n.t('error.general.unknown', 'AdminFormView.formSubmit()');
+                    }
                     if (app.debug) {
-                        if ( _.has(json, 'errors') && json.errors.length ) {
-                            error_msg += ":\n" + json.errors.join("\n");
-                            error_modal = json.errors.join('<br/><br/>');
-                        }
-                        console.log(error_msg);
+                        console.log( error.replace('<br/>', "\n") );
                     }
                     self.trigger('view:update:end');
-	            	Utils.showModalWarning('Error', error_modal);
+	            	Utils.showModalWarning( I18n.t('error'), error);
 	            }
 	        });
 			

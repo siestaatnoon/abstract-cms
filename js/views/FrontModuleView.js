@@ -4,8 +4,9 @@ define([
     'underscore',
     'backbone',
     'classes/Utils',
+    'classes/I18n',
     'views/AbstractContentView'
-], function(app, $, _, Backbone,  Utils, AbstractContentView) {
+], function(app, $, _, Backbone,  Utils, I18n, AbstractContentView) {
     var FrontModuleView = AbstractContentView.extend({
 
         boostrapModel: null,
@@ -61,8 +62,7 @@ define([
             e.preventDefault();
             var formId = '#' + (this.viewData.form_id ? this.viewData.form_id : 'form');
             if ( $(formId).length === 0 ) {
-                var error = 'Module [' + this.module + ']: "form_id" parameter must be passed ';
-                error += 'within "data" parameter in API call.';
+                var error = I18n.t('error.api.parameter', 'form_id');
                 if (app.debug) {
                     console.log(error);
                 }
@@ -128,9 +128,9 @@ define([
                     })(field);
                 }
 
-                self.trigger('form:submit:error', $(formId).get(0), ['Errors were found that need correction.']);
+                var error = I18n.t('message.errors.found');
+                self.trigger('form:submit:error', $(formId).get(0), [error]);
                 if (app.debug) {
-                    var error = 'Form errors [' + this.module + '] were found.';
                     console.log(error);
                 }
                 return false;
@@ -153,12 +153,15 @@ define([
                     }
                     self.trigger('form:submit:success', $(formId).get(0), response);
                     if (app.debug) {
-                        console.log('FrontModuleView.formSubmit[' + self.module + ']: form has saved successfully.');
+                        console.log( I18n.t('message.form.saved') );
                     }
                 },
                 error: function (model, response, options) {
-                    var json = response.responseJSON;
-                    var errors = _.has(json, 'errors') ? json.errors : ['An error has occurred while saving form.'];
+                    var resp = Utils.parseJqXHR(response);
+                    var errors = resp.errors.length ? resp.errors : (resp.response.length ? [resp.response] : []);
+                    if (errors.length === 0) {
+                        errors = [ I18n.t('error.general.unknown', 'FrontModuleView.formSubmit()') ];
+                    }
                     if (app.debug) {
                         console.log( errors.join("\n") );
                     }
@@ -211,10 +214,13 @@ define([
                     self.trigger('view:update:end');
                 },
                 error: function(model, response, options) {
-                    var json = response.responseJSON;
+                    var resp = Utils.parseJqXHR(response);
+                    var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                    if (error.length === 0) {
+                        error = I18n.t('error.general.unknown', 'FrontModuleView.render()');
+                    }
                     if (app.debug) {
-                        var errors = json.errors ? json.errors.join("\n") : 'An unknown error has occurred';
-                        console.log("FrontModuleView.render: error(s) have occurred in AJAX call:\n" + errors);
+                        console.log(error);
                     }
                     self.deferred.resolve(response);
                     self.trigger('view:update:end');

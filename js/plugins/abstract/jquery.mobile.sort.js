@@ -2,9 +2,10 @@ define([
     'config',
     'jquery',
     'classes/Utils',
+    'classes/I18n',
     'plugins/jquery-ui/jquery-ui.min',
     'plugins/abstract/jquery.ui.touch-punch.min'
-], function(app, $, Utils) {
+], function(app, $, Utils, I18n) {
     $(function() {
         var $form = $('.form-sort');
         var $ids =  $('#sort-ids', $form);
@@ -82,21 +83,25 @@ define([
                 }).done(function(data) {
                     var error = '';
                     if ( parseInt(data) === 1 ) {
-                        var msg = 'Sorted items have been saved successfully';
-                        Utils.showModalConfirm('Success', msg, false, function() {
+                        var msg = I18n.t('message.sort.saved');
+                        Utils.showModalConfirm( I18n.t('message'), msg, false, function() {
                             app.Router.navigate( $('#button-cancel').data('redirect'), {trigger: true});
-                        }, false, 'OK', 'Exit');
+                        }, false, I18n.t('ok'), I18n.t('exit') );
                     } else if ( parseInt(data) === 0 ) {
-                        error = 'Sorted items could not be saved';
-                        Utils.showModalWarning('Error', error);
+                        error = I18n.t('error.sort.saved');
+                        Utils.showModalWarning( I18n.t('error'), error);
                     } else if (data.errors) {
-                        error = data.errors.join('<br/><br/>');
-                        Utils.showModalWarning('Error', error);
+                        error = data.errors.join('<br/>');
+                        Utils.showModalWarning( I18n.t('error'), error);
                     }
                     $submit.attr('disabled', false);
                 }).fail(function(jqXHR) {
-                    var json = JSON.parse(jqXHR.responseText);
-                    Utils.showModalWarning('Error', json.errors.join('<br/>') );
+                    var resp = Utils.parseJqXHR(jqXHR);
+                    var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;
+                    if (error.length === 0) {
+                        error = I18n.t('error.general.unknown', 'jquery.mobile.sort');
+                    }
+                    Utils.showModalWarning( I18n.t('error'), error);
                     isValidForm = false;
                 }).then(defer.resolve, defer.reject);
             }).promise();

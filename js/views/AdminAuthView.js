@@ -4,8 +4,9 @@ define([
 	'jquerymobile', 
 	'underscore',
 	'backbone',
-	'classes/Utils'
-], function(app, $, jquerymobile, _, Backbone, Utils) {
+    'classes/Utils',
+    'classes/I18n'
+], function(app, $, jquerymobile, _, Backbone, Utils, I18n) {
 	var AdminAuthView = Backbone.View.extend({
 
 		id: app.pageDynContentId,
@@ -42,7 +43,7 @@ define([
 			
 			$login_btn.blur().attr('disabled', true);
 			if ( $.trim( $user.val() ).length === 0 ) {
-				errors.push('Please enter a username');
+				errors.push( I18n.t('validate.username') );
 				$user.parent('div').addClass('has-error');
 				$user.on('blur', function() {
 					if ( $.trim( $(this).val() ).length > 0 ) {
@@ -51,7 +52,7 @@ define([
 				});
 			}
 			if ( $.trim( $pass.val() ).length === 0 ) {
-				errors.push('Please enter a password');
+				errors.push( I18n.t('validate.pass') );
 				$pass.parent('div').addClass('has-error');
 				$pass.on('blur', function() {
 					if ( $.trim( $(this).val() ).length > 0 ) {
