@@ -73,6 +73,8 @@
 			deps: ['jquery'],
 			exports: '_'
 		},
+
+        'classes/I18n': ['config', 'jquery', 'underscore'],
 		
 		'backbone.paginator': ['underscore', 'backbone'],
 		
@@ -85,7 +87,8 @@
 			'underscore', 
 			'backbone',
 			'backgrid',
-			'backbone.paginator'
+			'backbone.paginator',
+            'classes/I18n'
 		],
 					
 		'backgrid.textcell': 		[
@@ -93,13 +96,13 @@
 			'backgrid'
 		],
 
-        'classes/Class': 					['config', 'jquery', 'underscore'],
-        'classes/Utils': 					['config', 'jquery', 'underscore'],
-        'classes/FormValidator': 			['config', 'jquery', 'underscore', 'classes/Class'],
-        'classes/ScriptLoader': 			['config', 'jquery', 'underscore', 'classes/Class'],
-        'classes/PageLoader': 				['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils'],
-        'classes/admin/SessionPoller': 		['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils'],
-        'classes/ModuleLoader': 			['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils'],
+        'classes/Class': 					['config', 'jquery', 'underscore', 'classes/I18n'],
+        'classes/Utils': 					['config', 'jquery', 'underscore', 'classes/I18n'],
+        'classes/FormValidator': 			['config', 'jquery', 'underscore', 'classes/Class', 'classes/I18n'],
+        'classes/ScriptLoader': 			['config', 'jquery', 'underscore', 'classes/Class', 'classes/I18n'],
+        'classes/PageLoader': 				['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils', 'classes/I18n'],
+        'classes/admin/SessionPoller': 		['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils', 'classes/I18n'],
+        'classes/ModuleLoader': 			['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils', 'classes/I18n'],
 
         'classes/admin/AdminAuth': 			[
             'config',
@@ -107,7 +110,7 @@
             'underscore',
             'classes/Class',
             'classes/admin/SessionPoller',
-            'classes/Utils'
+            'classes/Utils', 'classes/I18n'
         ],
 
         'classes/admin/AdminModuleLoader': 	['config', 'jquery', 'underscore', 'classes/Class', 'classes/ModuleLoader'],
@@ -134,7 +137,8 @@
             'jquery',
             'underscore',
             'backbone',
-            'classes/Utils'
+            'classes/Utils',
+            'classes/I18n'
         ],
 
         'views/AdminAuthView': 	[
@@ -143,6 +147,7 @@
             'underscore',
             'backbone',
             'classes/Utils',
+            'classes/I18n',
             'classes/admin/AdminAuth'
         ],
 
@@ -156,7 +161,8 @@
             'classes/admin/AdminModuleLoader',
             'classes/ScriptLoader',
             'classes/FormValidator',
-            'models/AdminModel'
+            'models/AdminModel',
+            'classes/I18n'
         ],
 
         'views/AdminListView': 	[
@@ -170,6 +176,7 @@
             'backgrid.textcell',
             'classes/admin/AdminModuleLoader',
             'classes/ScriptLoader',
+            'classes/I18n',
             'collections/AdminCollection',
             'views/AdminListUpdaterView'
         ],
@@ -179,7 +186,8 @@
             'jquery',
             'underscore',
             'backbone',
-            'backgrid'
+            'backgrid',
+            'classes/I18n'
         ],
 
         'views/AdminTplView': 	[

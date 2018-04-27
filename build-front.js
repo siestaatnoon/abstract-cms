@@ -31,13 +31,14 @@
         //'bootstrap':                      ['jquery'],
         'jquerymobile':                     ['config', 'jquery'],
         'backbone.paginator':               ['underscore', 'backbone'],
+        'classes/I18n':                     ['config', 'jquery', 'underscore'],
         'classes/Class': 					['config', 'jquery', 'underscore'],
-        'classes/Utils': 					['config', 'jquery', 'underscore'],
-        'classes/FormValidator': 			['config', 'jquery', 'underscore', 'classes/Class'],
+        'classes/Utils': 					['config', 'jquery', 'underscore', 'classes/I18n'],
+        'classes/FormValidator': 			['config', 'jquery', 'underscore', 'classes/Class', 'classes/I18n'],
         'classes/ScriptLoader': 			['config', 'jquery', 'underscore', 'classes/Class'],
-        'classes/PageLoader': 				['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils'],
-        'classes/ModuleLoader': 			['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils'],
-        'classes/front/FrontModuleLoader': 	['config', 'jquery', 'underscore', 'classes/Class', 'classes/ModuleLoader'],
+        'classes/PageLoader': 				['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils', 'classes/I18n'],
+        'classes/ModuleLoader': 			['config', 'jquery', 'underscore', 'classes/Class', 'classes/Utils', 'classes/I18n'],
+        'classes/front/FrontModuleLoader': 	['config', 'jquery', 'underscore', 'classes/Class', 'classes/ModuleLoader', 'classes/I18n'],
 
         'models/AbstractModel': 			[
             'config',
@@ -62,15 +63,18 @@
             'config',
             'jquery',
             'underscore',
-            'backbone'
+            'backbone',
+            'classes/I18n'
         ],
 
         'views/FrontListView': [
-            'views/AbstractContentView'
+            'views/AbstractContentView',
+            'classes/I18n'
         ],
 
         'views/FrontModuleView': [
-            'views/AbstractContentView'
+            'views/AbstractContentView',
+            'classes/I18n'
         ],
 
         'views/AbstractTplView': 	[
