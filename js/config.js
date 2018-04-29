@@ -1,7 +1,8 @@
 define([
 	'jquery',
+    '../api/i18n',
     'text!../abstract.json'
-    ], function($, abstractCfgJson) {
+    ], function($, i18nDict, abstractCfgJson) {
     var abstractCfg = JSON.parse(abstractCfgJson);
 	var app = app || {};
 	app.debug 				= abstractCfg.debug;
@@ -54,6 +55,7 @@ define([
 	app.appCache			= {};
 	app.i18n                = {};
 
+<<<<<<< HEAD
 	// check if we're in admin or frontend
     app.isAdmin = location.pathname.indexOf(app.adminRoot) === 0;
 
@@ -89,6 +91,16 @@ define([
         });
         */
     }
+=======
+	// Check if we're in admin or frontend
+    app.isAdmin = location.pathname.indexOf(app.adminRoot) === 0;
+
+    // Set locale for i18n
+    app.locale = app.isAdmin ? abstractCfg.localeAdmin : abstractCfg.localeFront;
+
+    // Set i18n translations
+    app.i18n = JSON.parse(i18nDict[app.locale]);
+>>>>>>> master
 
 	// execute following only for admin or if front uses jQm
     if (app.isAdmin || app.useFrontJqm) {
@@ -105,7 +117,11 @@ define([
                 //commented since this is needed for JQM listbox
                 //to function
                 //$.mobile.linkBindingEnabled = false;
+<<<<<<< HEAD
 
+=======
+                var loadingText = app.i18n['loading'].toLowerCase();
+>>>>>>> master
                 var loadingHTML = '<div class="ui-loader-centered"><span class="ui-icon-loading"></span><h1>' + loadingText + '</h1></div>';
                 $.mobile.loader.prototype.options.text = "";
                 $.mobile.loader.prototype.options.textVisible = true;
