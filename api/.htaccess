@@ -6,6 +6,9 @@ RewriteEngine On
 #
 # RewriteBase /
 
+RewriteCond %{REQUEST_URI} /api/i18n.js$
+RewriteRule ^(.*)$ i18n.php [L]
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_URI} /api/admin/.*$
 RewriteRule ^(.*)$ admin.php [QSA,L]
