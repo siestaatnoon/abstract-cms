@@ -55,43 +55,6 @@ define([
 	app.appCache			= {};
 	app.i18n                = {};
 
-<<<<<<< HEAD
-	// check if we're in admin or frontend
-    app.isAdmin = location.pathname.indexOf(app.adminRoot) === 0;
-
-    // Load i18n translations for admin
-    app.locale = app.isAdmin ? abstractCfg.localeAdmin : abstractCfg.localeFront;
-    var loadingText = 'loading';
-    var parts = app.locale.split('_');
-    if (parts.length === 2) {
-        // NOTE: AJAX used to load I18n translations instead of
-        // requirejs since other module loads would not get in the
-        // way here
-        //
-        // TODO: Also note the larger the i18n file gets, the bigger the possibility
-        // of I18n files loading before... something to think about
-        //
-        parts = [abstractCfg.localeAppDir].concat(parts);
-        var url = parts.join('/') + '/' + app.locale + '.json';
-        $.ajax({
-            url : 		url,
-            type: 		'GET',
-            dataType: 	'text'
-        }).done(function(data) {
-            app.i18n = JSON.parse(data);
-        }).fail(function(jqXHR) {
-            console.log(jqXHR.responseText);
-        });
-
-        /*
-        var textModule = 'text!../' + parts.join('/') + '/' + app.locale + '.json';
-        require([textModule], function(i18nJson){
-            app.i18n = JSON.parse(i18nJson);
-            loadingText = app.i18n['loading'].toLowerCase();
-        });
-        */
-    }
-=======
 	// Check if we're in admin or frontend
     app.isAdmin = location.pathname.indexOf(app.adminRoot) === 0;
 
@@ -100,7 +63,6 @@ define([
 
     // Set i18n translations
     app.i18n = JSON.parse(i18nDict[app.locale]);
->>>>>>> master
 
 	// execute following only for admin or if front uses jQm
     if (app.isAdmin || app.useFrontJqm) {
@@ -117,11 +79,7 @@ define([
                 //commented since this is needed for JQM listbox
                 //to function
                 //$.mobile.linkBindingEnabled = false;
-<<<<<<< HEAD
-
-=======
                 var loadingText = app.i18n['loading'].toLowerCase();
->>>>>>> master
                 var loadingHTML = '<div class="ui-loader-centered"><span class="ui-icon-loading"></span><h1>' + loadingText + '</h1></div>';
                 $.mobile.loader.prototype.options.text = "";
                 $.mobile.loader.prototype.options.textVisible = true;
