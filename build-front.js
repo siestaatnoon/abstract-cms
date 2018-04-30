@@ -14,7 +14,8 @@
         //'bootstrap': 			'lib/bootstrap.min',
         'underscore':			'lib/underscore.min',
         'backbone': 			'lib/backbone.min',
-        'backbone.paginator': 	'lib/ext/backbone.paginator'
+        'backbone.paginator': 	'lib/ext/backbone.paginator',
+        'config': 	            'config-build'
     },
 
     shim: {

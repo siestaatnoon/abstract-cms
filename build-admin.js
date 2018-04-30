@@ -56,7 +56,8 @@
 		'backbone.paginator': 	'lib/ext/backbone.paginator',
 		'backgrid': 			'lib/backgrid.min',
 		'abstract.paginator': 	'lib/ext/abstract.paginator',
-		'backgrid.textcell': 	'lib/ext/backgrid.textcell'
+        'backgrid.textcell': 	'lib/ext/backgrid.textcell',
+        'config': 	            'config-build'
 	},
 
 	shim: {
