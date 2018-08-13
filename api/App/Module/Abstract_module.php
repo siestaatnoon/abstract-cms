@@ -436,7 +436,8 @@ abstract class Abstract_module {
 		}
 
 		$is_readonly = (empty($row_id) && $permission->has_add() === false) ||
-					   ( ! empty($row_id) && $permission->has_update() === false);
+					   ( ! empty($row_id) && $permission->has_update() === false) ||
+                       empty($this->module['use_cms_form']);
 
 		$form_fields = $this->get_form_fields();
 		$config = array(
@@ -525,7 +526,7 @@ abstract class Abstract_module {
             throw new AppException($error, AppException::ERROR_FATAL);
         }
 
-        $title = 'Arrange '.$this->module['label_plural'];
+        $title = __('arrange').' '.$this->module['label_plural'];
         $is_readonly = $permission->has_update() === false;
         $form_config = array();
 

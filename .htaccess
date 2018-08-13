@@ -28,6 +28,10 @@ RewriteCond %{REQUEST_URI} ^/backbone/dev/api/admin/.*$
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^(.*)$ api/admin.php [QSA,L]
 
+# Redirect simple login/logout URLs
+RedirectMatch 301 ^/backbone/dev/admin/login$ /backbone/dev/admin/authenticate/login
+RedirectMatch 301 ^/backbone/dev/admin/logout /backbone/dev/admin/authenticate/logout
+
 # Route admin URLs to CMS panel
 RewriteCond %{REQUEST_FILENAME} !-f 
 RewriteCond %{REQUEST_FILENAME} !-d

@@ -4,9 +4,26 @@ define([
 	'underscore',
     'classes/I18n'
 ], function(app, $, _, I18n) {
-	
+
+    /**
+     * Class containing utility functions used in Backbone/Javascript files.
+     *
+     * @exports classes/Utils
+     * @requires config
+     * @requires jquery
+     * @requires Underscore
+	 * @requires classes/I18n
+     * @constructor
+     */
 	var Utils = {
 
+        /**
+         * Converts single quotes contained in a string array, object member properties or a string
+		 * itself to the unicode u0027 character. Primarily used for JSON parsing.
+         *
+         * @param {Array|Object|String} mixed - The string or object or array whose string values to convert
+         * @return {Array|Object|String} The string, object or array with single quotes converted
+         */
         escapeSingleQuotes: function(mixed) {
             var type = typeof mixed;
             if ( $.isArray(type) ) {
@@ -22,7 +39,13 @@ define([
             }
             return mixed;
         },
-		
+
+        /**
+         * Recursively sets an object's  member properties to null readying it for garbage collection.
+         *
+         * @param {Object} obj - The object
+         * @return {null} The new property value
+         */
 		gcReadyObject: function(obj) {
 			if ( $.isPlainObject(obj) ) {
 				for (var prop in obj) {
@@ -33,7 +56,13 @@ define([
 			obj = null;
 			return obj;
 		},
-		
+
+        /**
+         * Returns the value of a form field as a jQuery object.
+         *
+         * @param {jQuery} $field - The jQuery object representing the form field
+         * @return {String|Array} The field value, note that for a non-existing field an empty string is returned
+         */
 		getVal: function($field) {
 			if ($field instanceof jQuery === false || $.isFunction($field.val) === false) {
 				return false;
@@ -90,12 +119,22 @@ define([
 			return values;
 		},
 
+        /**
+         * Hides a jQuery overlay (semi-transparent page blocker).
+         *
+         */
         hideOverlay: function() {
             if ( $('.abstract-overlay').length ) {
                 $('.abstract-overlay').css('display', 'none');
             }
         },
-		
+
+        /**
+         * Checks if a string is a JSON object. Note that scalar values will return false.
+         *
+         * @param {String} str - The string to check
+         * @return {Boolean} True if string represents a JSON object
+         */
 		isJson: function(str) {
 			var is_json = true;
 			var obj = false;
@@ -116,7 +155,7 @@ define([
          * response: The raw response string
          *
          * @param {jqXHR} jqXHR - The jQuery XHR object
-         * @return {Object/null} The formatted object or null if jqXHR parameter invalid
+         * @return {Object|null} The formatted object or null if jqXHR parameter invalid
          */
         parseJqXHR: function(jqXHR) {
             if ( _.isObject(jqXHR) === false || _.has(jqXHR, 'responseText') === false || _.has(jqXHR, 'status') === false ) {
@@ -138,7 +177,11 @@ define([
             };
         },
 
-		
+        /**
+         * Refreshes a jQuery Mobile select, checkbox, radio button or flipswitch widget.
+         *
+         * @param {jQuery|String} selector - The jQuery object or selector string
+         */
 		refreshJqmField: function(selector) {
 			var $field = $.type(selector) === 'string' ? $(selector) : selector;
 			if ( ! $field) {
@@ -160,7 +203,12 @@ define([
 				$field.checkboxradio().checkboxradio('refresh');
 			}
 		},
-		
+
+        /**
+         * Removes all form field errors in an admin form page.
+         *
+         * @param {jQuery|String} selector - The form container jQuery object or selector string
+         */
 		removeAllFieldErrors: function(selector) {
 			var $container = $.type(selector) === 'string' ? $(selector) : selector;
 			if ( ! $container) {
@@ -172,7 +220,12 @@ define([
 			//Bootstrap
 			//$('.form-control-feedback', $container).remove();
 		},
-		
+
+        /**
+         * Removes the error(s) of a single form field in an admin form page.
+         *
+         * @param {jQuery|String} selector - The form field jQuery object or selector string
+         */
 		removeFieldError: function(selector) {
 			var $field = $.type(selector) === 'string' ? $(selector) : selector;
 			if ( ! $field) {
@@ -188,6 +241,9 @@ define([
 			//$('.form-control-feedback', $field_block).remove();
 		},
 
+        /**
+         * Sets the CRSF token as a header in the AJAX configuration for an admin form.
+         */
 		setCrsfToken: function() {
 			var crsf_token = '';
 			var cookie_name = app.csrfToken;
@@ -209,7 +265,13 @@ define([
 			config['headers'][cookie_name] =  crsf_token;
 			$.ajaxSetup(config);
 		},
-		
+
+        /**
+         * Shows the error(s) of a single form field in an admin form page.
+         *
+         * @param {jQuery|String} selector - The form field jQuery object or selector string
+         * @param {String|Array} messages - The error message or array of error messages to join
+         */
 		showFieldError: function(selector, messages) {
 			var $field = $.type(selector) === 'string' ? $(selector) : selector;
 			if ( ! $field) {
@@ -240,12 +302,23 @@ define([
 			.appendTo($field_block);
 			$field_group.addClass('has-error has-feedback');
 		},
-		
+
+        /**
+         * Displays a jQuery Mobile modal confirm box.
+         *
+         * @param {String} label - The modal label (top of confirm box)
+         * @param {String} message - The message string
+         * @param {Function} onOk - The callback when OK button is pressed
+         * @param {Function} onCancel - The callback when Cancel button is pressed
+         * @param {Object} context - The context for the above callbacks
+         * @param {String} okText - The text for the OK button, defaults to "OK" if undefined or empty
+         * @param {String} cancelText - The text for the Cancel button, defaults to "Cancel" if undefined or empty
+         */
 		showModalConfirm: function(label, message, onOk, onCancel, context, okText, cancelText) {
-			var label = label || I18n.t('message');
-			var message = message || '';
-			var onCancel = onCancel !== undefined && typeof onCancel === 'function' ? onCancel : false;
-			var onOk = onOk !== undefined && typeof onOk === 'function' ? onOk : false;
+			label = label || I18n.t('message');
+			message = message || '';
+			onCancel = onCancel !== undefined && typeof onCancel === 'function' ? onCancel : false;
+			onOk = onOk !== undefined && typeof onOk === 'function' ? onOk : false;
 			context = context || null;
 			okText = okText || I18n.t('ok');
 			cancelText = cancelText || I18n.t('cancel');
@@ -270,11 +343,20 @@ define([
 			$('#modal-confirm-body').html(message);
 			$('#modal-confirm').show().popup({ dismissable: false }).popup('open');
 		},
-		
+
+        /**
+         * Displays a jQuery Mobile modal dialog box.
+         *
+         * @param {String} label - The modal label (top of confirm box)
+         * @param {String} message - The message string
+         * @param {Function} callback - The callback when Continue button is pressed
+         * @param {Object} context - The context for the above callbacks
+         * @param {closeText} closeText - The text for the Continue button, defaults to "Continue" if undefined or empty
+         */
 		showModalDialog: function(label, message, callback, context, closeText) {
-			var label = label || I18n.t('message');
-			var message = message || '';
-			var callback = callback !== undefined && typeof callback === 'function' ? callback : false;
+			label = label || I18n.t('message');
+			message = message || '';
+			callback = callback !== undefined && typeof callback === 'function' ? callback : false;
 			context = context || null;
 			closeText = closeText || I18n.t('continue');
 			
@@ -290,11 +372,20 @@ define([
 			$('#modal-dialog-body').html(message);
 			$('#modal-dialog').show().popup({ dismissable: false }).popup('open');
 		},
-		
+
+        /**
+         * Displays a jQuery Mobile modal warning box.
+         *
+         * @param {String} label - The modal label (top of confirm box)
+         * @param {String} message - The message string
+         * @param {Function} callback - The callback when Continue button is pressed
+         * @param {Object} context - The context for the above callbacks
+         * @param {closeText} closeText - The text for the Continue button, defaults to "Continue" if undefined or empty
+         */
 		showModalWarning: function(label, message, callback, context, closeText) {
-			var label = label || I18n.t('error');
-			var message = message || I18n.t('error.general.unknown', label + ':');
-			var callback = callback !== undefined && typeof callback === 'function' ? callback : false;
+			label = label || I18n.t('error');
+			message = message || I18n.t('error.general.unknown', label + ':');
+			callback = callback !== undefined && typeof callback === 'function' ? callback : false;
 			context = context || null;
 			closeText = closeText || I18n.t('continue');
 			
@@ -311,12 +402,23 @@ define([
 			$('#modal-warning').show().popup({ dismissable: false }).popup('open');
 		},
 
+        /**
+         * Shows a jQuery overlay (semi-transparent page blocker).
+         *
+         */
 		showOverlay: function() {
         	if ( $('.abstract-overlay').length ) {
                 $('.abstract-overlay').css('display', 'block');
             }
         },
 
+        /**
+         * Converts the unicode u0027 contained in a string array, object member properties or a string
+         * itself to a single quote character. Primarily used after JSON parsing.
+         *
+         * @param {Array|Object|String} mixed - The string or object or array whose string values to convert
+         * @return {Array|Object|String} The string, object or array with unicode u0027 character converted
+         */
         unescapeSingleQuotes: function(mixed) {
             var type = typeof mixed;
             if ( $.isArray(type) ) {

@@ -103,7 +103,7 @@ class Session {
 	protected $sess_data;
 
     /**
-     * @var string Added to session id and resulting MD5 hash to store in session cookie
+     * @var string Added to session id and resulting SHA-512 hash to store in session cookie
      */
 	protected $sess_hash_salt = '';
 
@@ -141,8 +141,10 @@ class Session {
 		$db_config = $App->config('db_config');
 		$this->db = Database::connection($db_config);
 
-		$sess_hash_salt = $App->config('session_hash_salt');
-		$this->sess_hash_salt = empty($sess_hash_salt) ? uniqid( mt_rand(), true) : $sess_hash_salt;
+        $this->sess_hash_salt = $App->config('session_hash_salt');
+		if ( empty($this->sess_hash_salt) ) {
+            $this->sess_hash_salt = '[PLEASE PASS THE SALT!]';
+        }
 		
 		$table_prefix = $App->config('db_table_prefix');
 		if ( ! empty($table_prefix) ) {
@@ -256,7 +258,7 @@ class Session {
 		if ( ! empty($cookie_val) ) {
 		//delete session from db
 			$query = "DELETE FROM ".$this->db->escape_identifier($this->sess_table)." ";
-			$query .= "WHERE MD5( CONCAT(`session_id`, ".$this->db->escape($this->sess_hash_salt).") )=";
+			$query .= "WHERE SHA2( CONCAT(`session_id`, ".$this->db->escape($this->sess_hash_salt)."), 512)=";
 			$query .= $this->db->escape($cookie_val);
 			$this->db->query($query);
 
@@ -297,7 +299,7 @@ class Session {
 	 */
 	public function session_start() {
 		//set session coookie
-		$cookie_data = md5($this->sess_user['session_id'].$this->sess_hash_salt);
+		$cookie_data = hash('sha512',$this->sess_user['session_id'].$this->sess_hash_salt);
 		setcookie($this->sess_cookie, $cookie_data, $this->cookie_timeout, '/');
 		
 		$this->has_session = true;
@@ -515,7 +517,7 @@ class Session {
 		if ( ! empty($cookie_val) ) {
 		//retrieve session from db
 			$query = "SELECT * FROM ".$this->db->escape_identifier($this->sess_table)." ";
-			$query .= "WHERE MD5( CONCAT(`session_id`, ".$this->db->escape($this->sess_hash_salt).") )=";
+			$query .= "WHERE SHA2( CONCAT(`session_id`, ".$this->db->escape($this->sess_hash_salt)."), 512)=";
 			$query .= $this->db->escape($cookie_val);
 			$result = $this->db->query($query);
 
