@@ -134,7 +134,9 @@ define([
 				dataType: 	'json'
 			}).done(function(response) {
                 isActive = _.has(response, 'session_active') ? response.session_active : false;
-                self.sessionStart();
+                if (isActive) {
+                    self.sessionStart();
+				}
 			}).fail(function(jqXHR) {
                 var resp = Utils.parseJqXHR(jqXHR);
                 var error = resp.errors.length ? resp.errors.join('<br/>') : resp.response;

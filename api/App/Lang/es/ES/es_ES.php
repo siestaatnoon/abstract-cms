@@ -21,6 +21,7 @@ $lang['yes']        = 'sí';
 
 // Botones
 $lang['add']        = 'Añadir';
+$lang['arrange']    = 'Ordenar';
 $lang['cancel']     = 'Cancelar';
 $lang['close']      = 'Cerrar';
 $lang['continue']   = 'Continuar';
@@ -40,6 +41,8 @@ $lang['view']       = 'Ver';
 
 // Frases
 $lang['add.new']                    = 'Añadir nuevo';
+$lang['arrange.all']                = 'Ordenar todos los artículos';
+$lang['arrange.by']                 = 'Ordenar por';
 $lang['filter.clear']               = 'Eliminar filtros';
 $lang['filter.results']             = 'Filtrar resultados';
 $lang['return.list']                = 'Volver al listado';
@@ -235,6 +238,7 @@ $lang['validate.strong_password'] 	= 'Contraseña fuerte';
 $lang['validate.custom'] 			= 'Validación customizado';
 
 // Errors
+$lang['error.arrange']              = 'Actualmente no hay artículos para ordenar';
 $lang['error.config.missing']       = 'Fichero de configuración no encontrado: %s';
 $lang['error.database.config'] 		= '%s parametros de la base de datos no definidos en configuración principal %s';
 $lang['error.exception.unknown'] 	= 'Ha occurido un %s desconocido';

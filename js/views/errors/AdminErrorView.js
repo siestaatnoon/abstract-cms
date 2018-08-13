@@ -90,6 +90,13 @@ define([
 			this.router.navigate(app.adminHomeFrag, {trigger: true, replace: true});
 		},
 
+        /**
+         * Redirects  to the admin login page.
+         *
+         */
+        goToLogin: function() {
+            this.router.navigate('admin/authenticate/login', {trigger: true, replace: true});
+        },
 
         /**
          * Calls the Backbone.View.remove() function.
@@ -102,25 +109,37 @@ define([
 
 
         /**
-         * Renders this error view.
+         * Renders this error view. NOTE: if user not logged into admin, then all errors
+		 * will redirect to login page. This effectively disables the 401 error page
+         * but probably best course of action here.
          *
+         * @return {views/error/AdminErrorView} Reference to this object
          */
 		render: function() {
 			if ( ! this.auth.isAuthenticated() ) {
-				self.router.navigate('admin/authenticate/login', {trigger: true, replace: true});
+				this.goToLogin();
 				return false;
 			}
 
 			var data = {
 			    title: I18n.t('error.' + this.errorCode + '.title'),
                 content: I18n.t('error.' + this.errorCode + '.text'),
-                buttonText: I18n.t('back')
+                buttonText: this.errorCode === 401 ? I18n.t('continue') : I18n.t('back')
             };
 			$.mobile.loading('show');
 			var template = this.template(data);
 			this.setElement( $(template).first(this.id) );
 			this.$content.empty();
 			this.$el.appendTo(this.$content);
+
+			// for 401 error page, make button return to login page
+            if (this.errorCode === 401) {
+            	var self = this;
+                this.$el.find('button').removeClass('button-back').addClass('button-redirect').click(function() {
+                    self.goToLogin();
+                });
+            }
+
 			$.mobile.initializePage();
 			this.$content.enhanceWithin();
 			$.mobile.loading('hide');

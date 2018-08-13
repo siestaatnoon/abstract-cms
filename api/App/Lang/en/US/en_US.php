@@ -21,6 +21,7 @@ $lang['yes']        = 'yes';
 
 // Buttons
 $lang['add']        = 'Add';
+$lang['arrange']    = 'Arrange';
 $lang['cancel']     = 'Cancel';
 $lang['close']      = 'Close';
 $lang['continue']   = 'Continue';
@@ -40,6 +41,8 @@ $lang['view']       = 'View';
 
 // Phrases
 $lang['add.new']                    = 'Add New Item';
+$lang['arrange.all']                = 'Arrange All Records';
+$lang['arrange.by']                 = 'Arrange by';
 $lang['filter.clear']               = 'Clear Filters';
 $lang['filter.results']             = 'Filter Results';
 $lang['return.list']                = 'Return to List';
@@ -235,6 +238,7 @@ $lang['validate.strong_password'] 	= 'Strong password';
 $lang['validate.custom'] 			= 'Custom validation';
 
 // Errors
+$lang['error.arrange']              = 'There are currently no items to arrange';
 $lang['error.config.missing']       = 'Configuration file not found: %s';
 $lang['error.database.config'] 		= '%s database parameters not defined in main config file %s';
 $lang['error.exception.unknown'] 	= 'An unknown %s has occurred';

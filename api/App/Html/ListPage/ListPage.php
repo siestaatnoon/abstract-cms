@@ -4,6 +4,7 @@ namespace App\HTML\ListPage;
 
 use
 App\App,
+App\Model\Model,
 App\Module\Module;
 
 
@@ -336,6 +337,12 @@ class ListPage {
                 if ( in_array($type, $bool_types) ) {
                     $row[$field] = (int) $val === 1 ? 'Yes' : 'No';
                 }
+            }
+
+            // in case module uses active field
+            if ( isset($row[Model::MODEL_ACTIVE_FIELD]) ) {
+                $val = $row[Model::MODEL_ACTIVE_FIELD];
+                $row[Model::MODEL_ACTIVE_FIELD] = (int) $val === 1 ? 'Yes' : 'No';
             }
         }
 

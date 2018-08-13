@@ -9,21 +9,54 @@ define([
   "use strict";
 
 	  /**
-	     @class Backgrid.Extension.Paginator
-	  */
-	var Paginator = Backgrid.Extension.Paginator = Backbone.View.extend({
+	   * Class extending the Backgrid.Paginator to suit this application.
+       *
+       * TODO: 1. isMobile? 2. UL list pagination option (default) 3. onRender, onPreRender for collection
+	   *
+	   * @exports Backgrid.Extension.Paginator
+       * @requires Underscore
+       * @requires Backbone
+       * @requires Backgrid
+       * @requires classes/I18n
+       * @requires backgrid.paginator
+       * @constructor
+       * @augments Backbone.View
+	   */
+	var Paginator = Backgrid.Extension.Paginator = Backbone.View.extend(
+    /** @lends Backgrid.Extension.Paginator.prototype **/
+	{
 
+        /**
+         * Class name of DOM container for pagination.
+         *
+         * @type {String}
+         */
 	    className: "abstract-paginator",
 
+        /**
+         * Backbone events for pagination.
+         *
+         * @type {Object}
+         */
 	    events: {
 	      "click a.pager-control": "changePage",
 	      "click a.pager-selector": "changePage",
 	      "change select.pager-selector": "changePage",
 	      "change select.pager-size": "setPerPage"
 	    },
-	    
+
+        /**
+         * Class used for active pagination link (numeric).
+         *
+         * @type {String}
+         */
 	    activeClass: 'active',
-	    
+
+        /**
+         * Attributes for pagination controls.
+         *
+         * @type {Object}
+         */
 	    attr: {
 			first: {
 				class: ['pager-control', 'page-first'],
@@ -48,25 +81,52 @@ define([
 				class: ['pager-size']
 			}
 		},
-		
+
+        /**
+         * Class attributes to add to pagination container in DOM.
+         *
+         * @type {Array}
+         */
 		classAttr: [],
-		
+
+        /**
+         * Class used to disable pagination control.
+         *
+         * @type {String}
+         */
 		disabledClass: 'disabled',
-		
+
+        /**
+         * Flag if user device is a mobile or tablet.
+         *
+         * @type {Boolean}
+         */
 		isMobile: false,
-		
+
+        /**
+         * Attributes for first, previous, next and last pagination controls.
+         *
+         * @type {Object}
+         */
 		listProps: {
 			first: { text:'&laquo;', title: I18n.t('first') },
 			prev: { text:'<', title: I18n.t('previous') },
 			next: { text:'>', title: I18n.t('next') },
 			last: { text:'&raquo;', title: I18n.t('last') },
 		},
-		
+
+        /**
+         * Type of pagination depending on device, mobile/tablet: list, desktop: table.
+         *
+         * @type {String}
+         */
 		pagerType: 'list',
-		
-		/*
-			TODO: 1. isMobile? 2. UL list pagination option (default) 3. onRender, onPreRender for collection
-		*/
+
+        /**
+         * Initializer.
+         *
+         * @param {Object} options - View options (Backbone)
+         */
 	    initialize: function(options) {
 	    	var options = options || {};
 	    	var self = this;
@@ -95,6 +155,11 @@ define([
 			
 	    },
 
+        /**
+         * Event handler for pagination controls.
+         *
+         * @param {jQuery} e - The jQuery event object
+         */
 	    changePage: function(e) {
 			e.preventDefault();
 			this.trigger('view:update:start');
@@ -125,7 +190,12 @@ define([
 			}
 			return this;
 	    },
-	    
+
+        /**
+         * Renders the pagination HTML.
+         *
+         * @return {Backgrid.Extension.Paginator} Reference to this object
+         */
 	    render: function () {
 			this.$el.empty();
 			if (this.pagerType === 'table') {
@@ -136,7 +206,13 @@ define([
 			this.delegateEvents();
 			return this;
 	    },
-	    
+
+        /**
+         * Event handler for the per page selector. Updates the number of list items showing
+         * in the page.
+         *
+         * @return {Backgrid.Extension.Paginator} Reference to this object
+         */
 	    setPerPage: function(e) {
 	    	this.trigger('view:update:start');
 			var perPage = $(e.target).val();
@@ -149,6 +225,12 @@ define([
 			return this;
 		},
 
+        /**
+         * Creates a jQuery link object for a first, previous, next or last control and
+         * adds its attributes and disabling it if needed.
+         *
+         * @return {jQuery} The link as a jQuery object
+         */
 		_controlLink: function(type) {
 			var $link = $('<a/>');
 			if ( _.isObject(this.attr[type]) ) {
@@ -160,7 +242,11 @@ define([
 			}
 			return $link;
 		},
-		
+
+        /**
+         * Merges additional attributes to the default first, previous, next and last controls.
+         *
+         */
 		_mergeAttr: function(attr) {
 			if ( _.isObject(attr) ) {
 				for (var prop in attr) {
@@ -182,7 +268,12 @@ define([
 				}
 			}
 		},
-		
+
+        /**
+         * Creates a jQuery select element used for a pagination jumpmenu.
+         *
+         * @return {jQuery} The select element as a jQuery object
+         */
 		_pageSelector: function() {
 			var $select = this._setAttr($('<select/>'), this.attr['page']);
 			var state = this.collection.state;
@@ -204,7 +295,13 @@ define([
 			$div.append($pre).append($select).append($post);
 			return $div;
 		},
-		
+
+        /**
+         * Creates the pagination HTML (jQuery) and adds it to this View. Used
+         * for mobile list view.
+         *
+         * @return {jQuery} The pagination HTML as a jQuery object
+         */
 		_pagerList: function() {
 			var $ul = $('<ul/>');
 
@@ -238,7 +335,13 @@ define([
 			}
 			$ul.appendTo(this.$el);
 		},
-		
+
+        /**
+         * Creates the pagination HTML (jQuery) and adds it to this View. Used
+         * for table list view.
+         *
+         * @return {jQuery} The pagination HTML as a jQuery object
+         */
 		_pagerTable: function() {
 			for (var prop in this.attr) {
 				var $element = null;
@@ -252,7 +355,12 @@ define([
 				$element.appendTo(this.$el);
 			}
 		},
-		
+
+        /**
+         * Creates a jQuery select menu used as a jumpmenu to change the number of list items showing.
+         *
+         * @return {jQuery} The select menu as a jQuery object
+         */
 		_perPageSelector: function() {
 			var $select = this._setAttr($('<select/>'), this.attr['perPage']);
 			var state = this.collection.state;
@@ -261,7 +369,10 @@ define([
 			var steps = [];
 			
 			if (this.isMobile) {
-				steps = [5, 10, 20, 50];
+                if (totalRecords > 20) steps.push(5);
+                if (totalRecords > 50) steps.push(10);
+                if (totalRecords > 100) steps.push(20);
+                if (totalRecords > 500) steps.push(50);
 			} else {
 				if (totalRecords > 20) steps.push(20);
 				if (totalRecords > 50) steps.push(50);
@@ -277,7 +388,7 @@ define([
 			for (var i=0; i < steps.length; i++) {
 				var step = steps[i];
 				var text = i < steps.length - 1 || this.isMobile ?
-					       i + ' ' + I18n.t('per.page') :
+                           step + ' ' + I18n.t('per.page') :
 					       I18n.t('view.all');
 				var is_selected = step === pageSize;
 				$('<option/>', {
@@ -288,11 +399,23 @@ define([
 			}
 			return $select;
 		},
-		
+
+        /**
+         * Triggers a "view:refresh" event for this view.
+         *
+         */
 		_refresh: function() {
 			this.trigger('view:refresh');
 		},
-		
+
+        /**
+         * Sets the attribute for a DOM element (jQuery) given the jQuery element
+         * attributes as an object.
+         *
+         * @param {jQuery} $element - The jQuery element
+         * @param {Object} attr - The attributes as an object and properties as attribute names
+         * @return {jQuery} The element with updated attributes
+         */
 		_setAttr: function($element, attr) {
 			var non_data_attr = ['id', 'title'];
 			if ( _.isObject(attr) ) {

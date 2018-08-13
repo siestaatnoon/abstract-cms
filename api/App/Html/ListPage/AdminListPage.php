@@ -109,7 +109,7 @@ class AdminListPage extends \App\Html\ListPage\ListPage {
 		$data = $this->module->get_module_data();
 		$module_name = $data['name'];
         $title_field = $data['title_field'];
-		$edit_text = $this->permission->has_update() ? __('edit') : __('view');
+		$edit_text = ! empty($data['use_cms_form']) && $this->permission->has_update() ? __('edit') : __('view');
 		$close = __('close');
         $delete = __('delete');
         $select_action = __('select.action');
@@ -176,8 +176,16 @@ HTML;
 HTML;
         }
 
+        $arrange = __('arrange');
+        if ( ! empty($data['use_sort']) && $this->permission->has_update() ) {
+            $html .= <<<HTML
+  <a href="admin/{$module_name}/sort" class="module-add-new module-top-button btn btn-primary ui-btn ui-icon-grid ui-btn-icon-right ui-corner-all ui-mini">{$arrange}</a>
+
+HTML;
+        }
+
         $add_new = __('add.new');
-		if ( $this->permission->has_add() ) {
+		if ( ! empty($data['use_cms_form']) &&  $this->permission->has_add() ) {
 			$html .= <<<HTML
   <a href="admin/{$module_name}/add" class="module-add-new module-top-button btn btn-primary ui-btn ui-icon-plus ui-btn-icon-right ui-corner-all ui-mini">{$add_new}</a>
 

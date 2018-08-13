@@ -253,7 +253,7 @@ html.abstract-splash body {
 #abstract-error p {
 	margin: 2em 0 0 0;
 }
-#abstract-error .button-back {
+#abstract-error .button-back, #abstract-error .button-redirect {
 	max-width: 200px;
     display: inline-block;
 }

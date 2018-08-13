@@ -202,7 +202,7 @@ class AdminSortForm {
         $class = $this->class_attr();
         $attr = $this->attributes();
         $admin_uri_segment = $this->App->config('admin_uri_segment');
-        $sort_all_records = 'Sort All Records';
+        $sort_all_records = __('arrange.all');
         $is_all_records = $this->field_name === self::ALL_SEGMENT;
         $subheading = $is_all_records ? $sort_all_records : '';
         $sort_uri = $this->module_name.'/'.self::SORT_URI_SEGMENT;
@@ -262,7 +262,7 @@ class AdminSortForm {
                         $this->params[$field_name]['values'];
                 $root_base = $admin_fragment.'/'.$field_name.'/';
 
-                $title = $is_1n ? 'Sort ' : 'Sort by ';
+                $title = ($is_1n ? __('arrange') : __('arrange.by') ).' ';
                 if ( empty($this->params[$field_name]['name']) ) {
                     $title .= isset($rel_names[$field_name]) ? $rel_names[$field_name] : $rel_module['label_plural'];
                 } else {
@@ -304,7 +304,7 @@ class AdminSortForm {
                 }
 
                 $root_base = $admin_fragment.'/'.$field_name.'/';
-                $title = 'Sort by '.$params['name'];
+                $title = __('arrange.by').' '.$params['name'];
                 $values = array('' => $title);
                 foreach ($params['values'] as $id => $name) {
                     $values[$root_base.$id] = $title.": ".$name;
@@ -445,6 +445,7 @@ class AdminSortForm {
         $grid_min = self::$GRID_MIN_ITEMS;
         $disabled = $this->is_readonly ? ' disabled' : '';
         $class = $this->is_readonly ? 'class="disabled" ' : '';
+        $no_items = error_str('error.arrange');
         return <<<HTML
 
 <% if (items !== false) { %>  
@@ -471,7 +472,7 @@ class AdminSortForm {
 
     <% } else { %>
 
-<p id="sort-no-items">There are currently no items to sort.</p>
+<p id="sort-no-items">{$no_items}</p>
 
     <% } %>
 

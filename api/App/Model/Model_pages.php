@@ -954,7 +954,9 @@ class Model_pages extends \App\Model\Model {
 		$query .= $this->db->escape_identifier('short_title').", ";
 		$query .= $this->db->escape_identifier('slug').", ";
 		$query .= $this->db->escape_identifier('is_permanent').", ";
-		$query .= $this->db->escape_identifier('is_active')." ";
+		$query .= $this->db->escape_identifier('is_active').", ";
+        $query .= $this->db->escape_identifier('created').", ";
+        $query .= $this->db->escape_identifier('updated')." ";
 		$query .= "FROM ".$this->db->escape_identifier($this->table_name)." ";
 		$query .= "WHERE ".$this->db->escape_identifier('parent_id')."!=0 ";
 		$query .= "ORDER BY ".$this->db->escape_identifier('parent_id')." ASC, ";
